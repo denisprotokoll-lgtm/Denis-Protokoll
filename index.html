@@ -33,7 +33,6 @@ body.dark-mode .modal-box input { background: #3a3a3a; color: var(--text); borde
 .proto-row.danger .cell { border-color: rgba(232,57,74,0.4) !important; background: #fff5f5 !important; }
 body.dark-mode .proto-row.danger .cell { background: #3a1a1a !important; }
 
-/* ── AUTOSAVE BAR ── */
 .autosave-bar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 999;
   background: #e8f5e9; border-top: 2px solid #4cba6b;
@@ -51,7 +50,6 @@ body.dark-mode .proto-row.danger .cell { background: #3a1a1a !important; }
 .as-btn { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 6px; border: 1.5px solid currentColor; background: transparent; cursor: pointer; color: inherit; transition: all 0.15s; }
 .as-btn:hover { opacity: 0.8; }
 
-/* ── TOAST NOTIFICATION ── */
 .toast-wrap { position: fixed; top: 16px; right: 16px; z-index: 9998; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
 .toast { background: #141518; color: white; border-radius: 12px; padding: 10px 16px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); animation: toastIn 0.25s ease; max-width: 280px; pointer-events: all; }
 @keyframes toastIn { from{opacity:0;transform:translateX(20px);} to{opacity:1;transform:none;} }
@@ -239,9 +237,6 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
 .sound-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 9px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.7); cursor: pointer; transition: all 0.2s; user-select: none; }
 .sound-badge:hover { background: rgba(255,255,255,0.2); }
 
-/* ══════════════════════════════
-   CHECK-IN SCREEN
-══════════════════════════════ */
 #checkinScreen { display: none; position: fixed; inset: 0; z-index: 99999; background: linear-gradient(160deg, #2d3f52 0%, #1a2535 100%); font-family: 'DM Sans', sans-serif; overflow-y: auto; padding: 0 0 40px; }
 .ci-header { background: linear-gradient(135deg, #4a6080, #3d5268); padding: 52px 20px 20px; text-align: center; }
 .ci-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: white; margin-bottom: 4px; }
@@ -297,69 +292,24 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
 .ci-log-type.in  { background: rgba(76,186,107,0.2); color: #4cba6b; }
 .ci-log-type.out { background: rgba(232,57,74,0.2); color: var(--red); }
 .ci-log-vorfall { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; font-style: italic; }
-
-/* ══ NEW: CI LOG EDIT / UNDO BUTTONS ══ */
 .ci-log-item-actions { display:flex; gap:4px; flex-shrink:0; align-items:center; margin-left:6px; }
-.ci-log-edit-btn, .ci-log-undo-btn {
-  background: none;
-  border: 1.5px solid rgba(255,255,255,0.15);
-  border-radius: 7px;
-  color: rgba(255,255,255,0.45);
-  font-size: 12px;
-  font-weight: 700;
-  padding: 3px 7px;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-  line-height: 1;
-}
+.ci-log-edit-btn, .ci-log-undo-btn { background: none; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 7px; color: rgba(255,255,255,0.45); font-size: 12px; font-weight: 700; padding: 3px 7px; cursor: pointer; transition: all 0.15s; white-space: nowrap; line-height: 1; }
 .ci-log-edit-btn:hover { background: rgba(245,166,35,0.2); border-color: #f5a623; color: #f5a623; }
 .ci-log-undo-btn:hover { background: rgba(124,58,237,0.2); border-color: #7c3aed; color: #c4b5fd; }
 .ci-log-item.editing { background: rgba(245,166,35,0.06) !important; }
-.ci-edit-form {
-  padding: 10px 14px 12px;
-  background: rgba(255,255,255,0.03);
-  border-top: 1px solid rgba(255,255,255,0.06);
-  animation: rowIn 0.18s ease;
-}
+.ci-edit-form { padding: 10px 14px 12px; background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.06); animation: rowIn 0.18s ease; }
 .ci-edit-form-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-.ci-edit-label {
-  font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.35);
-  letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0; min-width: 44px;
-}
-.ci-edit-select {
-  font-family: 'DM Sans',sans-serif; font-size: 11px; color: white;
-  background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2);
-  border-radius: 8px; padding: 5px 9px; outline: none; cursor: pointer;
-  flex: 1; min-width: 0;
-}
-.ci-edit-time {
-  font-family: 'DM Sans',sans-serif; font-size: 12px; color: white;
-  background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2);
-  border-radius: 8px; padding: 5px 9px; outline: none; width: 105px; flex-shrink: 0;
-}
-.ci-edit-vorfall {
-  font-family: 'DM Sans',sans-serif; font-size: 11px; color: white;
-  background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.15);
-  border-radius: 8px; padding: 7px 10px; outline: none; resize: none;
-  min-height: 40px; width: 100%; transition: border-color 0.15s;
-}
+.ci-edit-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0; min-width: 44px; }
+.ci-edit-select { font-family: 'DM Sans',sans-serif; font-size: 11px; color: white; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 5px 9px; outline: none; cursor: pointer; flex: 1; min-width: 0; }
+.ci-edit-time { font-family: 'DM Sans',sans-serif; font-size: 12px; color: white; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 5px 9px; outline: none; width: 105px; flex-shrink: 0; }
+.ci-edit-vorfall { font-family: 'DM Sans',sans-serif; font-size: 11px; color: white; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 7px 10px; outline: none; resize: none; min-height: 40px; width: 100%; transition: border-color 0.15s; }
 .ci-edit-vorfall:focus { border-color: #f5a623; background: rgba(255,255,255,0.1); }
 .ci-edit-vorfall::placeholder { color: rgba(255,255,255,0.2); }
 .ci-edit-form-btns { display: flex; gap: 8px; margin-top: 4px; }
-.ci-edit-save {
-  background: linear-gradient(135deg,#f5a623,#e08020); color: white; border: none;
-  border-radius: 8px; padding: 8px 18px; font-family: 'DM Sans',sans-serif;
-  font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.15s;
-}
+.ci-edit-save { background: linear-gradient(135deg,#f5a623,#e08020); color: white; border: none; border-radius: 8px; padding: 8px 18px; font-family: 'DM Sans',sans-serif; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.15s; }
 .ci-edit-save:hover { transform: translateY(-1px); opacity: 0.9; }
-.ci-edit-cancel {
-  background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5);
-  border: 1.5px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 14px;
-  font-family: 'DM Sans',sans-serif; font-size: 11px; font-weight: 700; cursor: pointer;
-}
+.ci-edit-cancel { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.5); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 14px; font-family: 'DM Sans',sans-serif; font-size: 11px; font-weight: 700; cursor: pointer; }
 .ci-edit-cancel:hover { background: rgba(255,255,255,0.14); color: white; }
-
 .ci-import-btn { width: 100%; margin-top: 16px; padding: 14px; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; border: none; border-radius: 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(124,58,237,0.35); }
 .ci-import-btn:hover { transform: translateY(-1px); }
 .ci-back-btn { width: 100%; margin-top: 10px; padding: 12px; background: transparent; color: rgba(255,255,255,0.4); border: 1.5px solid rgba(255,255,255,0.12); border-radius: 14px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
@@ -414,7 +364,7 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
   <div class="archive-list" id="archiveList"></div>
 </div>
 <button class="archive-btn no-print" onclick="openArchive()" title="Archiv öffnen">📁</button>
-<button class="ai-btn no-print ai-btn-pulse" onclick="openAiModal()" title="🤖 KI-Assistent">🤖</button>
+<button class="ai-btn no-print ai-btn-pulse" onclick="openAiModal()" title="KI-Assistent">🤖</button>
 
 <div class="toolbar no-print">
   <div class="toolbar-brand">Denis <span>Protokoll</span> · Sicherheitsdienst</div>
@@ -522,7 +472,7 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
       </div>
     </div>
     <div id="aiTab-describe" style="display:none">
-      <textarea class="ai-describe-input" id="aiDescribeText" placeholder="Beschreiben Sie den Vorfall auf Deutsch oder Arabisch…"></textarea>
+      <textarea class="ai-describe-input" id="aiDescribeText" placeholder="Beschreiben Sie den Vorfall…"></textarea>
       <div class="ai-result-box" id="describeAiResult"></div>
       <div class="ai-actions">
         <button class="ai-action-btn primary" id="describeBtn" onclick="analyzeDescribeText()">🤖 Analysieren</button>
@@ -549,7 +499,7 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
 <div id="checkinScreen">
   <div class="ci-header">
     <div class="ci-title">⏱ Check<span>in</span></div>
-    <div class="ci-subtitle">دخول · خروج · Kunde</div>
+    <div class="ci-subtitle">Eingang · Ausgang · Kunde</div>
   </div>
   <div class="ci-clock" id="ciClock">00:00:00</div>
   <div class="ci-date" id="ciDate">—</div>
@@ -559,18 +509,18 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
     <div class="ci-actions">
       <button class="ci-btn ci-btn-in" id="ciBtnIn" onclick="ciCheckIn()" disabled>
         <span style="font-size:22px">✅</span>
-        دخول / Eingang
-        <span class="ci-btn-label" id="ciBtnInTime">Wähle Kunde</span>
+        Eingang
+        <span class="ci-btn-label" id="ciBtnInTime">Kunde wählen</span>
       </button>
       <button class="ci-btn ci-btn-out" id="ciBtnOut" onclick="ciCheckOut()" disabled>
         <span style="font-size:22px">🚪</span>
-        خروج / Ausgang
-        <span class="ci-btn-label" id="ciBtnOutTime">Wähle Kunde</span>
+        Ausgang
+        <span class="ci-btn-label" id="ciBtnOutTime">Kunde wählen</span>
       </button>
     </div>
     <div class="ci-vorfall-wrap">
       <span class="ci-vorfall-label">⚠️ Vorfall (optional)</span>
-      <textarea class="ci-vorfall-input" id="ciVorfallInput" placeholder="Vorfall beschreiben… (wird automatisch gespeichert)"></textarea>
+      <textarea class="ci-vorfall-input" id="ciVorfallInput" placeholder="Vorfall beschreiben…"></textarea>
     </div>
     <div class="ci-log">
       <div class="ci-log-header">
@@ -583,12 +533,8 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
         <button class="ci-log-act-btn del-all" onclick="ciClearLog()">🗑 Alle</button>
       </div>
     </div>
-    <button class="ci-import-btn" onclick="ciImportToProtokoll()">
-      📥 Alle Einträge → Protokoll übertragen
-    </button>
-    <button class="ci-back-btn" onclick="hideCheckin()">
-      ← Zurück zum Protokoll
-    </button>
+    <button class="ci-import-btn" onclick="ciImportToProtokoll()">📥 Alle Einträge → Protokoll übertragen</button>
+    <button class="ci-back-btn" onclick="hideCheckin()">← Zurück zum Protokoll</button>
   </div>
 </div>
 
@@ -605,7 +551,6 @@ body.dark-mode .ai-action-btn.secondary { background:#3a3a3a;color:var(--text); 
 </div>
 
 <script>
-// ── CONSTANTS ──
 const KUNDEN = ['— Standort —','Galerie','Lüneburg Parkhaus','Fuhle','Parking Millerntorplatz','Parkhaus My Falkenried'];
 const EREIGNISSE_GROUPS = [
   { label: '── Regulär ──', disabled: true },
@@ -653,135 +598,119 @@ const INIT = [
   { k:'Lüneburg Parkhaus', b:'06:35', e:'07:00', n:[] },
 ];
 
-// ── STATE ──
-let rowId = 0, statusOk = true;
-const nCounts = {};
-let soundEnabled = localStorage.getItem('denis_sound') !== '0';
-let autoSaveTimer = null;
-let pendingSave = false;
-let currentProtoNr = '';
+let rowId=0, statusOk=true;
+const nCounts={};
+let soundEnabled=localStorage.getItem('denis_sound')!=='0';
+let autoSaveTimer=null, pendingSave=false, currentProtoNr='';
 
-// ── SHIFT DATE ──
-function getShiftDate() {
-  const now = new Date();
-  if (now.getHours() < 17) { const y = new Date(now); y.setDate(y.getDate()-1); return y; }
-  return now;
-}
-function getShiftDayLabel(d) { return ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][d.getDay()]; }
-function formatDateISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function formatDateDE(d)  { return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; }
+function getShiftDate(){const now=new Date();if(now.getHours()<17){const y=new Date(now);y.setDate(y.getDate()-1);return y;}return now;}
+function getShiftDayLabel(d){return['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][d.getDay()];}
+function formatDateISO(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function formatDateDE(d){return`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;}
 
-(function initShiftDateTime() {
-  const sd = getShiftDate(), now = new Date();
-  document.getElementById('dateInput').value = formatDateISO(sd);
-  document.getElementById('daySelect').value  = getShiftDayLabel(sd);
-  const si = document.getElementById('shiftDayInfo');
-  if (si) si.textContent = now.getHours() < 17 ? `📅 Nachtschicht von gestern (${formatDateDE(sd)})` : `📅 Schicht ab heute (${formatDateDE(sd)})`;
+(function initShiftDateTime(){
+  const sd=getShiftDate(),now=new Date();
+  document.getElementById('dateInput').value=formatDateISO(sd);
+  document.getElementById('daySelect').value=getShiftDayLabel(sd);
+  const si=document.getElementById('shiftDayInfo');
+  if(si)si.textContent=now.getHours()<17?`📅 Nachtschicht von gestern (${formatDateDE(sd)})`:`📅 Schicht ab heute (${formatDateDE(sd)})`;
 })();
 
-// ── PROTO NR ──
-function generateProtoNr(increment = true) {
-  const d = getShiftDate();
-  const dk = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-  const dp = formatDateDE(d);
-  const stored = localStorage.getItem('denis_proto_date');
-  let counter = 1;
-  if (stored === dk) { counter = parseInt(localStorage.getItem('denis_proto_seq') || '0'); if (increment) counter++; }
-  else { counter = 1; }
-  if (increment || stored !== dk) { localStorage.setItem('denis_proto_date', dk); localStorage.setItem('denis_proto_seq', counter); }
-  return `${dp} – NR-${String(counter).padStart(3,'0')}`;
+function generateProtoNr(increment=true){
+  const d=getShiftDate();
+  const dk=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const dp=formatDateDE(d);
+  const stored=localStorage.getItem('denis_proto_date');
+  let counter=1;
+  if(stored===dk){counter=parseInt(localStorage.getItem('denis_proto_seq')||'0');if(increment)counter++;}
+  else{counter=1;}
+  if(increment||stored!==dk){localStorage.setItem('denis_proto_date',dk);localStorage.setItem('denis_proto_seq',counter);}
+  return`${dp} – NR-${String(counter).padStart(3,'0')}`;
 }
-function applyProtoNr(nr) { currentProtoNr = nr; const el = document.getElementById('protokollNrText'); if (el) el.textContent = nr; }
-function refreshProtoNr() { applyProtoNr(generateProtoNr(true)); showToast('🔄 Neue Protokoll-Nr. generiert','info'); saveData(); }
+function applyProtoNr(nr){currentProtoNr=nr;const el=document.getElementById('protokollNrText');if(el)el.textContent=nr;}
+function refreshProtoNr(){applyProtoNr(generateProtoNr(true));showToast('🔄 Neue Protokoll-Nr. generiert','info');saveData();}
 
-// ── AUDIO ──
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-function getAudioCtx() { if (!audioCtx) { try { audioCtx = new AudioCtx(); } catch(e){} } return audioCtx; }
-function playBeep(type='save') {
-  if (!soundEnabled) return;
-  const ctx = getAudioCtx(); if (!ctx) return;
-  const osc = ctx.createOscillator(), gain = ctx.createGain();
-  osc.connect(gain); gain.connect(ctx.destination);
-  if (type==='save')    { osc.frequency.value=880; gain.gain.setValueAtTime(0.08,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2); osc.start(); osc.stop(ctx.currentTime+0.2); }
-  if (type==='danger')  { osc.frequency.value=440; gain.gain.setValueAtTime(0.15,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5); osc.start(); osc.stop(ctx.currentTime+0.5); }
-  if (type==='success') { osc.frequency.value=660; gain.gain.setValueAtTime(0.08,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3); osc.start(); osc.stop(ctx.currentTime+0.3); }
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let audioCtx=null;
+function getAudioCtx(){if(!audioCtx){try{audioCtx=new AudioCtx();}catch(e){}}return audioCtx;}
+function playBeep(type='save'){
+  if(!soundEnabled)return;
+  const ctx=getAudioCtx();if(!ctx)return;
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.connect(gain);gain.connect(ctx.destination);
+  if(type==='save'){osc.frequency.value=880;gain.gain.setValueAtTime(0.08,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.2);osc.start();osc.stop(ctx.currentTime+0.2);}
+  if(type==='danger'){osc.frequency.value=440;gain.gain.setValueAtTime(0.15,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);osc.start();osc.stop(ctx.currentTime+0.5);}
+  if(type==='success'){osc.frequency.value=660;gain.gain.setValueAtTime(0.08,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);osc.start();osc.stop(ctx.currentTime+0.3);}
 }
-function toggleSound() {
-  soundEnabled = !soundEnabled;
-  localStorage.setItem('denis_sound', soundEnabled?'1':'0');
-  const b = document.getElementById('soundBadge'); if(b) b.textContent = soundEnabled?'🔔 Ton':'🔕 Stumm';
-  const btn = document.getElementById('soundBtn'); if(btn) btn.textContent = soundEnabled?'🔔':'🔕';
+function toggleSound(){
+  soundEnabled=!soundEnabled;localStorage.setItem('denis_sound',soundEnabled?'1':'0');
+  const b=document.getElementById('soundBadge');if(b)b.textContent=soundEnabled?'🔔 Ton':'🔕 Stumm';
+  const btn=document.getElementById('soundBtn');if(btn)btn.textContent=soundEnabled?'🔔':'🔕';
   showToast(soundEnabled?'🔔 Ton aktiviert':'🔕 Ton deaktiviert','info');
 }
-if (!soundEnabled) { setTimeout(()=>{ const b=document.getElementById('soundBadge'); if(b) b.textContent='🔕 Stumm'; const btn=document.getElementById('soundBtn'); if(btn) btn.textContent='🔕'; },100); }
+if(!soundEnabled){setTimeout(()=>{const b=document.getElementById('soundBadge');if(b)b.textContent='🔕 Stumm';const btn=document.getElementById('soundBtn');if(btn)btn.textContent='🔕';},100);}
 
-// ── TOAST ──
-function showToast(msg, type='success', duration=2500) {
-  const wrap = document.getElementById('toastWrap');
-  const t = document.createElement('div'); t.className=`toast ${type}`; t.innerHTML=msg;
+function showToast(msg,type='success',duration=2500){
+  const wrap=document.getElementById('toastWrap');
+  const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=msg;
   wrap.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, duration);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all 0.3s';setTimeout(()=>t.remove(),300);},duration);
 }
 
-// ── HELPERS ──
-function buildEreignisOptions(selected) {
-  let html = `<option value="">— Ereignis —</option>`;
-  EREIGNISSE_GROUPS.forEach(g => {
-    if (g.disabled) html += `<option disabled style="color:#aaa;font-size:10px;">${g.label}</option>`;
-    else html += `<option${g.label===selected?' selected':''}>${g.label}</option>`;
+function buildEreignisOptions(selected){
+  let html=`<option value="">— Ereignis —</option>`;
+  EREIGNISSE_GROUPS.forEach(g=>{
+    if(g.disabled)html+=`<option disabled style="color:#aaa;font-size:10px;">${g.label}</option>`;
+    else html+=`<option${g.label===selected?' selected':''}>${g.label}</option>`;
   });
   return html;
 }
-function getEventColor(val) {
-  if (EVENT_COLORS.red.includes(val))    return 'red';
-  if (EVENT_COLORS.orange.includes(val)) return 'orange';
-  if (EVENT_COLORS.blue.includes(val))   return 'blue';
-  return 'none';
+function getEventColor(val){
+  if(EVENT_COLORS.red.includes(val))return'red';
+  if(EVENT_COLORS.orange.includes(val))return'orange';
+  if(EVENT_COLORS.blue.includes(val))return'blue';
+  return'none';
 }
-function updateNotizSelectStyle(sel) {
-  const c = getEventColor(sel.value);
-  sel.style.background  = c==='red'?'#ffecec':c==='orange'?'#fff8e6':c==='blue'?'#e8f4ff':'';
-  sel.style.color       = c==='red'?'#b71c1c':c==='orange'?'#7a4800':c==='blue'?'#1a4a7a':'';
-  sel.style.borderColor = c==='red'?'#e88':c==='orange'?'#f5a623':c==='blue'?'#90caf9':'';
-  const row = sel.closest('.proto-row'); if (row) checkDanger(row);
+function updateNotizSelectStyle(sel){
+  const c=getEventColor(sel.value);
+  sel.style.background=c==='red'?'#ffecec':c==='orange'?'#fff8e6':c==='blue'?'#e8f4ff':'';
+  sel.style.color=c==='red'?'#b71c1c':c==='orange'?'#7a4800':c==='blue'?'#1a4a7a':'';
+  sel.style.borderColor=c==='red'?'#e88':c==='orange'?'#f5a623':c==='blue'?'#90caf9':'';
+  const row=sel.closest('.proto-row');if(row)checkDanger(row);
   updateSummary();
 }
-function checkDanger(row) {
-  const hasDanger = Array.from(row.querySelectorAll('.notiz-select')).some(s => DANGER_EVENTS.includes(s.value));
-  const was = row.classList.contains('danger');
-  row.classList.toggle('danger', hasDanger);
-  if (hasDanger && !was) playBeep('danger');
+function checkDanger(row){
+  const hasDanger=Array.from(row.querySelectorAll('.notiz-select')).some(s=>DANGER_EVENTS.includes(s.value));
+  const was=row.classList.contains('danger');
+  row.classList.toggle('danger',hasDanger);
+  if(hasDanger&&!was)playBeep('danger');
 }
-function colorTime(input) {
-  const val = input.value; if (!val) return;
-  const h = parseInt(val.split(':')[0]);
+function colorTime(input){
+  const val=input.value;if(!val)return;
+  const h=parseInt(val.split(':')[0]);
   input.classList.remove('t-night','t-day','t-eve');
-  if (h>=6&&h<17) input.classList.add('t-day');
-  else if (h>=17&&h<22) input.classList.add('t-eve');
+  if(h>=6&&h<17)input.classList.add('t-day');
+  else if(h>=17&&h<22)input.classList.add('t-eve');
   else input.classList.add('t-night');
 }
-function setNow(inputId) {
-  const now = new Date(), el = document.getElementById(inputId);
-  if (el) { el.value=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; colorTime(el); }
+function setNow(inputId){
+  const now=new Date(),el=document.getElementById(inputId);
+  if(el){el.value=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;colorTime(el);}
+}
+function toggleStatus(){
+  statusOk=!statusOk;
+  document.getElementById('statusBadge').className='status-badge'+(statusOk?'':' incident');
+  document.getElementById('statusText').textContent=statusOk?'Regulär':'Vorfall aktiv';
+  if(!statusOk)playBeep('danger');
 }
 
-// ── STATUS ──
-function toggleStatus() {
-  statusOk = !statusOk;
-  document.getElementById('statusBadge').className = 'status-badge'+(statusOk?'':' incident');
-  document.getElementById('statusText').textContent = statusOk ? 'Regulär' : 'Vorfall aktiv';
-  if (!statusOk) playBeep('danger');
-}
-
-// ── ROWS ──
-function addRow(data) {
-  const id = ++rowId; nCounts[id] = [];
-  const k = data?.k||'— Standort —', bv = data?.b||'00:00', ev = data?.e||'00:00';
-  const isCustom = !KUNDEN.includes(k) && k !== '— Standort —';
-  const div = document.createElement('div');
-  div.className = 'proto-row'; div.id = `row-${id}`;
-  div.innerHTML = `
+function addRow(data){
+  const id=++rowId;nCounts[id]=[];
+  const k=data?.k||'— Standort —',bv=data?.b||'00:00',ev=data?.e||'00:00';
+  const isCustom=!KUNDEN.includes(k)&&k!=='— Standort —';
+  const div=document.createElement('div');
+  div.className='proto-row';div.id=`row-${id}`;
+  div.innerHTML=`
     <div class="cell cell-kunde">
       <span class="row-num">#${String(id).padStart(2,'0')}</span>
       <select id="ksel-${id}" onchange="onKundeChange(this,${id})" style="display:${isCustom?'none':'block'}">
@@ -813,38 +742,31 @@ function addRow(data) {
       </div>
     </div>`;
   document.getElementById('rowsWrap').appendChild(div);
-  if (data?.n) data.n.forEach(n => addNotiz(id, n.ev, n.c, n.ft||''));
-  if (data?.photos && data.photos.length) {
-    data.photos.forEach(b64 => {
-      const fr = document.getElementById(`fr-${id}`);
-      const wrap = document.createElement('div');
-      wrap.style.cssText = 'position:relative;display:inline-flex;flex-shrink:0;';
-      wrap.dataset.b64 = b64;
-      const img = document.createElement('img');
-      img.src = b64; img.className = 'foto-thumb'; img.dataset.b64 = b64;
-      img.onclick = () => window.open(b64,'_blank');
-      const delBtn = document.createElement('button');
-      delBtn.textContent = '✕'; delBtn.className = 'no-print';
-      delBtn.style.cssText = 'position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--red);color:white;border:none;font-size:9px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:10;padding:0;';
-      delBtn.onclick = (e) => { e.stopPropagation(); wrap.style.opacity='0'; wrap.style.transition='opacity 0.2s'; setTimeout(()=>{wrap.remove();updateSummary();},200); };
-      wrap.appendChild(img); wrap.appendChild(delBtn); fr.appendChild(wrap);
+  if(data?.n)data.n.forEach(n=>addNotiz(id,n.ev,n.c,n.ft||''));
+  if(data?.photos&&data.photos.length){
+    data.photos.forEach(b64=>{
+      const fr=document.getElementById(`fr-${id}`);
+      const wrap=document.createElement('div');wrap.style.cssText='position:relative;display:inline-flex;flex-shrink:0;';wrap.dataset.b64=b64;
+      const img=document.createElement('img');img.src=b64;img.className='foto-thumb';img.dataset.b64=b64;img.onclick=()=>window.open(b64,'_blank');
+      const delBtn=document.createElement('button');delBtn.textContent='✕';delBtn.className='no-print';
+      delBtn.style.cssText='position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--red);color:white;border:none;font-size:9px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:10;padding:0;';
+      delBtn.onclick=(e)=>{e.stopPropagation();wrap.style.opacity='0';wrap.style.transition='opacity 0.2s';setTimeout(()=>{wrap.remove();updateSummary();},200);};
+      wrap.appendChild(img);wrap.appendChild(delBtn);fr.appendChild(wrap);
     });
   }
-  setTimeout(()=>{ const bd=document.getElementById(`bd-${id}`), ed=document.getElementById(`ed-${id}`); if(bd) colorTime(bd); if(ed) colorTime(ed); },0);
+  setTimeout(()=>{const bd=document.getElementById(`bd-${id}`),ed=document.getElementById(`ed-${id}`);if(bd)colorTime(bd);if(ed)colorTime(ed);},0);
   updateSummary();
 }
-function removeLastRow() { const rows=document.querySelectorAll('.proto-row'); if(!rows.length) return; const last=rows[rows.length-1]; last.style.cssText+='opacity:0;transform:translateX(20px);transition:all 0.2s'; setTimeout(()=>{last.remove();updateSummary();},200); }
-function removeRow(id) { const el=document.getElementById(`row-${id}`); if(el){el.style.cssText+='opacity:0;transform:translateX(20px);transition:all 0.2s';setTimeout(()=>{el.remove();updateSummary();},200);} }
+function removeLastRow(){const rows=document.querySelectorAll('.proto-row');if(!rows.length)return;const last=rows[rows.length-1];last.style.cssText+='opacity:0;transform:translateX(20px);transition:all 0.2s';setTimeout(()=>{last.remove();updateSummary();},200);}
+function removeRow(id){const el=document.getElementById(`row-${id}`);if(el){el.style.cssText+='opacity:0;transform:translateX(20px);transition:all 0.2s';setTimeout(()=>{el.remove();updateSummary();},200);}}
 
-// ── NOTIZ ──
-function addNotiz(rId, ereignis, count, freeText) {
-  const ni = document.getElementById(`ni-${rId}`);
-  const idx = nCounts[rId].length;
+function addNotiz(rId,ereignis,count,freeText){
+  const ni=document.getElementById(`ni-${rId}`);
+  const idx=nCounts[rId].length;
   nCounts[rId].push(count||0);
-  const isFree = ereignis === 'Freitext…';
-  const item = document.createElement('div');
-  item.className = 'notiz-item'; item.id = `ni-${rId}-${idx}`;
-  item.innerHTML = `
+  const isFree=ereignis==='Freitext…';
+  const item=document.createElement('div');item.className='notiz-item';item.id=`ni-${rId}-${idx}`;
+  item.innerHTML=`
     <div class="nc-wrap">
       <button class="nc-btn m" onclick="chN(${rId},${idx},-1)">−</button>
       <span class="nc-num" id="nc-${rId}-${idx}">${count||0}</span>
@@ -855,233 +777,219 @@ function addNotiz(rId, ereignis, count, freeText) {
     </select>
     <button class="notiz-del-btn no-print" title="Löschen" onclick="deleteNotiz(this)">🗑</button>`;
   ni.appendChild(item);
-  const ta = document.createElement('textarea');
-  ta.className='notiz-free'; ta.value=freeText||'';
-  ta.style.display = isFree?'block':'none';
+  const ta=document.createElement('textarea');ta.className='notiz-free';ta.value=freeText||'';ta.style.display=isFree?'block':'none';
   ni.appendChild(ta);
-  const sel = item.querySelector('.notiz-select');
-  if (sel && sel.value) updateNotizSelectStyle(sel);
+  const sel=item.querySelector('.notiz-select');if(sel&&sel.value)updateNotizSelectStyle(sel);
   updateSummary();
 }
-function deleteNotiz(btn) {
-  const item = btn.closest('.notiz-item');
-  const next = item.nextElementSibling;
-  if (next && next.tagName==='TEXTAREA') next.remove();
-  item.style.opacity='0'; item.style.transform='translateX(10px)'; item.style.transition='all 0.18s';
+function deleteNotiz(btn){
+  const item=btn.closest('.notiz-item');const next=item.nextElementSibling;
+  if(next&&next.tagName==='TEXTAREA')next.remove();
+  item.style.opacity='0';item.style.transform='translateX(10px)';item.style.transition='all 0.18s';
   setTimeout(()=>{item.remove();updateSummary();},180);
 }
-function onNChange(sel, rId, idx) {
-  const ta = document.getElementById(`ni-${rId}-${idx}`)?.nextElementSibling;
-  if (ta && ta.tagName==='TEXTAREA') ta.style.display = sel.value==='Freitext…'?'block':'none';
+function onNChange(sel,rId,idx){
+  const ta=document.getElementById(`ni-${rId}-${idx}`)?.nextElementSibling;
+  if(ta&&ta.tagName==='TEXTAREA')ta.style.display=sel.value==='Freitext…'?'block':'none';
   updateSummary();
 }
-function chN(rId, idx, d) {
-  nCounts[rId][idx] = Math.max(0,(nCounts[rId][idx]||0)+d);
-  document.getElementById(`nc-${rId}-${idx}`).textContent = nCounts[rId][idx];
+function chN(rId,idx,d){
+  nCounts[rId][idx]=Math.max(0,(nCounts[rId][idx]||0)+d);
+  document.getElementById(`nc-${rId}-${idx}`).textContent=nCounts[rId][idx];
   updateSummary();
 }
-function onKundeChange(sel, id) {
-  const cust = document.getElementById(`kcust-${id}`), back = document.getElementById(`kback-${id}`);
-  if (sel.value==='__custom__') { sel.style.display='none'; cust.style.display='block'; back.style.display='inline'; cust.focus(); }
-  else { cust.style.display='none'; back.style.display='none'; sel.style.display='block'; }
+function onKundeChange(sel,id){
+  const cust=document.getElementById(`kcust-${id}`),back=document.getElementById(`kback-${id}`);
+  if(sel.value==='__custom__'){sel.style.display='none';cust.style.display='block';back.style.display='inline';cust.focus();}
+  else{cust.style.display='none';back.style.display='none';sel.style.display='block';}
   updateSummary();
 }
-function resetKunde(id) {
-  document.getElementById(`ksel-${id}`).value='— Standort —'; document.getElementById(`ksel-${id}`).style.display='block';
-  document.getElementById(`kcust-${id}`).style.display='none'; document.getElementById(`kback-${id}`).style.display='none';
+function resetKunde(id){
+  document.getElementById(`ksel-${id}`).value='— Standort —';document.getElementById(`ksel-${id}`).style.display='block';
+  document.getElementById(`kcust-${id}`).style.display='none';document.getElementById(`kback-${id}`).style.display='none';
   updateSummary();
 }
 
-// ── FOTO ──
-function compressImage(file, maxW, maxH, quality, callback) {
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const image = new Image();
-    image.onload = () => {
-      let w=image.width, h=image.height;
-      if (w>maxW||h>maxH) { const ratio=Math.min(maxW/w,maxH/h); w=Math.round(w*ratio); h=Math.round(h*ratio); }
-      const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+function compressImage(file,maxW,maxH,quality,callback){
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const image=new Image();
+    image.onload=()=>{
+      let w=image.width,h=image.height;
+      if(w>maxW||h>maxH){const ratio=Math.min(maxW/w,maxH/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}
+      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(image,0,0,w,h);
       callback(canvas.toDataURL('image/jpeg',quality));
     };
-    image.src = e.target.result;
+    image.src=e.target.result;
   };
   reader.readAsDataURL(file);
 }
-function addFoto(rId, input) {
-  if (!input.files[0]) return;
-  compressImage(input.files[0], 800, 600, 0.55, (b64) => {
-    const fr = document.getElementById(`fr-${rId}`);
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;display:inline-flex;flex-shrink:0;'; wrap.dataset.b64=b64;
-    const img = document.createElement('img'); img.src=b64; img.className='foto-thumb'; img.dataset.b64=b64;
-    img.onclick = () => window.open(b64,'_blank');
-    const delBtn = document.createElement('button'); delBtn.textContent='✕'; delBtn.className='no-print';
+function addFoto(rId,input){
+  if(!input.files[0])return;
+  compressImage(input.files[0],800,600,0.55,(b64)=>{
+    const fr=document.getElementById(`fr-${rId}`);
+    const wrap=document.createElement('div');wrap.style.cssText='position:relative;display:inline-flex;flex-shrink:0;';wrap.dataset.b64=b64;
+    const img=document.createElement('img');img.src=b64;img.className='foto-thumb';img.dataset.b64=b64;img.onclick=()=>window.open(b64,'_blank');
+    const delBtn=document.createElement('button');delBtn.textContent='✕';delBtn.className='no-print';
     delBtn.style.cssText='position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--red);color:white;border:none;font-size:9px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:10;padding:0;';
     delBtn.onclick=(e)=>{e.stopPropagation();wrap.style.opacity='0';wrap.style.transition='opacity 0.2s';setTimeout(()=>{wrap.remove();updateSummary();},200);};
-    wrap.appendChild(img); wrap.appendChild(delBtn); fr.appendChild(wrap);
-    input.value=''; updateSummary(); showToast('📸 Foto komprimiert & gespeichert','success'); playBeep('success');
+    wrap.appendChild(img);wrap.appendChild(delBtn);fr.appendChild(wrap);
+    input.value='';updateSummary();showToast('📸 Foto komprimiert & gespeichert','success');playBeep('success');
   });
 }
 
-// ── SUMMARY ──
-function updateSummary() {
-  const rows = document.querySelectorAll('.proto-row');
-  let kC=0, vC=0;
-  rows.forEach(row => {
-    const sel=row.querySelector('select'), hasKunde=sel&&sel.value!=='— Standort —';
+function updateSummary(){
+  const rows=document.querySelectorAll('.proto-row');let kC=0,vC=0;
+  rows.forEach(row=>{
+    const sel=row.querySelector('select'),hasKunde=sel&&sel.value!=='— Standort —';
     const hasNotiz=row.querySelectorAll('.nc-num').length>0;
-    let total=0; row.querySelectorAll('.nc-num').forEach(n=>{total+=parseInt(n.textContent)||0;});
-    vC+=total; if(hasKunde) kC++;
+    let total=0;row.querySelectorAll('.nc-num').forEach(n=>{total+=parseInt(n.textContent)||0;});
+    vC+=total;if(hasKunde)kC++;
     row.classList.remove('row-ok','row-warn','row-empty');
-    if (!hasKunde) row.classList.add('row-empty');
-    else if (hasNotiz&&total>0) row.classList.add('row-warn');
+    if(!hasKunde)row.classList.add('row-empty');
+    else if(hasNotiz&&total>0)row.classList.add('row-warn');
     else row.classList.add('row-ok');
     checkDanger(row);
   });
-  document.getElementById('chipK').textContent = kC+' Kunden';
-  document.getElementById('chipV').textContent = vC+' Vorfälle';
-  document.getElementById('chipR').textContent = rows.length+' Zeilen';
-  const rc=document.getElementById('rowCount'); if(rc) rc.textContent=rows.length+' Zeilen';
+  document.getElementById('chipK').textContent=kC+' Kunden';
+  document.getElementById('chipV').textContent=vC+' Vorfälle';
+  document.getElementById('chipR').textContent=rows.length+' Zeilen';
+  const rc=document.getElementById('rowCount');if(rc)rc.textContent=rows.length+' Zeilen';
   scheduleSave();
 }
 
-// ── DARK MODE ──
-function toggleDark() { document.body.classList.toggle('dark-mode'); localStorage.setItem('denis_dark',document.body.classList.contains('dark-mode')?'1':'0'); }
-if (localStorage.getItem('denis_dark')==='1') document.body.classList.add('dark-mode');
+function toggleDark(){document.body.classList.toggle('dark-mode');localStorage.setItem('denis_dark',document.body.classList.contains('dark-mode')?'1':'0');}
+if(localStorage.getItem('denis_dark')==='1')document.body.classList.add('dark-mode');
 
-// ── AUTO SAVE ──
-function scheduleSave() {
-  pendingSave=true; clearTimeout(autoSaveTimer);
+function scheduleSave(){
+  pendingSave=true;clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(()=>{saveData();pendingSave=false;},800);
-  const bar=document.getElementById('autosaveBar'), txt=document.getElementById('autosaveText');
-  if(bar) bar.className='autosave-bar saving no-print'; if(txt) txt.textContent='⏳ Speichern…';
+  const bar=document.getElementById('autosaveBar'),txt=document.getElementById('autosaveText');
+  if(bar)bar.className='autosave-bar saving no-print';if(txt)txt.textContent='⏳ Speichern…';
 }
-function collectData() {
+function collectData(){
   const rows=document.querySelectorAll('.proto-row');
   const data={day:document.getElementById('daySelect').value,date:document.getElementById('dateInput').value,protokollNr:currentProtoNr,mitarbeiter:document.getElementById('mitarbeiterName')?.value||'',status:statusOk,savedAt:new Date().toISOString(),rows:[]};
   rows.forEach(row=>{
     const id=row.id.replace('row-','');
-    const ksel=document.getElementById(`ksel-${id}`), kcust=document.getElementById(`kcust-${id}`);
-    const bd=document.getElementById(`bd-${id}`), ed=document.getElementById(`ed-${id}`);
-    const ni=document.getElementById(`ni-${id}`), fr=document.getElementById(`fr-${id}`);
+    const ksel=document.getElementById(`ksel-${id}`),kcust=document.getElementById(`kcust-${id}`);
+    const bd=document.getElementById(`bd-${id}`),ed=document.getElementById(`ed-${id}`);
+    const ni=document.getElementById(`ni-${id}`),fr=document.getElementById(`fr-${id}`);
     const isCustom=kcust&&kcust.style.display!=='none';
     const kunde=isCustom?kcust.value:(ksel?ksel.value:'— Standort —');
     const notizen=[];
     if(ni){ni.querySelectorAll('.notiz-item').forEach(item=>{const s=item.querySelector('.notiz-select'),n=item.querySelector('.nc-num'),t=item.nextElementSibling;notizen.push({ev:s?s.value:'',c:n?parseInt(n.textContent)||0:0,ft:(t&&t.tagName==='TEXTAREA')?t.value:''});});}
     const photos=[];
-    if(fr){fr.querySelectorAll('img.foto-thumb').forEach(img=>{if(img.dataset.b64) photos.push(img.dataset.b64); else if(img.src.startsWith('data:')) photos.push(img.src);});}
+    if(fr){fr.querySelectorAll('img.foto-thumb').forEach(img=>{if(img.dataset.b64)photos.push(img.dataset.b64);else if(img.src.startsWith('data:'))photos.push(img.src);});}
     data.rows.push({k:kunde,b:bd?bd.value:'00:00',e:ed?ed.value:'00:00',n:notizen,photos});
   });
   return data;
 }
-function saveData() {
-  try {
-    const data=collectData(); localStorage.setItem('denis_protokoll',JSON.stringify(data));
+function saveData(){
+  try{
+    const data=collectData();localStorage.setItem('denis_protokoll',JSON.stringify(data));
     const bar=document.getElementById('autosaveBar'),txt=document.getElementById('autosaveText'),chip=document.getElementById('chipSave');
-    const now=new Date(), ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-    if(bar) bar.className='autosave-bar no-print'; if(txt) txt.textContent=`💾 Automatisch gespeichert um ${ts}`; if(chip) chip.textContent=`💾 ${ts}`;
+    const now=new Date(),ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    if(bar)bar.className='autosave-bar no-print';if(txt)txt.textContent=`💾 Automatisch gespeichert um ${ts}`;if(chip)chip.textContent=`💾 ${ts}`;
     playBeep('save');
-  } catch(e) {
+  }catch(e){
     const bar=document.getElementById('autosaveBar'),txt=document.getElementById('autosaveText');
-    if(bar) bar.className='autosave-bar error no-print'; if(txt) txt.textContent='❌ Speicherfehler – Speicher voll?';
+    if(bar)bar.className='autosave-bar error no-print';if(txt)txt.textContent='❌ Speicherfehler – Speicher voll?';
     showToast('❌ Speicherfehler!','error');
   }
 }
-function loadData() {
-  try {
-    const saved=localStorage.getItem('denis_protokoll'); if(!saved) return false;
+function loadData(){
+  try{
+    const saved=localStorage.getItem('denis_protokoll');if(!saved)return false;
     const data=JSON.parse(saved);
-    if(data.day) document.getElementById('daySelect').value=data.day;
-    if(data.date) document.getElementById('dateInput').value=data.date;
-    if(data.protokollNr) applyProtoNr(data.protokollNr);
-    if(data.mitarbeiter) document.getElementById('mitarbeiterName').value=data.mitarbeiter;
-    if(data.status===false) toggleStatus();
+    if(data.day)document.getElementById('daySelect').value=data.day;
+    if(data.date)document.getElementById('dateInput').value=data.date;
+    if(data.protokollNr)applyProtoNr(data.protokollNr);
+    if(data.mitarbeiter)document.getElementById('mitarbeiterName').value=data.mitarbeiter;
+    if(data.status===false)toggleStatus();
     if(data.rows&&data.rows.length){data.rows.forEach(r=>addRow(r));return true;}
-  } catch(e) {}
+  }catch(e){}
   return false;
 }
 
-// ── ARCHIVE ──
-function saveToArchive() {
-  const data=collectData(); const key=`denis_archive_${Date.now()}`;
-  try { localStorage.setItem(key,JSON.stringify(data)); showToast('📁 Im Archiv gespeichert!','success'); playBeep('success'); }
-  catch(e) { showToast('❌ Archiv voll','error'); }
+function saveToArchive(){
+  const data=collectData();const key=`denis_archive_${Date.now()}`;
+  try{localStorage.setItem(key,JSON.stringify(data));showToast('📁 Im Archiv gespeichert!','success');playBeep('success');}
+  catch(e){showToast('❌ Archiv voll','error');}
 }
-function getArchiveKeys() { return Object.keys(localStorage).filter(k=>k.startsWith('denis_archive_')).sort().reverse(); }
-function openArchive() {
-  const list=document.getElementById('archiveList'); list.innerHTML='';
+function getArchiveKeys(){return Object.keys(localStorage).filter(k=>k.startsWith('denis_archive_')).sort().reverse();}
+function openArchive(){
+  const list=document.getElementById('archiveList');list.innerHTML='';
   const keys=getArchiveKeys();
   if(!keys.length){list.innerHTML='<div class="archive-empty">📭 Kein Archiv vorhanden</div>';}
   keys.forEach(key=>{
-    try {
+    try{
       const d=JSON.parse(localStorage.getItem(key));
-      const item=document.createElement('div'); item.className='archive-item';
+      const item=document.createElement('div');item.className='archive-item';
       const saved=d.savedAt?new Date(d.savedAt).toLocaleString('de-DE'):'—';
       item.innerHTML=`<div class="archive-item-date">📋 ${d.protokollNr||'—'}</div><div class="archive-item-sub">📅 ${d.day||''} ${d.date||''} · ${d.mitarbeiter||'Anonym'}<br>💾 ${saved} · ${d.rows?.length||0} Zeilen</div>`;
       item.onclick=()=>{if(confirm('Dieses Protokoll laden?')){loadArchiveItem(key);closeArchive();}};
-      const del=document.createElement('button'); del.textContent='🗑'; del.style.cssText='float:right;background:none;border:none;cursor:pointer;color:#e44;font-size:12px;';
+      const del=document.createElement('button');del.textContent='🗑';del.style.cssText='float:right;background:none;border:none;cursor:pointer;color:#e44;font-size:12px;';
       del.onclick=(e)=>{e.stopPropagation();if(confirm('Löschen?')){localStorage.removeItem(key);openArchive();}};
-      item.appendChild(del); list.appendChild(item);
-    } catch(e){}
+      item.appendChild(del);list.appendChild(item);
+    }catch(e){}
   });
   document.getElementById('archivePanel').classList.add('open');
   document.getElementById('archiveOverlay').classList.add('open');
 }
-function closeArchive() { document.getElementById('archivePanel').classList.remove('open'); document.getElementById('archiveOverlay').classList.remove('open'); }
-function loadArchiveItem(key) { try { const data=JSON.parse(localStorage.getItem(key)); localStorage.setItem('denis_protokoll',JSON.stringify(data)); location.reload(); } catch(e){showToast('❌ Fehler beim Laden','error');} }
-function exportJSON() { const data=collectData(); const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`denis-protokoll-${data.date||'export'}.json`; a.click(); URL.revokeObjectURL(url); showToast('⬇ JSON exportiert','success'); }
+function closeArchive(){document.getElementById('archivePanel').classList.remove('open');document.getElementById('archiveOverlay').classList.remove('open');}
+function loadArchiveItem(key){try{const data=JSON.parse(localStorage.getItem(key));localStorage.setItem('denis_protokoll',JSON.stringify(data));location.reload();}catch(e){showToast('❌ Fehler beim Laden','error');}}
+function exportJSON(){const data=collectData();const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`denis-protokoll-${data.date||'export'}.json`;a.click();URL.revokeObjectURL(url);showToast('⬇ JSON exportiert','success');}
 
-// ── PDF ──
-async function generatePDF() {
-  const {jsPDF}=window.jspdf;
+async function generatePDF(){
+  const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const data=collectData();
-  const pageW=210,margin=10,contentW=pageW-2*margin;
-  let y=margin;
-  doc.setFillColor(61,82,104); doc.rect(0,0,pageW,28,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(18); doc.setFont('helvetica','bold');
-  doc.text('Denis Protokoll',margin,12); doc.setFontSize(8); doc.setFont('helvetica','normal');
-  doc.text('Tagesbericht · Vorfallprotokoll',margin,18); doc.setFontSize(9);
+  const pageW=210,margin=10,contentW=pageW-2*margin;let y=margin;
+  doc.setFillColor(61,82,104);doc.rect(0,0,pageW,28,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(18);doc.setFont('helvetica','bold');
+  doc.text('Denis Protokoll',margin,12);doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Tagesbericht · Vorfallprotokoll',margin,18);doc.setFontSize(9);
   doc.text(`Nr: ${data.protokollNr||'—'}`,margin,23);
   doc.text(`Mitarbeiter: ${data.mitarbeiter||'—'}`,90,23);
-  doc.text(`${data.day||''} ${data.date||''}`,155,23); y=33;
-  doc.setFillColor(240,241,244); doc.rect(margin,y,contentW,7,'F');
-  doc.setTextColor(80,80,80); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  doc.text('Kunde',margin+2,y+5); doc.text('Beginn',margin+38,y+5); doc.text('Ende',margin+60,y+5); doc.text('Dienstnotiz',margin+82,y+5); y+=9;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text(`${data.day||''} ${data.date||''}`,155,23);y=33;
+  doc.setFillColor(240,241,244);doc.rect(margin,y,contentW,7,'F');
+  doc.setTextColor(80,80,80);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text('Kunde',margin+2,y+5);doc.text('Beginn',margin+38,y+5);doc.text('Ende',margin+60,y+5);doc.text('Dienstnotiz',margin+82,y+5);y+=9;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
   data.rows.forEach((row,i)=>{
     if(y>270){doc.addPage();y=margin;}
     const rowH=Math.max(9,(row.n?.length||0)*6+6);
     if(i%2===0){doc.setFillColor(252,252,252);doc.rect(margin,y,contentW,rowH,'F');}
-    doc.setDrawColor(220,220,220); doc.rect(margin,y,contentW,rowH);
-    doc.setTextColor(20,21,24); doc.setFont('helvetica','bold');
+    doc.setDrawColor(220,220,220);doc.rect(margin,y,contentW,rowH);
+    doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');
     doc.text(row.k==='— Standort —'?'':row.k,margin+2,y+5,{maxWidth:34});
-    doc.setFont('helvetica','normal'); doc.text(row.b||'',margin+38,y+5); doc.text(row.e||'',margin+60,y+5);
+    doc.setFont('helvetica','normal');doc.text(row.b||'',margin+38,y+5);doc.text(row.e||'',margin+60,y+5);
     let ny=y+4;
-    if(row.n&&row.n.length){row.n.forEach(n=>{if(!n.ev||n.ev==='— Ereignis —') return; doc.setFontSize(7.5); doc.text('• '+(n.c>0?`[${n.c}x] ${n.ev}`:n.ev),margin+82,ny,{maxWidth:contentW-84}); ny+=5.5;});}
+    if(row.n&&row.n.length){row.n.forEach(n=>{if(!n.ev||n.ev==='— Ereignis —')return;doc.setFontSize(7.5);doc.text('• '+(n.c>0?`[${n.c}x] ${n.ev}`:n.ev),margin+82,ny,{maxWidth:contentW-84});ny+=5.5;});}
     else{doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
     y+=rowH+1;
   });
-  y+=4; if(y>260){doc.addPage();y=margin;}
-  doc.setFillColor(61,82,104); doc.rect(margin,y,contentW,7,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
-  const rows=document.querySelectorAll('.proto-row'); let kC=0,vC=0;
+  y+=4;if(y>260){doc.addPage();y=margin;}
+  doc.setFillColor(61,82,104);doc.rect(margin,y,contentW,7,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  const rows=document.querySelectorAll('.proto-row');let kC=0,vC=0;
   rows.forEach(row=>{const sel=row.querySelector('select');if(sel&&sel.value!=='— Standort —')kC++;row.querySelectorAll('.nc-num').forEach(n=>{vC+=parseInt(n.textContent)||0;});});
-  doc.text(`Kunden: ${kC}   Vorfälle: ${vC}   Zeilen: ${data.rows.length}`,margin+2,y+5); y+=11;
+  doc.text(`Kunden: ${kC}   Vorfälle: ${vC}   Zeilen: ${data.rows.length}`,margin+2,y+5);y+=11;
   if(y>245){doc.addPage();y=margin;}
-  doc.setDrawColor(200,200,200); doc.setLineWidth(0.5);
-  doc.line(margin,y+15,margin+85,y+15); doc.line(margin+95,y+15,margin+contentW,y+15);
-  doc.setTextColor(120,120,120); doc.setFontSize(8); doc.setFont('helvetica','normal');
-  doc.text('Mitarbeiter',margin+2,y+19); doc.text('Vorgesetzter',margin+97,y+19);
-  doc.setFontSize(7); doc.setTextColor(180,180,180);
+  doc.setDrawColor(200,200,200);doc.setLineWidth(0.5);
+  doc.line(margin,y+15,margin+85,y+15);doc.line(margin+95,y+15,margin+contentW,y+15);
+  doc.setTextColor(120,120,120);doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Mitarbeiter',margin+2,y+19);doc.text('Vorgesetzter',margin+97,y+19);
+  doc.setFontSize(7);doc.setTextColor(180,180,180);
   doc.text(`Denis Protokoll · Erstellt am ${new Date().toLocaleString('de-DE')}`,margin,292);
   return doc;
 }
-async function savePdfAndWhatsApp() {
+async function savePdfAndWhatsApp(){
   showPdfLoader(true);
-  try {
-    const doc=await generatePDF(); const data=collectData();
+  try{
+    const doc=await generatePDF();const data=collectData();
     doc.save(`denis-protokoll-${data.date||'export'}.pdf`);
     let text=`🛡 *Denis Protokoll*\n📋 Nr: ${data.protokollNr||'—'}\n👤 ${data.mitarbeiter||'—'}\n📅 ${data.day||''}, ${data.date||''}\n\n`;
     data.rows.forEach((row,i)=>{const k=row.k==='— Standort —'?'':row.k;if(!k)return;text+=`${i+1}. *${k}* (${row.b||'—'}–${row.e||'—'})\n`;if(row.n)row.n.forEach(n=>{if(n.ev&&n.ev!=='— Ereignis —')text+=`   • ${n.ev}\n`;});});
@@ -1089,338 +997,263 @@ async function savePdfAndWhatsApp() {
     showToast('📄 PDF gespeichert! WhatsApp wird geöffnet…','success');
     setTimeout(()=>{window.open('https://wa.me/?text='+encodeURIComponent(text));},800);
     saveToArchive();
-  } catch(e){ showToast('❌ Fehler: '+e.message,'error'); }
-  finally { showPdfLoader(false); }
+  }catch(e){showToast('❌ Fehler: '+e.message,'error');}
+  finally{showPdfLoader(false);}
 }
-function showPdfLoader(show) {
+function showPdfLoader(show){
   let o=document.getElementById('pdfLoader');
   if(show){if(!o){o=document.createElement('div');o.id='pdfLoader';o.className='pdf-loading';o.innerHTML='<div class="pdf-spinner"></div><div class="pdf-loading-text">PDF wird erstellt…</div>';document.body.appendChild(o);}}
   else{if(o)o.remove();}
 }
-function sendWhatsApp() {
+function sendWhatsApp(){
   const data=collectData();
   let text=`🛡 *Denis Protokoll*\n📋 Nr: ${data.protokollNr||'—'}\n👤 ${data.mitarbeiter||'—'}\n📅 ${data.day||''}, ${data.date||''}\n\n`;
   data.rows.forEach((row,i)=>{const k=row.k==='— Standort —'?'':row.k;if(!k)return;text+=`${i+1}. *${k}* (${row.b||'—'}–${row.e||'—'})\n`;if(row.n)row.n.forEach(n=>{if(n.ev&&n.ev!=='— Ereignis —')text+=`   • ${n.ev}\n`;});});
   window.open('https://wa.me/?text='+encodeURIComponent(text));
 }
-function resetForm() {
-  if(!confirm('Alle Einträge zurücksetzen?')) return;
+function resetForm(){
+  if(!confirm('Alle Einträge zurücksetzen?'))return;
   localStorage.removeItem('denis_protokoll');
-  document.getElementById('rowsWrap').innerHTML=''; rowId=0;
+  document.getElementById('rowsWrap').innerHTML='';rowId=0;
   Object.keys(nCounts).forEach(k=>delete nCounts[k]);
-  INIT.forEach(d=>addRow(d)); applyProtoNr(generateProtoNr(true));
+  INIT.forEach(d=>addRow(d));applyProtoNr(generateProtoNr(true));
 }
 
-// ── CLOCK ──
-function updateClock() {
-  const now=new Date(), clock=document.getElementById('liveClock');
-  if(clock) clock.textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-  const shiftStart=19*60+45, shiftEnd=7*60, shiftTotal=(24*60-shiftStart)+shiftEnd;
+function updateClock(){
+  const now=new Date(),clock=document.getElementById('liveClock');
+  if(clock)clock.textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const shiftStart=19*60+45,shiftEnd=7*60,shiftTotal=(24*60-shiftStart)+shiftEnd;
   const nowMins=now.getHours()*60+now.getMinutes();
   let elapsed=nowMins>=shiftStart?nowMins-shiftStart:nowMins<=shiftEnd?(24*60-shiftStart)+nowMins:0;
   const pct=Math.min(100,Math.round((elapsed/shiftTotal)*100));
-  const fill=document.getElementById('progressFill'), pctEl=document.getElementById('progressPct');
-  if(fill) fill.style.width=pct+'%'; if(pctEl) pctEl.textContent=pct+'%';
+  const fill=document.getElementById('progressFill'),pctEl=document.getElementById('progressPct');
+  if(fill)fill.style.width=pct+'%';if(pctEl)pctEl.textContent=pct+'%';
 }
 
 document.addEventListener('input',()=>scheduleSave());
 document.addEventListener('change',()=>scheduleSave());
-setInterval(saveData,30000); setInterval(saveToArchive,5*60*1000);
-updateClock(); setInterval(updateClock,1000);
+setInterval(saveData,30000);setInterval(saveToArchive,5*60*1000);
+updateClock();setInterval(updateClock,1000);
 
-// ── SHIFT RESET ──
-function getShiftKey() { const sd=getShiftDate(); return `shift_${sd.getFullYear()}${String(sd.getMonth()+1).padStart(2,'0')}${String(sd.getDate()).padStart(2,'0')}`; }
-function checkNewShift() {
-  try {
-    const ck=getShiftKey(), lk=localStorage.getItem('denis_last_shift_key');
+function getShiftKey(){const sd=getShiftDate();return`shift_${sd.getFullYear()}${String(sd.getMonth()+1).padStart(2,'0')}${String(sd.getDate()).padStart(2,'0')}`;}
+function checkNewShift(){
+  try{
+    const ck=getShiftKey(),lk=localStorage.getItem('denis_last_shift_key');
     if(lk&&lk!==ck){
       try{const od=localStorage.getItem('denis_protokoll');if(od){const p=JSON.parse(od);if(p.rows&&p.rows.some(r=>r.k&&r.k!=='— Standort —'))localStorage.setItem('denis_archive_'+Date.now(),od);}}catch(e){}
-      localStorage.removeItem('denis_protokoll'); localStorage.removeItem('denis_checkin_log');
-      localStorage.setItem('denis_last_shift_key',ck); return true;
+      localStorage.removeItem('denis_protokoll');localStorage.removeItem('denis_checkin_log');
+      localStorage.setItem('denis_last_shift_key',ck);return true;
     }
-    if(!lk) localStorage.setItem('denis_last_shift_key',ck); return false;
-  } catch(e){console.warn('checkNewShift:',e);return false;}
+    if(!lk)localStorage.setItem('denis_last_shift_key',ck);return false;
+  }catch(e){console.warn('checkNewShift:',e);return false;}
 }
 
-// ── INIT ──
-try {
-  const isNew=checkNewShift(), loaded=!isNew&&loadData();
+try{
+  const isNew=checkNewShift(),loaded=!isNew&&loadData();
   if(!loaded){
-    const wrap=document.getElementById('rowsWrap'); if(wrap) wrap.innerHTML='';
+    const wrap=document.getElementById('rowsWrap');if(wrap)wrap.innerHTML='';
     applyProtoNr(generateProtoNr(isNew));
-    if(isNew){setTimeout(()=>{try{showToast('🌟 Neuer Schicht gestartet!','info',4000);playBeep('success');}catch(e){}},600);}
-  } else if(!currentProtoNr){applyProtoNr(generateProtoNr(false));}
+    if(isNew){setTimeout(()=>{try{showToast('🌟 Neue Schicht gestartet!','info',4000);playBeep('success');}catch(e){}},600);}
+  }else if(!currentProtoNr){applyProtoNr(generateProtoNr(false));}
   document.querySelectorAll('.time-input-direct').forEach(colorTime);
   document.querySelectorAll('.notiz-select').forEach(updateNotizSelectStyle);
-} catch(e){
+}catch(e){
   console.warn('Init error:',e);
   try{if(!loadData())applyProtoNr(generateProtoNr(false));document.querySelectorAll('.time-input-direct').forEach(colorTime);document.querySelectorAll('.notiz-select').forEach(updateNotizSelectStyle);}catch(e2){console.warn(e2);}
 }
 
-// ══════════════════════════════════════════
-// 🤖 KI-ASSISTENT
-// ══════════════════════════════════════════
-let aiCurrentTab='voice', aiTargetRowId=null, mediaRecorder=null, audioChunks=[], isRecording=false, aiPhotoBase64=null;
+let aiCurrentTab='voice',aiTargetRowId=null,mediaRecorder=null,audioChunks=[],isRecording=false,aiPhotoBase64=null;
 
-function openAiModal(rowId) {
+function openAiModal(rowId){
   aiTargetRowId=rowId||null;
   const sel=document.getElementById('aiRowSelect');
   sel.innerHTML='<option value="">— Zeile auswählen (optional) —</option>';
   document.querySelectorAll('.proto-row').forEach(row=>{
     const id=row.id.replace('row-','');
-    const ksel=document.getElementById(`ksel-${id}`), kcust=document.getElementById(`kcust-${id}`);
+    const ksel=document.getElementById(`ksel-${id}`),kcust=document.getElementById(`kcust-${id}`);
     const isCustom=kcust&&kcust.style.display!=='none';
     const kunde=isCustom?kcust.value:(ksel?ksel.value:'');
     if(kunde&&kunde!=='— Standort —'){const opt=document.createElement('option');opt.value=id;opt.textContent=`#${id.padStart(2,'0')} – ${kunde}`;if(String(rowId)===String(id))opt.selected=true;sel.appendChild(opt);}
   });
-  if(rowId) sel.value=rowId;
+  if(rowId)sel.value=rowId;
   document.getElementById('aiModalOverlay').style.display='flex';
   resetAiResults();
 }
-function closeAiModal(e) {
-  if(e&&e.target!==document.getElementById('aiModalOverlay')) return;
+function closeAiModal(e){
+  if(e&&e.target!==document.getElementById('aiModalOverlay'))return;
   document.getElementById('aiModalOverlay').style.display='none';
-  stopRecording(); aiPhotoBase64=null;
+  stopRecording();aiPhotoBase64=null;
   document.getElementById('aiPhotoPreview').style.display='none';
   document.getElementById('aiPhotoPreview').src='';
   document.getElementById('photoAnalyzeBtn').style.display='none';
   document.getElementById('aiPhotoInput').value='';
   resetAiResults();
 }
-function resetAiResults() {
+function resetAiResults(){
   ['voiceAiResult','describeAiResult','photoAiResult'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.remove('visible');el.innerHTML='';}});
-  const vr=document.getElementById('voiceResult'); if(vr){vr.style.display='none';vr.textContent='';}
-  const vab=document.getElementById('voiceAnalyzeBtn'); if(vab) vab.style.display='none';
+  const vr=document.getElementById('voiceResult');if(vr){vr.style.display='none';vr.textContent='';}
+  const vab=document.getElementById('voiceAnalyzeBtn');if(vab)vab.style.display='none';
 }
-function switchAiTab(tab, btn) {
+function switchAiTab(tab,btn){
   aiCurrentTab=tab;
-  document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+  document.querySelectorAll('.ai-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
   ['voice','describe','photo'].forEach(t=>{const el=document.getElementById(`aiTab-${t}`);if(el)el.style.display=t===tab?'block':'none';});
   resetAiResults();
 }
-function applyAiToRow(ereignis, freitext) {
+function applyAiToRow(ereignis,freitext){
   const sel=document.getElementById('aiRowSelect');
   const rowId=sel.value||aiTargetRowId;
   if(!rowId){showToast('⚠️ Bitte zuerst eine Zeile auswählen','error');return;}
   const match=EREIGNISSE_GROUPS.find(g=>!g.disabled&&g.label.toLowerCase().includes(ereignis.toLowerCase().substring(0,15)));
   const finalEvent=match?match.label:'Freitext…';
   addNotiz(parseInt(rowId),finalEvent,1,freitext||ereignis);
-  showToast('✅ KI-Ergebnis eingetragen!','success'); playBeep('success');
+  showToast('✅ KI-Ergebnis eingetragen!','success');playBeep('success');
   document.getElementById('aiModalOverlay').style.display='none';
 }
 
-// ── VOICE ──
-async function toggleRecording() {
+async function toggleRecording(){
   if(isRecording){stopRecording();return;}
-  try {
+  try{
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    mediaRecorder=new MediaRecorder(stream); audioChunks=[];
+    mediaRecorder=new MediaRecorder(stream);audioChunks=[];
     mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
     mediaRecorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());await transcribeAudio(new Blob(audioChunks,{type:'audio/webm'}));};
-    mediaRecorder.start(); isRecording=true;
-    document.getElementById('voiceBtn').classList.add('recording'); document.getElementById('voiceBtn').textContent='⏹';
+    mediaRecorder.start();isRecording=true;
+    document.getElementById('voiceBtn').classList.add('recording');document.getElementById('voiceBtn').textContent='⏹';
     document.getElementById('voiceStatus').textContent='🔴 Aufnahme läuft…';
-  } catch(e){useSpeechRecognition();}
+  }catch(e){useSpeechRecognition();}
 }
-function stopRecording() {
-  if(mediaRecorder&&isRecording) mediaRecorder.stop();
+function stopRecording(){
+  if(mediaRecorder&&isRecording)mediaRecorder.stop();
   isRecording=false;
-  document.getElementById('voiceBtn').classList.remove('recording'); document.getElementById('voiceBtn').textContent='🎙';
+  document.getElementById('voiceBtn').classList.remove('recording');document.getElementById('voiceBtn').textContent='🎙';
   document.getElementById('voiceStatus').textContent='Tippen zum Starten';
 }
-function useSpeechRecognition() {
+function useSpeechRecognition(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showToast('❌ Mikrofon nicht verfügbar','error');return;}
-  const recognition=new SR(); recognition.lang='de-DE'; recognition.interimResults=false; recognition.maxAlternatives=1;
-  isRecording=true; document.getElementById('voiceBtn').classList.add('recording'); document.getElementById('voiceBtn').textContent='⏹';
-  document.getElementById('voiceStatus').textContent='🔴 Sprechen Sie jetzt…'; recognition.start();
+  const recognition=new SR();recognition.lang='de-DE';recognition.interimResults=false;recognition.maxAlternatives=1;
+  isRecording=true;document.getElementById('voiceBtn').classList.add('recording');document.getElementById('voiceBtn').textContent='⏹';
+  document.getElementById('voiceStatus').textContent='🔴 Sprechen Sie jetzt…';recognition.start();
   recognition.onresult=(e)=>{
     const text=e.results[0][0].transcript;
-    const vr=document.getElementById('voiceResult'); vr.style.display='block'; vr.textContent='🗣 '+text;
-    document.getElementById('voiceAnalyzeBtn').style.display='block'; document.getElementById('voiceAnalyzeBtn').dataset.text=text;
-    isRecording=false; document.getElementById('voiceBtn').classList.remove('recording'); document.getElementById('voiceBtn').textContent='🎙';
+    const vr=document.getElementById('voiceResult');vr.style.display='block';vr.textContent='🗣 '+text;
+    document.getElementById('voiceAnalyzeBtn').style.display='block';document.getElementById('voiceAnalyzeBtn').dataset.text=text;
+    isRecording=false;document.getElementById('voiceBtn').classList.remove('recording');document.getElementById('voiceBtn').textContent='🎙';
     document.getElementById('voiceStatus').textContent='Fertig! Analysieren drücken';
   };
   recognition.onerror=()=>{showToast('❌ Spracherkennung fehlgeschlagen','error');stopRecording();};
 }
-async function transcribeAudio(blob) { useSpeechRecognition(); }
-async function analyzeVoiceText() {
+async function transcribeAudio(blob){useSpeechRecognition();}
+async function analyzeVoiceText(){
   const btn=document.getElementById('voiceAnalyzeBtn');
   const raw=document.getElementById('voiceResult').textContent.replace('🗣 ','').trim();
   const text=btn.dataset.text&&btn.dataset.text!=='Audio analysieren'?btn.dataset.text:raw;
   if(!text){showToast('⚠️ Bitte zuerst sprechen','error');return;}
   analyzeTextLocally(text,'voiceAiResult',btn);
 }
-async function analyzeDescribeText() {
+async function analyzeDescribeText(){
   const text=document.getElementById('aiDescribeText').value.trim();
   if(!text){showToast('⚠️ Bitte Vorfall beschreiben','error');return;}
   analyzeTextLocally(text,'describeAiResult',document.getElementById('describeBtn'));
 }
-
-// ── PHOTO ──
-function handleAiPhoto(input) {
-  if(!input.files[0]) return;
+function handleAiPhoto(input){
+  if(!input.files[0])return;
   compressImage(input.files[0],1024,768,0.75,(b64)=>{
     aiPhotoBase64=b64;
-    const p=document.getElementById('aiPhotoPreview'); p.src=b64; p.style.display='block';
-    const ab=document.getElementById('photoAnalyzeBtn'); ab.style.display='block'; ab.disabled=false; ab.style.opacity='1';
+    const p=document.getElementById('aiPhotoPreview');p.src=b64;p.style.display='block';
+    const ab=document.getElementById('photoAnalyzeBtn');ab.style.display='block';ab.disabled=false;ab.style.opacity='1';
   });
 }
-function openAiPhotoFromRow(rowId,input) {
+function openAiPhotoFromRow(rowId,input){
   openAiModal(rowId);
   const photoTabBtn=document.querySelector('.ai-tab:nth-child(3)');
-  if(photoTabBtn) switchAiTab('photo',photoTabBtn);
-  if(input.files[0]) handleAiPhoto(input);
+  if(photoTabBtn)switchAiTab('photo',photoTabBtn);
+  if(input.files[0])handleAiPhoto(input);
 }
-async function analyzePhoto() {
+async function analyzePhoto(){
   if(!aiPhotoBase64){showToast('⚠️ Bitte zuerst ein Foto hochladen','error');return;}
   analyzePhotoLocally(aiPhotoBase64,'photoAiResult',document.getElementById('photoAnalyzeBtn'));
 }
 
-// ── LOCAL AI ──
-const KEYWORD_MAP = [
-  {keys:['obdachlos','بدون مأوى','تشرد','raus','draußen','homeless'],ev:'Obdachlose nach draußen gebracht',schwere:'niedrig'},
-  {keys:['herausgelassen','schranke auf','fahrzeug raus','سيارة خرجت'],ev:'Fahrzeuge herausgelassen',schwere:'niedrig'},
-  {keys:['unbefugt','fremde person','eindringling','شخص غير مصرح'],ev:'Unbefugte Person entfernt',schwere:'mittel'},
-  {keys:['fahrzeugschaden','auto beschädigt','kratzer','تلف سيارة'],ev:'Fahrzeugschaden festgestellt',schwere:'mittel'},
-  {keys:['parkverstoß','falsch geparkt','مخالفة وقوف'],ev:'Parkverstoß dokumentiert',schwere:'niedrig'},
-  {keys:['sachschaden','zerbrochen','kaputt','تلف ممتلكات'],ev:'Sachschaden festgestellt – Dokumentiert',schwere:'mittel'},
-  {keys:['technisch','defekt','störung','عطل تقني'],ev:'Technischer Defekt gemeldet 🔧',schwere:'niedrig'},
-  {keys:['beleuchtung','licht','lampe','إضاءة'],ev:'Defekte Beleuchtung 💡',schwere:'niedrig'},
-  {keys:['schranke','schranken','barriere','شبكة'],ev:'Schrankenstörung 🚧',schwere:'mittel'},
-  {keys:['sicherung','strom','ausfall','انقطاع كهرباء'],ev:'Sicherungsausfall ⚡',schwere:'hoch'},
-  {keys:['dauersignal','alarm dauert','إنذار مستمر'],ev:'Dauersignal an Schranke ⚠️',schwere:'mittel'},
-  {keys:['ruhestörung','lärm','schreien','ضجة','إزعاج'],ev:'Ruhestörung – Personen verwiesen',schwere:'mittel'},
-  {keys:['streit','schlägerei','konflikt','شجار','عراك'],ev:'Streit geschlichtet',schwere:'hoch'},
-  {keys:['polizei','obdachlos entfernt','شرطة'],ev:'Polizei eingetroffen – Obdachlose Person entfernt 🚨',schwere:'hoch'},
-  {keys:['personalien','ausweis','هوية'],ev:'Polizei eingetroffen – Personalien aufgenommen 🚨',schwere:'hoch'},
-  {keys:['vandalismus','graffiti','تخريب'],ev:'Vandalismus gemeldet – Polizei informiert 🚨',schwere:'hoch'},
-  {keys:['notruf','notfall','sos','نجدة','طوارئ'],ev:'Notruf / Notfall gemeldet 🚨',schwere:'hoch'},
-  {keys:['rettung','krankenwagen','إسعاف'],ev:'Rettungsdienst angefordert 🚑',schwere:'hoch'},
-  {keys:['diebstahl','gestohlen','سرقة'],ev:'Diebstahl gemeldet – Polizei verständigt 🚨',schwere:'hoch'},
-  {keys:['rohrbruch','wasser','تسرب ماء'],ev:'Rohrbruch / Wasseraustritt 💧',schwere:'hoch'},
-  {keys:['tür','fenster','kaputte tür','باب'],ev:'Defekte Tür / Fenster 🚪',schwere:'mittel'},
-  {keys:['abschlepper','abschleppen','رافعة'],ev:'Fahrzeug unberechtigt geparkt – Abschlepper verständigt',schwere:'mittel'},
+const KEYWORD_MAP=[
+  {keys:['obdachlos','raus','draußen','homeless'],ev:'Obdachlose nach draußen gebracht',schwere:'niedrig'},
+  {keys:['herausgelassen','schranke auf','fahrzeug raus'],ev:'Fahrzeuge herausgelassen',schwere:'niedrig'},
+  {keys:['unbefugt','fremde person','eindringling'],ev:'Unbefugte Person entfernt',schwere:'mittel'},
+  {keys:['fahrzeugschaden','auto beschädigt','kratzer'],ev:'Fahrzeugschaden festgestellt',schwere:'mittel'},
+  {keys:['parkverstoß','falsch geparkt'],ev:'Parkverstoß dokumentiert',schwere:'niedrig'},
+  {keys:['sachschaden','zerbrochen','kaputt'],ev:'Sachschaden festgestellt – Dokumentiert',schwere:'mittel'},
+  {keys:['technisch','defekt','störung'],ev:'Technischer Defekt gemeldet 🔧',schwere:'niedrig'},
+  {keys:['beleuchtung','licht','lampe'],ev:'Defekte Beleuchtung 💡',schwere:'niedrig'},
+  {keys:['schranke','schranken','barriere'],ev:'Schrankenstörung 🚧',schwere:'mittel'},
+  {keys:['sicherung','strom','ausfall'],ev:'Sicherungsausfall ⚡',schwere:'hoch'},
+  {keys:['dauersignal','alarm dauert'],ev:'Dauersignal an Schranke ⚠️',schwere:'mittel'},
+  {keys:['ruhestörung','lärm','schreien'],ev:'Ruhestörung – Personen verwiesen',schwere:'mittel'},
+  {keys:['streit','schlägerei','konflikt'],ev:'Streit geschlichtet',schwere:'hoch'},
+  {keys:['polizei','obdachlos entfernt'],ev:'Polizei eingetroffen – Obdachlose Person entfernt 🚨',schwere:'hoch'},
+  {keys:['personalien','ausweis'],ev:'Polizei eingetroffen – Personalien aufgenommen 🚨',schwere:'hoch'},
+  {keys:['vandalismus','graffiti'],ev:'Vandalismus gemeldet – Polizei informiert 🚨',schwere:'hoch'},
+  {keys:['notruf','notfall','sos'],ev:'Notruf / Notfall gemeldet 🚨',schwere:'hoch'},
+  {keys:['rettung','krankenwagen'],ev:'Rettungsdienst angefordert 🚑',schwere:'hoch'},
+  {keys:['diebstahl','gestohlen'],ev:'Diebstahl gemeldet – Polizei verständigt 🚨',schwere:'hoch'},
+  {keys:['rohrbruch','wasser'],ev:'Rohrbruch / Wasseraustritt 💧',schwere:'hoch'},
+  {keys:['tür','fenster','kaputte tür'],ev:'Defekte Tür / Fenster 🚪',schwere:'mittel'},
+  {keys:['abschlepper','abschleppen'],ev:'Fahrzeug unberechtigt geparkt – Abschlepper verständigt',schwere:'mittel'},
 ];
-
-function matchEvent(text) {
-  const lower=text.toLowerCase(); let bestMatch=null, bestScore=0;
+function matchEvent(text){
+  const lower=text.toLowerCase();let bestMatch=null,bestScore=0;
   for(const entry of KEYWORD_MAP){let score=0;for(const kw of entry.keys){if(lower.includes(kw.toLowerCase()))score+=kw.length;}if(score>bestScore){bestScore=score;bestMatch=entry;}}
   return bestMatch;
 }
-
-function buildResultHTML(title, ereignis, zusammenfassung, empfehlung, schwere) {
+function buildResultHTML(title,ereignis,zusammenfassung,empfehlung,schwere){
   const sc=schwere==='hoch'?'#b71c1c':schwere==='mittel'?'#7a4800':'#1a6630';
   const se=schwere==='hoch'?'🚨':schwere==='mittel'?'⚠️':'✅';
   const safe=s=>s.replace(/'/g,"\\'");
-  return `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <strong style="font-size:13px;">${title}</strong>
-      <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}20;padding:2px 8px;border-radius:10px;">${se} ${schwere.toUpperCase()}</span>
-    </div>
-    <div style="margin-bottom:12px;"><span style="font-weight:700;font-size:11px;color:#6d28d9;">📋 Ereignis:</span><br><span style="font-size:13px;font-weight:700;color:#1a1a1a;">${ereignis}</span></div>
-    <button class="ai-action-btn primary" style="width:100%;" onclick="applyAiToRow('${safe(ereignis)}','${safe(ereignis)}')">✅ In Zeile eintragen</button>`;
+  return`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><strong style="font-size:13px;">${title}</strong><span style="font-size:10px;font-weight:700;color:${sc};background:${sc}20;padding:2px 8px;border-radius:10px;">${se} ${schwere.toUpperCase()}</span></div><div style="margin-bottom:12px;"><span style="font-weight:700;font-size:11px;color:#6d28d9;">📋 Ereignis:</span><br><span style="font-size:13px;font-weight:700;color:#1a1a1a;">${ereignis}</span></div><button class="ai-action-btn primary" style="width:100%;" onclick="applyAiToRow('${safe(ereignis)}','${safe(ereignis)}')">✅ In Zeile eintragen</button>`;
 }
-
-function analyzeTextLocally(text, resultBoxId, btn) {
-  const orig=btn.innerHTML; btn.innerHTML='<span class="ai-spinner"></span>Analysiere…'; btn.disabled=true;
+function analyzeTextLocally(text,resultBoxId,btn){
+  const orig=btn.innerHTML;btn.innerHTML='<span class="ai-spinner"></span>Analysiere…';btn.disabled=true;
   setTimeout(()=>{
     const match=matchEvent(text);
     const ereignis=match?match.ev:'Freitext…';
     const schwere=match?match.schwere:'niedrig';
-    const empMap={hoch:'Vorgesetzten sofort informieren.',mittel:'Situation beobachten.',niedrig:'Im Protokoll dokumentieren.'};
     const rb=document.getElementById(resultBoxId);
     rb.innerHTML=buildResultHTML('🤖 KI-Analyse',ereignis,'','',schwere);
-    rb.classList.add('visible'); playBeep('success');
-    btn.innerHTML=orig; btn.disabled=false;
+    rb.classList.add('visible');playBeep('success');
+    btn.innerHTML=orig;btn.disabled=false;
   },600);
 }
 
-// ══ PATCH 3: FIXED AI PHOTO ANALYSIS (no repeated sentences) ══
-async function analyzePhotoLocally(b64, resultBoxId, btn) {
-  const orig = btn.innerHTML;
-  btn.innerHTML = '<span class="ai-spinner"></span>Foto wird analysiert…';
-  btn.disabled = true;
-
-  const mediaType = b64.startsWith('data:image/png') ? 'image/png' : 'image/jpeg';
-  const imageData = b64.split(',')[1];
-
-  // Strict single-line system prompt — model completes after seeded "Ereignis:"
-  const SYSTEM = `You are a security camera image analysis API.
-STRICT OUTPUT FORMAT:
-- Output EXACTLY one continuation after "Ereignis: "
-- 3-6 German words describing what you see
-- NEVER repeat "Ereignis:" in your output
-- NEVER add any other sentence, explanation, or preamble
-- If unclear: Unklarer Vorfall`;
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 20,
-        system: SYSTEM,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data: imageData } },
-              { type: 'text', text: 'Ereignis:' }
-            ]
-          },
-          // Seed the assistant response so it only completes the phrase
-          { role: 'assistant', content: 'Ereignis: ' }
-        ]
-      })
-    });
-
-    const data = await resp.json();
-    let raw = (data.content?.[0]?.text || '').trim();
-
-    // ── De-duplication & cleaning ──
-    // Remove any accidental "Ereignis:" prefix the model might have repeated
-    raw = raw.replace(/^Ereignis:\s*/gi, '').trim();
-    // Take first line only
-    raw = raw.split(/[\n\r]/)[0].trim();
-    // Remove trailing punctuation
-    raw = raw.replace(/[.;,!?]+$/, '').trim();
-    // Max 60 chars
-    if (raw.length > 60) raw = raw.substring(0, 60).trim();
-
-    const ereignisText = raw || 'Unklarer Vorfall';
-
-    // Map to known event label via keyword overlap
-    const knownMatch = EREIGNISSE_GROUPS.find(g => {
-      if (!g.label || g.disabled || g.label === 'Freitext…') return false;
-      const lbl = g.label.toLowerCase();
-      return ereignisText.toLowerCase().split(/\s+/).filter(w => w.length > 4).some(w => lbl.includes(w));
-    });
-    const finalEreignis = knownMatch ? knownMatch.label : ereignisText;
-
-    const isHoch   = DANGER_EVENTS.some(d => finalEreignis.toLowerCase().includes(d.toLowerCase().substring(0, 8)));
-    const isMittel = EVENT_COLORS.orange.some(o => finalEreignis.toLowerCase().includes(o.toLowerCase().substring(0, 8)));
-    const schwere  = isHoch ? 'hoch' : isMittel ? 'mittel' : 'niedrig';
-
-    const rb = document.getElementById(resultBoxId);
-    rb.innerHTML = buildResultHTML('📸 Foto-Analyse (KI)', finalEreignis, '', '', schwere);
-    rb.classList.add('visible');
-    playBeep('success');
-  } catch(e) {
-    console.warn('AI photo error:', e.message);
-    fallbackPhotoAnalysis(b64, resultBoxId);
-  } finally {
-    btn.innerHTML = orig;
-    btn.disabled = false;
-  }
+async function analyzePhotoLocally(b64,resultBoxId,btn){
+  const orig=btn.innerHTML;btn.innerHTML='<span class="ai-spinner"></span>Foto wird analysiert…';btn.disabled=true;
+  const mediaType=b64.startsWith('data:image/png')?'image/png':'image/jpeg';
+  const imageData=b64.split(',')[1];
+  const SYSTEM=`You are a security camera image analysis API.\nSTRICT OUTPUT FORMAT:\n- Output EXACTLY one continuation after "Ereignis: "\n- 3-6 German words describing what you see\n- NEVER repeat "Ereignis:" in your output\n- NEVER add any other sentence, explanation, or preamble\n- If unclear: Unklarer Vorfall`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:20,system:SYSTEM,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mediaType,data:imageData}},{type:'text',text:'Ereignis:'}]},{role:'assistant',content:'Ereignis: '}]})});
+    const data=await resp.json();
+    let raw=(data.content?.[0]?.text||'').trim();
+    raw=raw.replace(/^Ereignis:\s*/gi,'').trim();
+    raw=raw.split(/[\n\r]/)[0].trim();
+    raw=raw.replace(/[.;,!?]+$/,'').trim();
+    if(raw.length>60)raw=raw.substring(0,60).trim();
+    const ereignisText=raw||'Unklarer Vorfall';
+    const knownMatch=EREIGNISSE_GROUPS.find(g=>{if(!g.label||g.disabled||g.label==='Freitext…')return false;const lbl=g.label.toLowerCase();return ereignisText.toLowerCase().split(/\s+/).filter(w=>w.length>4).some(w=>lbl.includes(w));});
+    const finalEreignis=knownMatch?knownMatch.label:ereignisText;
+    const isHoch=DANGER_EVENTS.some(d=>finalEreignis.toLowerCase().includes(d.toLowerCase().substring(0,8)));
+    const isMittel=EVENT_COLORS.orange.some(o=>finalEreignis.toLowerCase().includes(o.toLowerCase().substring(0,8)));
+    const schwere=isHoch?'hoch':isMittel?'mittel':'niedrig';
+    const rb=document.getElementById(resultBoxId);
+    rb.innerHTML=buildResultHTML('📸 Foto-Analyse (KI)',finalEreignis,'','',schwere);
+    rb.classList.add('visible');playBeep('success');
+  }catch(e){console.warn('AI photo error:',e.message);fallbackPhotoAnalysis(b64,resultBoxId);}
+  finally{btn.innerHTML=orig;btn.disabled=false;}
 }
-
-function fallbackPhotoAnalysis(b64, resultBoxId) {
+function fallbackPhotoAnalysis(b64,resultBoxId){
   const img=new Image();
   img.onload=()=>{
-    const canvas=document.createElement('canvas'); canvas.width=Math.min(img.width,100); canvas.height=Math.min(img.height,100);
-    const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const canvas=document.createElement('canvas');canvas.width=Math.min(img.width,100);canvas.height=Math.min(img.height,100);
+    const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
     const pixels=ctx.getImageData(0,0,canvas.width,canvas.height).data;
     let brightness=0,rAvg=0,gAvg=0,bAvg=0,count=pixels.length/4;
     for(let i=0;i<pixels.length;i+=4){rAvg+=pixels[i];gAvg+=pixels[i+1];bAvg+=pixels[i+2];brightness+=(pixels[i]*0.299+pixels[i+1]*0.587+pixels[i+2]*0.114);}
@@ -1432,290 +1265,178 @@ function fallbackPhotoAnalysis(b64, resultBoxId) {
     else{ereignis='Sachschaden festgestellt – Dokumentiert';schwere='mittel';}
     const rb=document.getElementById(resultBoxId);
     rb.innerHTML=buildResultHTML('📸 Foto-Analyse (lokal)',ereignis,'','',schwere);
-    rb.classList.add('visible'); playBeep('success');
+    rb.classList.add('visible');playBeep('success');
   };
   img.src=b64;
 }
 
-// ══════════════════════════════════════════
-// ⏱ CHECK-IN SYSTEM
-// ══════════════════════════════════════════
 const KUNDE_ICONS={'Galerie':'🏛️','Lüneburg Parkhaus':'🅿️','Fuhle':'🏢','Parking Millerntorplatz':'🅿️','Parkhaus My Falkenried':'🚗'};
-let ciSelectedKunde=null, ciClockInterval=null;
+let ciSelectedKunde=null,ciClockInterval=null;
 
-function showCheckin() {
-  document.getElementById('checkinScreen').style.display='block'; document.body.style.overflow='hidden';
-  ciRenderKunden(); ciRenderLog(); ciStartClock();
-  if(window.location.hash!=='#checkin') history.pushState(null,'','#checkin');
-}
-function hideCheckin() {
-  document.getElementById('checkinScreen').style.display='none'; document.body.style.overflow='';
-  if(ciClockInterval) clearInterval(ciClockInterval);
-  history.pushState(null,'',window.location.pathname);
-}
+function showCheckin(){document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';ciRenderKunden();ciRenderLog();ciStartClock();if(window.location.hash!=='#checkin')history.pushState(null,'','#checkin');}
+function hideCheckin(){document.getElementById('checkinScreen').style.display='none';document.body.style.overflow='';if(ciClockInterval)clearInterval(ciClockInterval);history.pushState(null,'',window.location.pathname);}
 window.addEventListener('hashchange',()=>{if(window.location.hash==='#checkin')showCheckin();else hideCheckin();});
-if(window.location.hash==='#checkin') window.addEventListener('load',showCheckin);
+if(window.location.hash==='#checkin')window.addEventListener('load',showCheckin);
 
-function ciStartClock() {
-  function tick() {
+function ciStartClock(){
+  function tick(){
     const now=new Date();
     const ts=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
     const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
     const ds=`${days[now.getDay()]}, ${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
-    const c=document.getElementById('ciClock'), d=document.getElementById('ciDate');
-    if(c) c.textContent=ts; if(d) d.textContent=ds;
+    const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');
+    if(c)c.textContent=ts;if(d)d.textContent=ds;
   }
-  tick(); ciClockInterval=setInterval(tick,1000);
+  tick();ciClockInterval=setInterval(tick,1000);
 }
-
-function ciGetAllKunden() {
+function ciGetAllKunden(){
   const base=KUNDEN.filter(k=>k!=='— Standort —');
   try{const extra=JSON.parse(localStorage.getItem('denis_ci_extra_kunden')||'[]');extra.forEach(k=>{if(!base.includes(k))base.push(k);});}catch(e){}
   return base;
 }
-function ciRenderKunden() {
-  const grid=document.getElementById('ciKundeGrid'); if(!grid) return; grid.innerHTML='';
+function ciRenderKunden(){
+  const grid=document.getElementById('ciKundeGrid');if(!grid)return;grid.innerHTML='';
   ciGetAllKunden().forEach(k=>{
-    const btn=document.createElement('button'); btn.className='ci-kunde-btn'+(ciSelectedKunde===k?' selected':'');
+    const btn=document.createElement('button');btn.className='ci-kunde-btn'+(ciSelectedKunde===k?' selected':'');
     btn.innerHTML=`<span class="ci-kunde-icon">${KUNDE_ICONS[k]||'📍'}</span>${k}`;
-    btn.onclick=()=>ciSelectKunde(k); grid.appendChild(btn);
+    btn.onclick=()=>ciSelectKunde(k);grid.appendChild(btn);
   });
-  const addBtn=document.createElement('button'); addBtn.className='ci-kunde-btn'; addBtn.style.cssText='border-style:dashed;opacity:0.65;';
-  addBtn.innerHTML='<span class="ci-kunde-icon">➕</span>Neuer Standort'; addBtn.onclick=()=>ciAddNewKunde();
+  const addBtn=document.createElement('button');addBtn.className='ci-kunde-btn';addBtn.style.cssText='border-style:dashed;opacity:0.65;';
+  addBtn.innerHTML='<span class="ci-kunde-icon">➕</span>Neuer Standort';addBtn.onclick=()=>ciAddNewKunde();
   grid.appendChild(addBtn);
 }
-function ciAddNewKunde() {
-  const name=prompt('Neuer Standort / موقع جديد:'); if(!name||!name.trim()) return;
+function ciAddNewKunde(){
+  const name=prompt('Neuer Standort:');if(!name||!name.trim())return;
   const trimmed=name.trim();
   try{const extra=JSON.parse(localStorage.getItem('denis_ci_extra_kunden')||'[]');if(!extra.includes(trimmed)&&!KUNDEN.includes(trimmed)){extra.push(trimmed);localStorage.setItem('denis_ci_extra_kunden',JSON.stringify(extra));}}catch(e){}
-  ciSelectKunde(trimmed); ciShowToast('📍 '+trimmed+' hinzugefügt');
+  ciSelectKunde(trimmed);ciShowToast('📍 '+trimmed+' hinzugefügt');
 }
-function ciSelectKunde(k) {
-  ciSelectedKunde=k; ciRenderKunden();
-  const bi=document.getElementById('ciBtnIn'), bo=document.getElementById('ciBtnOut');
-  const li=document.getElementById('ciBtnInTime'), lo=document.getElementById('ciBtnOutTime');
-  if(bi) bi.disabled=false; if(bo) bo.disabled=false; if(li) li.textContent=k; if(lo) lo.textContent=k;
+function ciSelectKunde(k){
+  ciSelectedKunde=k;ciRenderKunden();
+  const bi=document.getElementById('ciBtnIn'),bo=document.getElementById('ciBtnOut');
+  const li=document.getElementById('ciBtnInTime'),lo=document.getElementById('ciBtnOutTime');
+  if(bi)bi.disabled=false;if(bo)bo.disabled=false;if(li)li.textContent=k;if(lo)lo.textContent=k;
 }
-function ciGetLog() { try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return [];} }
-function ciSaveLog(log) { localStorage.setItem('denis_checkin_log',JSON.stringify(log)); }
-function ciNowStr() { const now=new Date(); return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; }
-function ciGetVorfall() { const el=document.getElementById('ciVorfallInput'); return el?el.value.trim():''; }
+function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return[];}}
+function ciSaveLog(log){localStorage.setItem('denis_checkin_log',JSON.stringify(log));}
+function ciNowStr(){const now=new Date();return`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;}
+function ciGetVorfall(){const el=document.getElementById('ciVorfallInput');return el?el.value.trim():'';}
 
-function ciCheckIn() {
-  if(!ciSelectedKunde) return;
-  const log=ciGetLog(), vorfall=ciGetVorfall();
+function ciCheckIn(){
+  if(!ciSelectedKunde)return;
+  const log=ciGetLog(),vorfall=ciGetVorfall();
   const entry={kunde:ciSelectedKunde,type:'in',time:ciNowStr(),ts:Date.now(),vorfall};
-  log.push(entry); ciSaveLog(log); ciRenderLog();
-  ciShowToast('✅ '+ciSelectedKunde+' – Eingang '+entry.time); playBeep('success');
-  // Auto-add to Protokoll
+  log.push(entry);ciSaveLog(log);ciRenderLog();
+  ciShowToast('✅ '+ciSelectedKunde+' – Eingang '+entry.time);playBeep('success');
   let found=false;
   document.querySelectorAll('.proto-row').forEach(row=>{
-    if(found) return;
+    if(found)return;
     const id=row.id.replace('row-','');
-    const ksel=document.getElementById('ksel-'+id), kcust=document.getElementById('kcust-'+id), ed=document.getElementById('ed-'+id);
+    const ksel=document.getElementById('ksel-'+id),kcust=document.getElementById('kcust-'+id),ed=document.getElementById('ed-'+id);
     const isC=kcust&&kcust.style.display!=='none';
     const k=isC?kcust.value:(ksel?ksel.value:'');
-    if(k===ciSelectedKunde&&(!ed||!ed.value||ed.value==='00:00')) found=true;
+    if(k===ciSelectedKunde&&(!ed||!ed.value||ed.value==='00:00'))found=true;
   });
   if(!found){const n=vorfall?[{ev:'Freitext…',c:0,ft:vorfall}]:[];addRow({k:ciSelectedKunde,b:entry.time,e:'',n});saveData();}
-  const vf=document.getElementById('ciVorfallInput'); if(vf) vf.value='';
+  const vf=document.getElementById('ciVorfallInput');if(vf)vf.value='';
 }
-function ciCheckOut() {
-  if(!ciSelectedKunde) return;
-  const log=ciGetLog(), vorfall=ciGetVorfall();
+function ciCheckOut(){
+  if(!ciSelectedKunde)return;
+  const log=ciGetLog(),vorfall=ciGetVorfall();
   const entry={kunde:ciSelectedKunde,type:'out',time:ciNowStr(),ts:Date.now(),vorfall};
-  log.push(entry); ciSaveLog(log); ciRenderLog();
-  ciShowToast('🚪 '+ciSelectedKunde+' – Ausgang '+entry.time); playBeep('success');
-  // Auto-update open row with Ende time
+  log.push(entry);ciSaveLog(log);ciRenderLog();
+  ciShowToast('🚪 '+ciSelectedKunde+' – Ausgang '+entry.time);playBeep('success');
   document.querySelectorAll('.proto-row').forEach(row=>{
     const id=row.id.replace('row-','');
-    const ksel=document.getElementById('ksel-'+id), kcust=document.getElementById('kcust-'+id), ed=document.getElementById('ed-'+id);
+    const ksel=document.getElementById('ksel-'+id),kcust=document.getElementById('kcust-'+id),ed=document.getElementById('ed-'+id);
     const isC=kcust&&kcust.style.display!=='none';
     const k=isC?kcust.value:(ksel?ksel.value:'');
     if(k===ciSelectedKunde&&ed&&(!ed.value||ed.value==='00:00')){
-      ed.value=entry.time; colorTime(ed);
-      if(vorfall) addNotiz(parseInt(id),'Freitext…',0,vorfall);
+      ed.value=entry.time;colorTime(ed);
+      if(vorfall)addNotiz(parseInt(id),'Freitext…',0,vorfall);
       saveData();
     }
   });
-  const vf=document.getElementById('ciVorfallInput'); if(vf) vf.value='';
+  const vf=document.getElementById('ciVorfallInput');if(vf)vf.value='';
 }
 
-// ══ PATCH 2: ciRenderLog WITH EDIT + UNDO BUTTONS ══
-function ciRenderLog() {
-  const list=document.getElementById('ciLogList'); if(!list) return;
+function ciRenderLog(){
+  const list=document.getElementById('ciLogList');if(!list)return;
   const log=ciGetLog();
   if(!log.length){list.innerHTML='<div class="ci-log-empty">Noch keine Einträge heute</div>';return;}
   list.innerHTML='';
   [...log].map((entry,idx)=>({...entry,_idx:idx})).reverse().forEach(entry=>{
-    const item=document.createElement('div');
-    item.className='ci-log-item'; item.dataset.idx=entry._idx;
-
-    // Left: checkbox + dot + info (clickable = select)
-    const leftArea=document.createElement('div');
-    leftArea.style.cssText='display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-width:0;';
+    const item=document.createElement('div');item.className='ci-log-item';item.dataset.idx=entry._idx;
+    const leftArea=document.createElement('div');leftArea.style.cssText='display:flex;align-items:center;gap:10px;flex:1;cursor:pointer;min-width:0;';
     leftArea.onclick=()=>item.classList.toggle('selected');
-    leftArea.innerHTML=`
-      <div class="ci-log-checkbox"></div>
-      <div class="ci-log-dot ${entry.type}"></div>
-      <div class="ci-log-info" style="min-width:0;flex:1;">
-        <div class="ci-log-kunde">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div>
-        <div class="ci-log-time">${entry.time} Uhr</div>
-        ${entry.vorfall?'<div class="ci-log-vorfall">⚠️ '+entry.vorfall+'</div>':''}
-      </div>`;
-
-    // Right: type badge + action buttons
-    const rightArea=document.createElement('div');
-    rightArea.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;';
-
-    const typeBadge=document.createElement('span');
-    typeBadge.className=`ci-log-type ${entry.type}`;
-    typeBadge.textContent=entry.type==='in'?'دخول':'خروج';
-
-    const actDiv=document.createElement('div');
-    actDiv.className='ci-log-item-actions';
-
-    // ✏️ EDIT button
-    const editBtn=document.createElement('button');
-    editBtn.className='ci-log-edit-btn'; editBtn.textContent='✏️';
-    editBtn.title='تعديل / Bearbeiten';
-    editBtn.onclick=(e)=>{e.stopPropagation();ciOpenEditForm(item,entry);};
-
-    // ↩ UNDO button
-    const undoBtn=document.createElement('button');
-    undoBtn.className='ci-log-undo-btn'; undoBtn.textContent='↩';
-    undoBtn.title='تراجع / Rückgängig';
-    undoBtn.onclick=(e)=>{e.stopPropagation();ciUndoEntry(entry._idx);};
-
-    actDiv.appendChild(editBtn);
-    actDiv.appendChild(undoBtn);
-    rightArea.appendChild(typeBadge);
-    rightArea.appendChild(actDiv);
-
-    item.appendChild(leftArea);
-    item.appendChild(rightArea);
-    list.appendChild(item);
+    leftArea.innerHTML=`<div class="ci-log-checkbox"></div><div class="ci-log-dot ${entry.type}"></div><div class="ci-log-info" style="min-width:0;flex:1;"><div class="ci-log-kunde">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div><div class="ci-log-time">${entry.time} Uhr</div>${entry.vorfall?'<div class="ci-log-vorfall">⚠️ '+entry.vorfall+'</div>':''}</div>`;
+    const rightArea=document.createElement('div');rightArea.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;';
+    const typeBadge=document.createElement('span');typeBadge.className=`ci-log-type ${entry.type}`;typeBadge.textContent=entry.type==='in'?'Eingang':'Ausgang';
+    const actDiv=document.createElement('div');actDiv.className='ci-log-item-actions';
+    const editBtn=document.createElement('button');editBtn.className='ci-log-edit-btn';editBtn.textContent='✏️';editBtn.title='Bearbeiten';editBtn.onclick=(e)=>{e.stopPropagation();ciOpenEditForm(item,entry);};
+    const undoBtn=document.createElement('button');undoBtn.className='ci-log-undo-btn';undoBtn.textContent='↩';undoBtn.title='Rückgängig';undoBtn.onclick=(e)=>{e.stopPropagation();ciUndoEntry(entry._idx);};
+    actDiv.appendChild(editBtn);actDiv.appendChild(undoBtn);rightArea.appendChild(typeBadge);rightArea.appendChild(actDiv);
+    item.appendChild(leftArea);item.appendChild(rightArea);list.appendChild(item);
   });
 }
-
-// ── CI: Open inline edit form ──
-function ciOpenEditForm(item, entry) {
-  // Close any open edit forms
+function ciOpenEditForm(item,entry){
   document.querySelectorAll('.ci-edit-form').forEach(f=>f.remove());
   document.querySelectorAll('.ci-log-item.editing').forEach(i=>i.classList.remove('editing'));
   item.classList.add('editing');
-
   const kunden=ciGetAllKunden();
   const kundeOpts=kunden.map(k=>`<option value="${k}"${k===entry.kunde?' selected':''}>${KUNDE_ICONS[k]||'📍'} ${k}</option>`).join('');
-
-  const form=document.createElement('div');
-  form.className='ci-edit-form';
-  form.innerHTML=`
-    <div class="ci-edit-form-row">
-      <span class="ci-edit-label">Typ</span>
-      <select class="ci-edit-select" id="ceType">
-        <option value="in"${entry.type==='in'?' selected':''}>✅ دخول / Eingang</option>
-        <option value="out"${entry.type==='out'?' selected':''}>🚪 خروج / Ausgang</option>
-      </select>
-    </div>
-    <div class="ci-edit-form-row">
-      <span class="ci-edit-label">Kunde</span>
-      <select class="ci-edit-select" id="ceKunde">${kundeOpts}</select>
-    </div>
-    <div class="ci-edit-form-row">
-      <span class="ci-edit-label">Zeit</span>
-      <input class="ci-edit-time" type="time" id="ceTime" value="${entry.time}">
-    </div>
-    <div class="ci-edit-form-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
-      <span class="ci-edit-label">Vorfall</span>
-      <textarea class="ci-edit-vorfall" id="ceVorfall" placeholder="Vorfall beschreiben… / وصف الحادثة">${entry.vorfall||''}</textarea>
-    </div>
-    <div class="ci-edit-form-btns">
-      <button class="ci-edit-save" onclick="ciSaveEdit(${entry._idx})">💾 Speichern</button>
-      <button class="ci-edit-cancel" onclick="ciCancelEdit()">✕ Abbrechen</button>
-    </div>`;
-
+  const form=document.createElement('div');form.className='ci-edit-form';
+  form.innerHTML=`<div class="ci-edit-form-row"><span class="ci-edit-label">Typ</span><select class="ci-edit-select" id="ceType"><option value="in"${entry.type==='in'?' selected':''}>✅ Eingang</option><option value="out"${entry.type==='out'?' selected':''}>🚪 Ausgang</option></select></div><div class="ci-edit-form-row"><span class="ci-edit-label">Kunde</span><select class="ci-edit-select" id="ceKunde">${kundeOpts}</select></div><div class="ci-edit-form-row"><span class="ci-edit-label">Zeit</span><input class="ci-edit-time" type="time" id="ceTime" value="${entry.time}"></div><div class="ci-edit-form-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span class="ci-edit-label">Vorfall</span><textarea class="ci-edit-vorfall" id="ceVorfall" placeholder="Vorfall beschreiben…">${entry.vorfall||''}</textarea></div><div class="ci-edit-form-btns"><button class="ci-edit-save" onclick="ciSaveEdit(${entry._idx})">💾 Speichern</button><button class="ci-edit-cancel" onclick="ciCancelEdit()">✕ Abbrechen</button></div>`;
   item.insertAdjacentElement('afterend',form);
   setTimeout(()=>document.getElementById('ceTime')?.focus(),50);
 }
-
-function ciSaveEdit(idx) {
-  const log=ciGetLog(); if(!log[idx]) return;
-  // Save previous state for undo
+function ciSaveEdit(idx){
+  const log=ciGetLog();if(!log[idx])return;
   log[idx]._prev={type:log[idx].type,kunde:log[idx].kunde,time:log[idx].time,vorfall:log[idx].vorfall};
-  log[idx].type   = document.getElementById('ceType')?.value    || log[idx].type;
-  log[idx].kunde  = document.getElementById('ceKunde')?.value   || log[idx].kunde;
-  log[idx].time   = document.getElementById('ceTime')?.value    || log[idx].time;
-  log[idx].vorfall= (document.getElementById('ceVorfall')?.value||'').trim();
-  ciSaveLog(log); ciRenderLog();
-  ciShowToast('✅ تم الحفظ / Gespeichert'); playBeep('success');
+  log[idx].type=document.getElementById('ceType')?.value||log[idx].type;
+  log[idx].kunde=document.getElementById('ceKunde')?.value||log[idx].kunde;
+  log[idx].time=document.getElementById('ceTime')?.value||log[idx].time;
+  log[idx].vorfall=(document.getElementById('ceVorfall')?.value||'').trim();
+  ciSaveLog(log);ciRenderLog();ciShowToast('✅ Gespeichert');playBeep('success');
 }
-
-function ciCancelEdit() {
-  document.querySelectorAll('.ci-edit-form').forEach(f=>f.remove());
-  document.querySelectorAll('.ci-log-item.editing').forEach(i=>i.classList.remove('editing'));
-}
-
-// ── CI UNDO: revert last edit OR remove entry ──
-function ciUndoEntry(idx) {
-  const log=ciGetLog(); if(!log[idx]) return;
+function ciCancelEdit(){document.querySelectorAll('.ci-edit-form').forEach(f=>f.remove());document.querySelectorAll('.ci-log-item.editing').forEach(i=>i.classList.remove('editing'));}
+function ciUndoEntry(idx){
+  const log=ciGetLog();if(!log[idx])return;
   if(log[idx]._prev){
-    // Revert to previous state
-    const p=log[idx]._prev;
-    log[idx].type=p.type; log[idx].kunde=p.kunde;
-    log[idx].time=p.time; log[idx].vorfall=p.vorfall;
-    delete log[idx]._prev;
-    ciSaveLog(log); ciRenderLog();
-    ciShowToast('↩ تم التراجع / Rückgängig gemacht'); playBeep('success');
-  } else {
-    // No previous state → offer to delete
-    if(confirm('لا يوجد تعديل سابق. هل تريد حذف هذا العنصر؟\nKein vorheriger Zustand. Eintrag löschen?')){
-      log.splice(idx,1); ciSaveLog(log); ciRenderLog();
-      ciShowToast('🗑 Gelöscht / تم الحذف');
-    }
-  }
+    const p=log[idx]._prev;log[idx].type=p.type;log[idx].kunde=p.kunde;log[idx].time=p.time;log[idx].vorfall=p.vorfall;delete log[idx]._prev;
+    ciSaveLog(log);ciRenderLog();ciShowToast('↩ Rückgängig gemacht');playBeep('success');
+  }else{if(confirm('Kein vorheriger Zustand. Eintrag löschen?')){log.splice(idx,1);ciSaveLog(log);ciRenderLog();ciShowToast('🗑 Gelöscht');}}
 }
-
-function ciClearLog() {
-  if(!confirm('Alle Einträge löschen?\nحذف جميع العناصر؟')) return;
-  localStorage.removeItem('denis_checkin_log'); ciRenderLog(); ciShowToast('🗑 Alle Einträge gelöscht');
-}
-function ciSelectAll() {
-  const items=document.querySelectorAll('#ciLogList .ci-log-item');
-  const allSel=[...items].every(i=>i.classList.contains('selected'));
-  items.forEach(i=>allSel?i.classList.remove('selected'):i.classList.add('selected'));
-}
-function ciDeleteSelected() {
+function ciClearLog(){if(!confirm('Alle Einträge löschen?'))return;localStorage.removeItem('denis_checkin_log');ciRenderLog();ciShowToast('🗑 Alle Einträge gelöscht');}
+function ciSelectAll(){const items=document.querySelectorAll('#ciLogList .ci-log-item');const allSel=[...items].every(i=>i.classList.contains('selected'));items.forEach(i=>allSel?i.classList.remove('selected'):i.classList.add('selected'));}
+function ciDeleteSelected(){
   const selected=document.querySelectorAll('#ciLogList .ci-log-item.selected');
   if(!selected.length){ciShowToast('⚠️ Nichts ausgewählt');return;}
   const idxToRemove=new Set([...selected].map(el=>parseInt(el.dataset.idx)));
   const log=ciGetLog().filter((_,i)=>!idxToRemove.has(i));
-  ciSaveLog(log); ciRenderLog(); ciShowToast('🗑 '+idxToRemove.size+' Einträge gelöscht');
+  ciSaveLog(log);ciRenderLog();ciShowToast('🗑 '+idxToRemove.size+' Einträge gelöscht');
 }
-
-function ciImportToProtokoll() {
-  const log=ciGetLog(); if(!log.length){ciShowToast('⚠️ Keine Einträge vorhanden');return;}
-  const pairs=[]; let i=0;
+function ciImportToProtokoll(){
+  const log=ciGetLog();if(!log.length){ciShowToast('⚠️ Keine Einträge vorhanden');return;}
+  const pairs=[];let i=0;
   while(i<log.length){
     if(log[i].type==='in'){
-      const kunde=log[i].kunde, inTime=log[i].time; let outTime='';
+      const kunde=log[i].kunde,inTime=log[i].time;let outTime='';
       for(let j=i+1;j<log.length;j++){if(log[j].type==='out'&&log[j].kunde===kunde){outTime=log[j].time;log.splice(j,1);break;}}
       pairs.push({k:kunde,b:inTime,e:outTime,n:[]});
     }
     i++;
   }
   if(!pairs.length){ciShowToast('⚠️ Keine vollständigen Besuche');return;}
-  hideCheckin(); pairs.forEach(pair=>addRow(pair)); saveData();
-  showToast('✅ '+pairs.length+' Besuche importiert!','success'); playBeep('success');
+  hideCheckin();pairs.forEach(pair=>addRow(pair));saveData();
+  showToast('✅ '+pairs.length+' Besuche importiert!','success');playBeep('success');
 }
-
-function ciShowToast(msg) {
-  const old=document.querySelector('.ci-toast'); if(old) old.remove();
-  const t=document.createElement('div'); t.className='ci-toast'; t.textContent=msg;
+function ciShowToast(msg){
+  const old=document.querySelector('.ci-toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='ci-toast';t.textContent=msg;
   document.getElementById('checkinScreen').appendChild(t);
   setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},2200);
 }
-
 </script>
 </body>
 </html>
