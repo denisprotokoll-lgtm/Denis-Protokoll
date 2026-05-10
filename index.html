@@ -10,18 +10,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
+/* ============================================================
+   RESET & CSS VARIABLES
+   ============================================================ */
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --red:#E8394A;--green:#4cba6b;--orange:#f5a623;--purple:#7c3aed;
   --bg:#f5f0eb;--card:#ffffff;--border:#E2E5EC;
   --text:#141518;--muted:#8890A0;--row-hover:#fff8f8;
 }
-body.dark-mode{--bg:#1a1a1a;--card:#2d2d2d;--border:#444;--text:#e0e0e0;--muted:#888;--row-hover:#3a2a2a;}
+body.dark-mode{
+  --bg:#1a1a1a;--card:#2d2d2d;--border:#444;
+  --text:#e0e0e0;--muted:#888;--row-hover:#3a2a2a;
+}
 body.dark-mode .cell{background:#333!important;}
 body.dark-mode .card-header{background:linear-gradient(135deg,#1a2a3a,#0d1a26)!important;}
 body.dark-mode .card-footer{background:#222!important;}
 body.dark-mode .col-tag{filter:brightness(0.8);}
-body.dark-mode .notiz-select,body.dark-mode .time-input-direct,body.dark-mode .notiz-free{background:#3a3a3a!important;color:var(--text)!important;border-color:#555!important;}
+body.dark-mode .notiz-select,
+body.dark-mode .time-input-direct,
+body.dark-mode .notiz-free{background:#3a3a3a!important;color:var(--text)!important;border-color:#555!important;}
 body.dark-mode .autosave-bar{background:#1a2a1a!important;}
 body.dark-mode .smart-chat-wrap{background:#2a2a2a;}
 body.dark-mode .chat-bubble.ai{background:#333;border-color:#555;}
@@ -30,19 +38,35 @@ body.dark-mode .ai-describe-input,body.dark-mode .ai-row-select,body.dark-mode .
 body.dark-mode .report-preview-box{background:#2a2a2a;border-color:#555;}
 body.dark-mode .ai-tab{background:#3a3a3a;border-color:#555;}
 body.dark-mode .patrol-popup{background:var(--card);}
+ 
+/* ============================================================
+   DANGER ROW
+   ============================================================ */
 .proto-row.danger{border-left-color:var(--red)!important;}
 .proto-row.danger .cell{border-color:rgba(232,57,74,0.4)!important;background:#fff5f5!important;}
 body.dark-mode .proto-row.danger .cell{background:#3a1a1a!important;}
-@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
-@keyframes rowIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-@keyframes modalIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-@keyframes aipulse{0%,100%{box-shadow:0 3px 16px rgba(124,58,237,0.45)}50%{box-shadow:0 3px 28px rgba(124,58,237,0.8)}}
+ 
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes toastIn {from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes rowIn   {from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes slideUp {from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes modalIn {from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+@keyframes spin    {to{transform:rotate(360deg)}}
+@keyframes pulse   {0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes aipulse {0%,100%{box-shadow:0 3px 16px rgba(124,58,237,0.45)}50%{box-shadow:0 3px 28px rgba(124,58,237,0.8)}}
 @keyframes recpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+ 
+/* ============================================================
+   BODY
+   ============================================================ */
 body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;padding:24px 16px 80px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 1px 1px,#d4cdc6 1px,transparent 0);background-size:28px 28px;opacity:0.5;pointer-events:none;z-index:0;}
+ 
+/* ============================================================
+   AUTOSAVE BAR
+   ============================================================ */
 .autosave-bar{position:fixed;bottom:0;left:0;right:0;z-index:999;background:#e8f5e9;border-top:2px solid #4cba6b;display:flex;align-items:center;justify-content:space-between;padding:6px 16px;font-size:11px;font-weight:700;color:#2e7d32;transition:all 0.3s;gap:10px;}
 .autosave-bar.saving{background:#fff3e0;border-color:var(--orange);color:#e65100;}
 .autosave-bar.error{background:#ffebee;border-color:var(--red);color:#b71c1c;}
@@ -53,11 +77,19 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .as-actions{display:flex;gap:5px;}
 .as-btn{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;border:1.5px solid currentColor;background:transparent;cursor:pointer;color:inherit;transition:all 0.15s;}
 .as-btn:hover{opacity:0.8;}
+ 
+/* ============================================================
+   TOAST
+   ============================================================ */
 .toast-wrap{position:fixed;top:16px;right:16px;z-index:9998;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
 .toast{background:#141518;color:white;border-radius:12px;padding:10px 16px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3);animation:toastIn 0.25s ease;max-width:280px;pointer-events:all;}
 .toast.success{border-left:3px solid #4cba6b;}
 .toast.error{border-left:3px solid var(--red);}
 .toast.info{border-left:3px solid #64b5f6;}
+ 
+/* ============================================================
+   TOOLBAR
+   ============================================================ */
 .toolbar{position:relative;z-index:2;max-width:900px;margin:0 auto 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .toolbar-brand{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
 .toolbar-brand span{color:var(--red);}
@@ -71,6 +103,10 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .btn-green:hover{background:#1da851;transform:translateY(-1px);}
 .btn-blue{background:#1565c0;color:white;}
 .btn-blue:hover{background:#0d47a1;transform:translateY(-1px);}
+ 
+/* ============================================================
+   MAIN CARD
+   ============================================================ */
 .card{position:relative;z-index:1;max-width:900px;margin:0 auto;background:var(--card);border-radius:24px;box-shadow:0 2px 0 #d0d4dc,0 8px 40px rgba(0,0,0,0.09);overflow:hidden;}
 .card-header{background:linear-gradient(135deg,#4a6080 0%,#3d5268 100%);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
 .header-left{display:flex;flex-direction:column;gap:1px;}
@@ -103,6 +139,10 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .progress-pct{font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:rgba(255,255,255,0.6);white-space:nowrap;}
 .live-clock{font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:rgba(255,255,255,0.5);letter-spacing:1px;margin-top:2px;}
 .shift-day-info{display:inline-flex;align-items:center;gap:4px;background:rgba(255,179,185,0.15);border:1px solid rgba(255,179,185,0.3);border-radius:20px;padding:3px 9px;font-size:9px;font-weight:700;color:rgba(255,220,220,0.9);margin-top:2px;}
+ 
+/* ============================================================
+   TABLE GRID
+   ============================================================ */
 .col-headers{display:grid;grid-template-columns:120px 70px 70px 1fr;gap:6px;padding:8px 14px 6px;}
 .col-tag{border-radius:6px;padding:4px 0;font-size:10px;font-weight:700;text-align:center;}
 .tag-kunde{background:#F0F1F4;color:#666;}
@@ -166,12 +206,20 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .chip-dot{width:5px;height:5px;border-radius:50%;background:var(--red);}
 .footer-brand{font-family:'Syne',sans-serif;font-size:9px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#c8ccd6;}
 .footer-brand span{color:var(--red);}
+ 
+/* ============================================================
+   AI FAB BUTTONS
+   ============================================================ */
 .fab{position:fixed;right:12px;z-index:998;border:none;border-radius:50%;width:44px;height:44px;font-size:18px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 16px rgba(0,0,0,0.25);}
 .fab:hover{transform:scale(1.12);}
 .fab-ai{bottom:54px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;animation:aipulse 2s infinite;}
 .fab-ci{bottom:106px;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;}
 .fab-patrol{bottom:158px;background:linear-gradient(135deg,#f5a623,#e08020);color:white;}
 .fab-left{left:12px;right:auto;bottom:54px;background:#3d5268;color:white;}
+ 
+/* ============================================================
+   AI MODAL
+   ============================================================ */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9995;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
 .ai-modal{background:var(--card);border-radius:24px 24px 0 0;padding:20px 18px 32px;width:100%;max-width:540px;box-shadow:0 -8px 40px rgba(0,0,0,0.25);animation:slideUp 0.3s ease;max-height:90vh;overflow-y:auto;}
 .ai-handle{width:40px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px;}
@@ -193,16 +241,24 @@ body.dark-mode .ai-result-box{background:#2d1f4a;border-color:#6d28d9;color:#c4b
 .ai-btn-secondary:hover{background:#f5f3ff;border-color:var(--purple);color:var(--purple);}
 .ai-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px;}
 .ai-spinner.dark{border-color:rgba(124,58,237,0.2);border-top-color:var(--purple);}
+ 
+/* Voice Tab */
 .voice-area{display:flex;flex-direction:column;align-items:center;gap:14px;padding:10px 0;}
 .voice-btn{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);border:none;color:white;font-size:28px;cursor:pointer;box-shadow:0 4px 18px rgba(124,58,237,0.4);transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
 .voice-btn.recording{background:linear-gradient(135deg,var(--red),#c8102e);animation:recpulse 1s infinite;}
 .voice-status{font-size:12px;font-weight:700;color:var(--muted);}
 .voice-result{width:100%;background:#f8f9fc;border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;font-size:12px;color:var(--text);min-height:60px;line-height:1.6;}
+ 
+/* Describe / Translate Input */
 .ai-textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;background:#fafafa;outline:none;resize:none;min-height:80px;transition:border-color 0.15s;}
 .ai-textarea:focus{border-color:var(--purple);background:white;}
+ 
+/* Photo Tab */
 .ai-photo-zone{border:2px dashed var(--border);border-radius:14px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:#fafafa;}
 .ai-photo-zone:hover{border-color:var(--purple);background:#f5f3ff;}
 .ai-photo-preview{width:100%;max-height:140px;object-fit:cover;border-radius:10px;margin-top:8px;border:1.5px solid var(--border);}
+ 
+/* Smart Chat */
 .smart-chat-wrap{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;margin-bottom:10px;padding:8px;background:#f8f9fc;border-radius:12px;border:1.5px solid var(--border);}
 .chat-bubble{padding:8px 12px;border-radius:12px;font-size:12px;line-height:1.6;max-width:90%;animation:rowIn 0.2s ease;}
 .chat-bubble.user{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;align-self:flex-end;border-radius:12px 12px 2px 12px;}
@@ -213,10 +269,16 @@ body.dark-mode .ai-result-box{background:#2d1f4a;border-color:#6d28d9;color:#c4b
 .smart-send-btn{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;border:none;border-radius:10px;padding:8px 14px;font-size:14px;cursor:pointer;transition:all 0.15s;}
 .smart-send-btn:hover{transform:translateY(-1px);}
 .smart-send-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+ 
+/* Translate Lang Buttons */
 .lang-row{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap;}
 .lang-tab{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;transition:all 0.15s;}
 .lang-tab.active{background:linear-gradient(135deg,#3d5268,#4a6080);color:white;border-color:transparent;}
 .lang-tab:hover:not(.active){border-color:var(--purple);color:var(--purple);}
+ 
+/* ============================================================
+   REPORT PREVIEW MODAL
+   ============================================================ */
 .report-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9996;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);}
 .report-modal{background:var(--card);border-radius:20px;width:100%;max-width:600px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.4);animation:modalIn 0.3s ease;}
 .report-modal-hdr{padding:14px 18px;border-bottom:1.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
@@ -233,6 +295,10 @@ body.dark-mode .ai-result-box{background:#2d1f4a;border-color:#6d28d9;color:#c4b
 .report-action-btn.copy:hover{transform:translateY(-1px);}
 .report-action-btn.cancel{background:white;color:#888;border:1.5px solid var(--border);}
 .report-action-btn.cancel:hover{background:#f5f5f5;}
+ 
+/* ============================================================
+   DIGITAL SIGNATURE MODAL
+   ============================================================ */
 .sig-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9997;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);}
 .sig-modal{background:var(--card);border-radius:20px;width:100%;max-width:480px;box-shadow:0 24px 80px rgba(0,0,0,0.4);animation:modalIn 0.3s ease;overflow:hidden;}
 .sig-hdr{background:linear-gradient(135deg,#4a6080,#3d5268);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
@@ -246,6 +312,10 @@ body.dark-mode .ai-result-box{background:#2d1f4a;border-color:#6d28d9;color:#c4b
 .sig-save:hover{opacity:0.9;}
 .sig-clear{flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#888;cursor:pointer;}
 .sig-saved-msg{display:none;margin-top:10px;padding:8px 12px;background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:8px;font-size:11px;font-weight:700;color:#2e7d32;}
+ 
+/* ============================================================
+   DASHBOARD MODAL
+   ============================================================ */
 .dashboard-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9996;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);}
 .dashboard-modal{background:var(--card);border-radius:20px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.4);animation:modalIn 0.3s ease;}
 .dash-hdr{background:linear-gradient(135deg,#4a6080,#3d5268);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;}
@@ -270,6 +340,10 @@ body.dark-mode .dash-section{background:#333;border-color:#555;}
 .dash-time-sub{font-size:10px;color:#4cba6b;font-weight:700;}
 .dash-gen-btn{width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;}
 .dash-gen-btn:hover{transform:translateY(-1px);opacity:0.9;}
+ 
+/* ============================================================
+   PATROL TIMER POPUP
+   ============================================================ */
 .patrol-popup{position:fixed;bottom:118px;right:64px;z-index:9993;background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.2);border:1.5px solid var(--border);width:204px;animation:rowIn 0.2s ease;}
 .patrol-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .patrol-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--text);}
@@ -284,6 +358,10 @@ body.dark-mode .patrol-display{color:#7c9ab8;}
 body.dark-mode .patrol-lap{background:#444;}
 .patrol-lap-btn{width:100%;margin-top:8px;padding:6px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;transition:all 0.15s;}
 .patrol-lap-btn:hover{border-color:var(--orange);color:var(--orange);}
+ 
+/* ============================================================
+   ARCHIVE PANEL
+   ============================================================ */
 .archive-overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:9989;}
 .archive-panel{position:fixed;left:0;top:0;bottom:0;width:300px;background:var(--card);box-shadow:4px 0 24px rgba(0,0,0,0.18);z-index:9990;transform:translateX(-100%);transition:transform 0.3s ease;display:flex;flex-direction:column;}
 .archive-panel.open{transform:translateX(0);}
@@ -297,6 +375,10 @@ body.dark-mode .archive-item{background:#333;}
 .archive-item-date{font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:var(--text);}
 .archive-item-sub{font-size:9px;color:var(--muted);margin-top:2px;}
 .archive-empty{text-align:center;color:var(--muted);font-size:11px;padding:20px;}
+ 
+/* ============================================================
+   CHECK-IN SCREEN
+   ============================================================ */
 #checkinScreen{display:none;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#2d3f52 0%,#1a2535 100%);font-family:'DM Sans',sans-serif;overflow-y:auto;padding:0 0 40px;}
 .ci-hdr{background:linear-gradient(135deg,#4a6080,#3d5268);padding:52px 20px 20px;text-align:center;}
 .ci-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;margin-bottom:4px;}
@@ -348,26 +430,38 @@ body.dark-mode .archive-item{background:#333;}
 .ci-back-btn{width:100%;margin-top:10px;padding:12px;background:transparent;color:rgba(255,255,255,0.4);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;}
 .ci-back-btn:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);}
 .ci-toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#141518;color:white;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:99999;animation:toastIn 0.25s ease;white-space:nowrap;}
+ 
+/* ============================================================
+   PDF LOADER
+   ============================================================ */
 .pdf-loading{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(4px);}
 .pdf-loading-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;letter-spacing:2px;}
 .pdf-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;}
+ 
+/* ============================================================
+   PRINT
+   ============================================================ */
 @media print{
-*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-body{background:white!important;padding:0!important;}
-body::before{display:none!important;}
-.no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
-.progress-wrap,.live-clock,.autosave-bar,.fab,.fab-left,.archive-panel,
-.archive-overlay-bg,.toast-wrap,.pdf-loading,.shift-day-info,
-.ai-tiny-btn,.modal-overlay,.report-overlay,.sig-overlay,.dashboard-overlay,.patrol-popup{display:none!important;}
-.card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;}
-@page{size:A4 portrait;margin:8mm;}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body{background:white!important;padding:0!important;}
+  body::before{display:none!important;}
+  .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
+  .progress-wrap,.live-clock,.autosave-bar,.fab,.fab-left,.archive-panel,
+  .archive-overlay-bg,.toast-wrap,.pdf-loading,.shift-day-info,
+  .ai-tiny-btn,.modal-overlay,.report-overlay,.sig-overlay,.dashboard-overlay,.patrol-popup{display:none!important;}
+  .card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;}
+  @page{size:A4 portrait;margin:8mm;}
 }
 </style>
 </head>
 <body>
-
+ 
+<!-- ============================================================
+     FIXED OVERLAYS & PANELS
+     ============================================================ -->
 <div class="toast-wrap" id="toastWrap"></div>
-
+ 
+<!-- Archive -->
 <div class="archive-overlay-bg" id="archiveBg" style="display:none" onclick="closeArchive()"></div>
 <div class="archive-panel" id="archivePanel">
   <div class="archive-hdr">
@@ -376,7 +470,8 @@ body::before{display:none!important;}
   </div>
   <div class="archive-list" id="archiveList"></div>
 </div>
-
+ 
+<!-- Report Preview Modal -->
 <div class="report-overlay" id="reportOverlay" style="display:none">
   <div class="report-modal">
     <div class="report-modal-hdr">
@@ -398,7 +493,8 @@ body::before{display:none!important;}
     </div>
   </div>
 </div>
-
+ 
+<!-- Signature Modal -->
 <div class="sig-overlay" id="sigOverlay" style="display:none">
   <div class="sig-modal">
     <div class="sig-hdr">
@@ -416,7 +512,8 @@ body::before{display:none!important;}
     </div>
   </div>
 </div>
-
+ 
+<!-- Dashboard Modal -->
 <div class="dashboard-overlay" id="dashOverlay" style="display:none">
   <div class="dashboard-modal">
     <div class="dash-hdr">
@@ -426,7 +523,8 @@ body::before{display:none!important;}
     <div class="dash-body" id="dashBody">Lädt…</div>
   </div>
 </div>
-
+ 
+<!-- Patrol Popup -->
 <div class="patrol-popup" id="patrolPopup" style="display:none">
   <div class="patrol-hdr">
     <span class="patrol-title">⏱ Rundgang</span>
@@ -440,7 +538,8 @@ body::before{display:none!important;}
   <div class="patrol-laps" id="patrolLaps"></div>
   <button class="patrol-lap-btn" onclick="savePatrolLap()">📌 Runde speichern</button>
 </div>
-
+ 
+<!-- AI Modal -->
 <div class="modal-overlay" id="aiOverlay" style="display:none" onclick="maybeCloseAI(event)">
   <div class="ai-modal" onclick="event.stopPropagation()">
     <div class="ai-handle"></div>
@@ -457,6 +556,8 @@ body::before{display:none!important;}
       <button class="ai-tab" onclick="switchTab('translate',this)">🌐 Übersetzen</button>
       <button class="ai-tab" onclick="switchTab('report',this)">📋 Bericht</button>
     </div>
+ 
+    <!-- VOICE -->
     <div id="tab-voice">
       <div class="voice-area">
         <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎙</button>
@@ -469,6 +570,8 @@ body::before{display:none!important;}
         <button class="ai-btn-secondary" onclick="closeAI()">Schließen</button>
       </div>
     </div>
+ 
+    <!-- DESCRIBE -->
     <div id="tab-describe" style="display:none">
       <textarea class="ai-textarea" id="describeInput" placeholder="Vorfall auf Deutsch, Arabisch oder Englisch beschreiben…"></textarea>
       <div class="ai-result-box" id="describeResult"></div>
@@ -477,6 +580,8 @@ body::before{display:none!important;}
         <button class="ai-btn-secondary" onclick="closeAI()">Schließen</button>
       </div>
     </div>
+ 
+    <!-- PHOTO -->
     <div id="tab-photo" style="display:none">
       <div class="ai-photo-zone" onclick="document.getElementById('aiPhotoInput').click()">
         <div style="font-size:28px">📸</div>
@@ -490,6 +595,8 @@ body::before{display:none!important;}
         <button class="ai-btn-secondary" onclick="closeAI()">Schließen</button>
       </div>
     </div>
+ 
+    <!-- CHAT -->
     <div id="tab-chat" style="display:none">
       <div class="smart-chat-wrap" id="chatWrap">
         <div class="chat-bubble ai">Hallo! Beschreiben Sie den Vorfall — ich trage ihn automatisch ein. z.B.: "Obdachlose Person um 23:15 bei Galerie entfernt"</div>
@@ -499,6 +606,8 @@ body::before{display:none!important;}
         <button class="smart-send-btn" id="chatSendBtn" onclick="sendChat()">➤</button>
       </div>
     </div>
+ 
+    <!-- TRANSLATE -->
     <div id="tab-translate" style="display:none">
       <textarea class="ai-textarea" id="translateInput" placeholder="Text zum Übersetzen…"></textarea>
       <div style="font-size:10px;font-weight:700;color:var(--muted);margin:10px 0 6px;">Übersetzen nach:</div>
@@ -512,6 +621,8 @@ body::before{display:none!important;}
         <button class="ai-btn-secondary" onclick="closeAI()">Schließen</button>
       </div>
     </div>
+ 
+    <!-- REPORT -->
     <div id="tab-report" style="display:none">
       <div style="background:#e8f5e9;border:1.5px solid #a5d6a7;border-radius:12px;padding:12px;margin-bottom:14px;font-size:11px;color:#1a6630;line-height:1.7;">
         ✅ <strong>Mit Bestätigung:</strong> Der KI-Bericht wird als Vorschau angezeigt. Sie können ihn prüfen, übersetzen und dann senden oder abbrechen.
@@ -529,7 +640,8 @@ body::before{display:none!important;}
     </div>
   </div>
 </div>
-
+ 
+<!-- Check-In Screen -->
 <div id="checkinScreen">
   <div class="ci-hdr">
     <div class="ci-title">⏱ Check<span>in</span></div>
@@ -565,7 +677,10 @@ body::before{display:none!important;}
     <button class="ci-back-btn" onclick="hideCheckin()">← Zurück zum Protokoll</button>
   </div>
 </div>
-
+ 
+<!-- ============================================================
+     TOOLBAR
+     ============================================================ -->
 <div class="toolbar no-print">
   <div class="toolbar-brand">Denis <span>Protokoll</span> · Sicherheitsdienst</div>
   <div class="toolbar-right" id="toolbarRight">
@@ -579,7 +694,10 @@ body::before{display:none!important;}
     <button class="btn btn-red" onclick="window.print()">🖨 Drucken</button>
   </div>
 </div>
-
+ 
+<!-- ============================================================
+     MAIN CARD
+     ============================================================ -->
 <div class="card" id="mainCard">
   <div class="card-header">
     <div class="header-left">
@@ -623,6 +741,7 @@ body::before{display:none!important;}
       </div>
     </div>
   </div>
+ 
   <div class="col-headers">
     <div class="col-tag tag-kunde">Kunde</div>
     <div class="col-tag tag-beginn">Beginn</div>
@@ -646,12 +765,14 @@ body::before{display:none!important;}
     <div class="footer-brand">Denis <span>Protokoll</span></div>
   </div>
 </div>
-
+ 
+<!-- FAB Buttons -->
 <button class="fab fab-ai no-print" onclick="openAI()" title="KI-Assistent">🤖</button>
 <button class="fab fab-ci no-print" onclick="showCheckin()" title="Check-in">⏱</button>
 <button class="fab fab-patrol no-print" onclick="togglePatrolPopup()" title="Rundgang-Timer">🚶</button>
 <button class="fab fab-left no-print" onclick="openArchive()" title="Archiv">📁</button>
-
+ 
+<!-- Autosave Bar -->
 <div class="autosave-bar no-print" id="autosaveBar">
   <span class="as-dot"></span>
   <span class="as-text" id="autosaveText">💾 Automatisch gespeichert</span>
@@ -661,13 +782,19 @@ body::before{display:none!important;}
     <button class="as-btn" onclick="manualSave()">💾 Speichern</button>
   </div>
 </div>
-
+ 
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
 <script>
 'use strict';
-
+ 
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
 const KUNDEN = ['— Standort —','Galerie','Lüneburg Parkhaus','Fuhle','Parking Millerntorplatz','Parkhaus My Falkenried'];
 const KUNDE_ICONS = {'Galerie':'🏛️','Lüneburg Parkhaus':'🅿️','Fuhle':'🏢','Parking Millerntorplatz':'🅿️','Parkhaus My Falkenried':'🚗'};
-
+ 
 const EREIGNISSE = [
   {g:true, label:'── Regulär ──'},
   {label:'Obdachlose nach draußen gebracht'},
@@ -697,7 +824,7 @@ const EREIGNISSE = [
   {label:'Fahrzeug unberechtigt geparkt – Abschlepper verständigt'},
   {label:'Freitext…'},
 ];
-
+ 
 const DANGER_EVENTS = [
   'Polizei eingetroffen – Obdachlose Person entfernt 🚨',
   'Polizei eingetroffen – Personalien aufgenommen 🚨',
@@ -711,23 +838,19 @@ const DANGER_EVENTS = [
 const RED_EVENTS   = DANGER_EVENTS.slice(0,6);
 const ORANGE_EVENTS= ['Sicherungsausfall ⚡','Dauersignal an Schranke ⚠️','Ruhestörung – Personen verwiesen','Streit geschlichtet','Fahrzeug unberechtigt geparkt – Abschlepper verständigt'];
 const BLUE_EVENTS  = ['Technischer Defekt gemeldet 🔧','Defekte Beleuchtung 💡','Schrankenstörung 🚧'];
-
-const INIT_ROWS = [
-  {k:'Lüneburg Parkhaus',b:'17:57',e:'19:13',n:[{ev:'Obdachlose nach draußen gebracht',c:1}]},
-  {k:'Galerie',b:'21:00',e:'21:35',n:[{ev:'Obdachlose nach draußen gebracht',c:1},{ev:'Fahrzeuge herausgelassen',c:1}]},
-  {k:'Fuhle',b:'21:51',e:'21:15',n:[]},
-  {k:'Galerie',b:'23:50',e:'00:00',n:[]},
-  {k:'Fuhle',b:'00:15',e:'01:00',n:[]},
-  {k:'Galerie',b:'01:30',e:'03:00',n:[{ev:'Obdachlose nach draußen gebracht',c:2}]},
-  {k:'Galerie',b:'05:42',e:'06:00',n:[]},
-  {k:'Lüneburg Parkhaus',b:'06:35',e:'07:00',n:[]},
-];
-
+ 
+ 
+/* ============================================================
+   STATE
+   ============================================================ */
 let rowId=0, statusOk=true, currentProtoNr='', currentReportText='', reportLang='de';
 const nCounts={};
 let soundEnabled = localStorage.getItem('denis_sound') !== '0';
 let autoSaveTimer=null, chatHistory=[];
-
+ 
+/* ============================================================
+   SHIFT DATE HELPERS
+   ============================================================ */
 function getShiftDate(){
   const now=new Date();
   if(now.getHours()<17){const d=new Date(now);d.setDate(d.getDate()-1);return d;}
@@ -738,7 +861,8 @@ function isoDate(d){return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDa
 function deDate(d){return`${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()}`;}
 function p2(n){return String(n).padStart(2,'0');}
 function nowHM(){const n=new Date();return`${p2(n.getHours())}:${p2(n.getMinutes())}`;}
-
+ 
+/* Init shift date */
 (function(){
   const sd=getShiftDate(), now=new Date();
   document.getElementById('dateInput').value=isoDate(sd);
@@ -748,7 +872,10 @@ function nowHM(){const n=new Date();return`${p2(n.getHours())}:${p2(n.getMinutes
     ? `📅 Nachtschicht von gestern (${deDate(sd)})`
     : `📅 Schicht ab heute (${deDate(sd)})`;
 })();
-
+ 
+/* ============================================================
+   PROTOCOL NUMBER
+   ============================================================ */
 function generateProtoNr(increment=true){
   const d=getShiftDate();
   const dk=`${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}`;
@@ -774,7 +901,10 @@ function refreshProtoNr(){
   showToast('🔄 Neue Protokoll-Nr. generiert','info');
   saveData();
 }
-
+ 
+/* ============================================================
+   SOUND
+   ============================================================ */
 let _audioCtx=null;
 function getACtx(){if(!_audioCtx)try{_audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _audioCtx;}
 function playBeep(type='save'){
@@ -801,7 +931,10 @@ if(!soundEnabled){
     document.getElementById('soundBtn').textContent='🔕';
   },100);
 }
-
+ 
+/* ============================================================
+   TOAST
+   ============================================================ */
 function showToast(msg,type='success',duration=2500){
   const wrap=document.getElementById('toastWrap');
   const t=document.createElement('div');
@@ -812,20 +945,29 @@ function showToast(msg,type='success',duration=2500){
     setTimeout(()=>t.remove(),300);
   },duration);
 }
-
+ 
+/* ============================================================
+   DARK MODE
+   ============================================================ */
 function toggleDark(){
   document.body.classList.toggle('dark-mode');
   localStorage.setItem('denis_dark',document.body.classList.contains('dark-mode')?'1':'0');
 }
 if(localStorage.getItem('denis_dark')==='1') document.body.classList.add('dark-mode');
-
+ 
+/* ============================================================
+   STATUS TOGGLE
+   ============================================================ */
 function toggleStatus(){
   statusOk=!statusOk;
   document.getElementById('statusBadge').className='status-badge'+(statusOk?'':' incident');
   document.getElementById('statusText').textContent=statusOk?'Regulär':'Vorfall aktiv';
   if(!statusOk) playBeep('danger');
 }
-
+ 
+/* ============================================================
+   EREIGNIS OPTIONS
+   ============================================================ */
 function buildEreignisOpts(selected=''){
   return '<option value="">— Ereignis —</option>'+
     EREIGNISSE.map(g=>g.g
@@ -853,7 +995,10 @@ function checkDanger(row){
   row.classList.toggle('danger',isDanger);
   if(isDanger&&!was) playBeep('danger');
 }
-
+ 
+/* ============================================================
+   TIME COLOR
+   ============================================================ */
 function colorTime(inp){
   const v=inp.value;if(!v) return;
   const h=parseInt(v.split(':')[0]);
@@ -866,12 +1011,16 @@ function setNow(id){
   const el=document.getElementById(id);
   if(el){el.value=nowHM();colorTime(el);}
 }
-
+ 
+/* ============================================================
+   ADD / REMOVE ROW
+   ============================================================ */
 function addRow(data){
   const id=++rowId;
   nCounts[id]=[];
   const k=data?.k||'— Standort —', bv=data?.b||'00:00', ev=data?.e||'00:00';
   const isCustom=!KUNDEN.includes(k)&&k!=='— Standort —';
+ 
   const div=document.createElement('div');
   div.className='proto-row';div.id=`row-${id}`;
   div.innerHTML=`
@@ -906,15 +1055,17 @@ function addRow(data){
       </div>
     </div>`;
   document.getElementById('rowsWrap').appendChild(div);
+ 
   if(data?.n) data.n.forEach(n=>addNotiz(id,n.ev,n.c,n.ft||''));
   if(data?.photos) data.photos.forEach(b64=>appendPhotoThumb(id,b64));
+ 
   setTimeout(()=>{
     const bd=document.getElementById(`bd-${id}`), ed=document.getElementById(`ed-${id}`);
     if(bd) colorTime(bd); if(ed) colorTime(ed);
   },0);
   updateSummary();
 }
-
+ 
 function removeRow(id){
   const el=document.getElementById(`row-${id}`);
   if(el){el.style.cssText+=';opacity:0;transform:translateX(20px);transition:all 0.2s';setTimeout(()=>{el.remove();updateSummary();},200);}
@@ -926,7 +1077,7 @@ function removeLastRow(){
   last.style.cssText+=';opacity:0;transform:translateX(20px);transition:all 0.2s';
   setTimeout(()=>{last.remove();updateSummary();},200);
 }
-
+ 
 function onKundeChange(sel,id){
   const cust=document.getElementById(`kcust-${id}`), back=document.getElementById(`kback-${id}`);
   if(sel.value==='__custom__'){
@@ -943,12 +1094,16 @@ function resetKunde(id){
   document.getElementById(`kback-${id}`).style.display='none';
   updateSummary();
 }
-
+ 
+/* ============================================================
+   NOTIZ
+   ============================================================ */
 function addNotiz(rId,ereignis,count,freeText){
   const ni=document.getElementById(`ni-${rId}`);
   const idx=nCounts[rId].length;
   nCounts[rId].push(count||0);
   const isFree=ereignis==='Freitext…';
+ 
   const item=document.createElement('div');
   item.className='notiz-item';item.id=`ni-${rId}-${idx}`;
   item.innerHTML=`
@@ -963,9 +1118,11 @@ function addNotiz(rId,ereignis,count,freeText){
     </select>
     <button class="notiz-del-btn no-print" onclick="deleteNotiz(this)">🗑</button>`;
   ni.appendChild(item);
+ 
   const ta=document.createElement('textarea');
   ta.className='notiz-free';ta.value=freeText||'';ta.style.display=isFree?'block':'none';
   ni.appendChild(ta);
+ 
   const sel=item.querySelector('.notiz-select');
   if(sel&&sel.value) styleNotizSelect(sel);
   updateSummary();
@@ -987,7 +1144,10 @@ function chN(rId,idx,d){
   document.getElementById(`nc-${rId}-${idx}`).textContent=nCounts[rId][idx];
   updateSummary();
 }
-
+ 
+/* ============================================================
+   PHOTO
+   ============================================================ */
 function compressImg(file,mW,mH,q,cb){
   const reader=new FileReader();
   reader.onload=e=>{
@@ -1022,7 +1182,10 @@ function addFoto(rId,input){
     showToast('📸 Foto gespeichert','success');playBeep('success');
   });
 }
-
+ 
+/* ============================================================
+   SUMMARY / CHIPS
+   ============================================================ */
 function updateSummary(){
   const rows=document.querySelectorAll('.proto-row');
   let kC=0,vC=0;
@@ -1048,7 +1211,10 @@ function updateSummary(){
   const rc=document.getElementById('rowCountLabel');if(rc) rc.textContent=rows.length+' Zeilen';
   scheduleSave();
 }
-
+ 
+/* ============================================================
+   SAVE / LOAD
+   ============================================================ */
 function scheduleSave(){
   clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(()=>saveData(),800);
@@ -1130,7 +1296,10 @@ function loadData(){
   } catch(e){}
   return false;
 }
-
+ 
+/* ============================================================
+   ARCHIVE
+   ============================================================ */
 function saveToArchive(){
   const data=collectData();
   try{
@@ -1163,7 +1332,10 @@ function closeArchive(){
   document.getElementById('archivePanel').classList.remove('open');
   document.getElementById('archiveBg').style.display='none';
 }
-
+ 
+/* ============================================================
+   EXPORT JSON
+   ============================================================ */
 function exportJSON(){
   const data=collectData();
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -1173,16 +1345,22 @@ function exportJSON(){
   URL.revokeObjectURL(url);
   showToast('⬇ JSON exportiert','success');
 }
-
+ 
+/* ============================================================
+   RESET FORM
+   ============================================================ */
 function resetForm(){
   if(!confirm('Alle Einträge zurücksetzen?')) return;
   localStorage.removeItem('denis_protokoll');
   document.getElementById('rowsWrap').innerHTML='';
   rowId=0;Object.keys(nCounts).forEach(k=>delete nCounts[k]);
-  INIT_ROWS.forEach(r=>addRow(r));
+  addRow(); // صف واحد فارغ للبداية
   applyProtoNr(generateProtoNr(true));
 }
-
+ 
+/* ============================================================
+   CLOCK & PROGRESS
+   ============================================================ */
 function updateClock(){
   const now=new Date();
   const cl=document.getElementById('liveClock');
@@ -1199,7 +1377,10 @@ function updateClock(){
 updateClock();setInterval(updateClock,1000);
 setInterval(saveData,30000);
 setInterval(saveToArchive,5*60*1000);
-
+ 
+/* ============================================================
+   NEW SHIFT CHECK
+   ============================================================ */
 function getShiftKey(){
   const sd=getShiftDate();
   return`shift_${sd.getFullYear()}${p2(sd.getMonth()+1)}${p2(sd.getDate())}`;
@@ -1219,17 +1400,20 @@ function checkNewShift(){
     return false;
   } catch(e){return false;}
 }
-
+ 
+/* ============================================================
+   INIT
+   ============================================================ */
 document.addEventListener('input',()=>scheduleSave());
 document.addEventListener('change',()=>scheduleSave());
-
+ 
 try{
   const isNew=checkNewShift();
   const loaded=!isNew&&loadData();
   if(!loaded){
     applyProtoNr(generateProtoNr(isNew));
     if(isNew) setTimeout(()=>{showToast('🌟 Neue Schicht gestartet!','info',4000);playBeep('success');},600);
-    else INIT_ROWS.forEach(r=>addRow(r));
+    else addRow(); // صف واحد فارغ للبداية
   } else if(!currentProtoNr){
     applyProtoNr(generateProtoNr(false));
   }
@@ -1238,7 +1422,10 @@ try{
 } catch(e){
   try{if(!loadData()) applyProtoNr(generateProtoNr(false));} catch(e2){}
 }
-
+ 
+/* ============================================================
+   WHATSAPP / PDF
+   ============================================================ */
 function buildWaText(data,lang='de'){
   let t='';
   if(lang==='de'){
@@ -1259,6 +1446,7 @@ function openReportPreview(dest){
   const data=collectData();
   currentReportText=buildWaText(data,'de');
   document.getElementById('reportPreviewBox').textContent=currentReportText;
+  // reset lang tabs
   document.querySelectorAll('.report-overlay .lang-tab').forEach((b,i)=>b.classList.toggle('active',i===0));
   document.getElementById('reportOverlay').style.display='flex';
 }
@@ -1282,7 +1470,7 @@ function confirmReport(action){
   else navigator.clipboard.writeText(currentReportText).then(()=>showToast('📋 Kopiert!','success')).catch(()=>{});
   closeReportModal();
 }
-
+ 
 async function generatePDFAndSave(){
   showPdfLoader(true);
   try{
@@ -1322,6 +1510,7 @@ async function generatePDFAndSave(){
       } else {doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
       y+=rH+1;
     });
+    // Footer
     y+=4;if(y>250){doc.addPage();y=margin;}
     doc.setFillColor(61,82,104);doc.rect(margin,y,cW,7,'F');
     doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
@@ -1335,6 +1524,7 @@ async function generatePDFAndSave(){
       doc.setTextColor(120,120,120);doc.setFontSize(8);doc.setFont('helvetica','normal');
       doc.text('Mitarbeiter',margin+2,y+19);doc.text('Vorgesetzter',margin+97,y+19);
     }
+    // Signature
     const sig=localStorage.getItem('denis_signature');
     if(sig&&y<240){
       try{doc.addImage(sig,'PNG',margin,y-16,60,18);}catch(e){}
@@ -1353,7 +1543,10 @@ function showPdfLoader(show){
     if(!o){o=document.createElement('div');o.id='pdfLoader';o.className='pdf-loading';o.innerHTML='<div class="pdf-spinner"></div><div class="pdf-loading-text">PDF wird erstellt…</div>';document.body.appendChild(o);}
   } else {if(o) o.remove();}
 }
-
+ 
+/* ============================================================
+   CLAUDE API
+   ============================================================ */
 const MODEL='claude-sonnet-4-20250514';
 async function callClaude(messages,system,maxTokens=800){
   const body={model:MODEL,max_tokens:maxTokens,messages};
@@ -1367,12 +1560,12 @@ async function callClaude(messages,system,maxTokens=800){
   const d=await resp.json();
   return d.content.map(c=>c.text||'').join('');
 }
-
+ 
 const AI_SYSTEM=`Du bist ein KI-Assistent für Sicherheitsdienste. Analysiere den Vorfall-Text (Deutsch, Arabisch oder Englisch akzeptiert) und antworte NUR als JSON ohne Markdown-Backticks:
 {"ereignis":"<Ereignis aus der Liste>","schwere":"hoch|mittel|niedrig","zusammenfassung":"<1 Satz Deutsch>","empfehlung":"<kurze Empfehlung Deutsch>"}
-
+ 
 Ereignis-Liste: Obdachlose nach draußen gebracht, Fahrzeuge herausgelassen, Unbefugte Person entfernt, Fahrzeugschaden festgestellt, Parkverstoß dokumentiert, Sachschaden festgestellt – Dokumentiert, Technischer Defekt gemeldet 🔧, Defekte Beleuchtung 💡, Schrankenstörung 🚧, Sicherungsausfall ⚡, Dauersignal an Schranke ⚠️, Ruhestörung – Personen verwiesen, Streit geschlichtet, Polizei eingetroffen – Obdachlose Person entfernt 🚨, Polizei eingetroffen – Personalien aufgenommen 🚨, Vandalismus gemeldet – Polizei informiert 🚨, Notruf / Notfall gemeldet 🚨, Rettungsdienst angefordert 🚑, Diebstahl gemeldet – Polizei verständigt 🚨, Rohrbruch / Wasseraustritt 💧, Defekte Tür / Fenster 🚪, Fahrzeug unberechtigt geparkt – Abschlepper verständigt, Freitext…`;
-
+ 
 async function analyzeText(text,resultBoxId,btn){
   const orig=btn.innerHTML;btn.innerHTML='<span class="ai-spinner"></span>Analysiere…';btn.disabled=true;
   try{
@@ -1384,7 +1577,7 @@ async function analyzeText(text,resultBoxId,btn){
   }
   btn.innerHTML=orig;btn.disabled=false;
 }
-
+ 
 function showAnalysisResult(boxId,ereignis,schwere,zusammenfassung,empfehlung){
   const sc=schwere==='hoch'?'#b71c1c':schwere==='mittel'?'#7a4800':'#1a6630';
   const se=schwere==='hoch'?'🚨':schwere==='mittel'?'⚠️':'✅';
@@ -1403,7 +1596,7 @@ function showAnalysisResult(boxId,ereignis,schwere,zusammenfassung,empfehlung){
       onclick="applyAiToRow('${safe(ereignis)}','${safe(zusammenfassung||ereignis)}')">✅ In Zeile eintragen</button>`;
   rb.classList.add('visible');playBeep('success');
 }
-
+ 
 function applyAiToRow(ereignis,freitext){
   const sel=document.getElementById('aiRowSelect');
   const rId=sel.value||aiTargetRowId;
@@ -1414,11 +1607,14 @@ function applyAiToRow(ereignis,freitext){
   showToast('✅ Eingetragen!','success');playBeep('success');
   closeAI();
 }
-
+ 
+/* ============================================================
+   AI MODAL
+   ============================================================ */
 let aiCurrentTab='voice', aiTargetRowId=null;
 let mediaRecorder=null, isRecording=false, audioChunks=[];
 let aiPhotoB64=null;
-
+ 
 function openAI(rowId){
   aiTargetRowId=rowId||null;
   const sel=document.getElementById('aiRowSelect');
@@ -1463,7 +1659,10 @@ function switchTab(tab,btn){
   });
   resetAIResults();
 }
-
+ 
+/* ============================================================
+   VOICE (Tab 1)
+   ============================================================ */
 function toggleVoice(){
   if(isRecording){stopVoice();return;}
   navigator.mediaDevices.getUserMedia({audio:true})
@@ -1507,14 +1706,20 @@ async function analyzeVoice(){
   if(!text) return;
   await analyzeText(text,'voiceResult2',btn);
 }
-
+ 
+/* ============================================================
+   DESCRIBE (Tab 2)
+   ============================================================ */
 async function analyzeDescribe(){
   const text=document.getElementById('describeInput').value.trim();
   if(!text){showToast('⚠️ Bitte Text eingeben','error');return;}
   const btn=document.querySelector('#tab-describe .ai-btn-primary');
   await analyzeText(text,'describeResult',btn);
 }
-
+ 
+/* ============================================================
+   PHOTO (Tab 3)
+   ============================================================ */
 function handlePhotoUpload(input){
   if(!input.files[0]) return;
   compressImg(input.files[0],1024,768,0.75,b64=>{
@@ -1545,7 +1750,10 @@ async function analyzePhoto(){
   }
   btn.innerHTML=orig;btn.disabled=false;
 }
-
+ 
+/* ============================================================
+   SMART CHAT (Tab 4)
+   ============================================================ */
 async function sendChat(){
   const input=document.getElementById('chatInput');
   const text=input.value.trim();if(!text) return;
@@ -1564,6 +1772,7 @@ Antworte immer auf Deutsch. Sei hilfsbereit und präzise.`;
     const reply=await callClaude([...chatHistory],chatSystem,350);
     chatHistory.push({role:'assistant',content:reply});
     addChatBubble(reply,'ai');
+    // Auto-fill from structured response
     const m=reply.match(/EINTRAG:\s*Kunde=([^,]+),\s*Zeit=([0-9:]+),\s*Ereignis=(.+)/);
     if(m){
       const kunde=m[1].trim(), zeit=m[2].trim(), ereignisRaw=m[3].trim();
@@ -1595,7 +1804,10 @@ function addChatBubble(text,role){
   const b=document.createElement('div');b.className=`chat-bubble ${role}`;b.textContent=text;
   wrap.appendChild(b);wrap.scrollTop=wrap.scrollHeight;
 }
-
+ 
+/* ============================================================
+   TRANSLATE (Tab 5)
+   ============================================================ */
 async function doTranslate(targetLang){
   const text=document.getElementById('translateInput').value.trim();
   if(!text){showToast('⚠️ Text eingeben','error');return;}
@@ -1615,7 +1827,10 @@ async function doTranslate(targetLang){
     playBeep('success');
   } catch(e){rb.innerHTML='❌ Übersetzungsfehler';}
 }
-
+ 
+/* ============================================================
+   AI REPORT GENERATION (Tab 6)
+   ============================================================ */
 let repLang='de';
 function setRepLang(lang,btn){
   repLang=lang;
@@ -1631,7 +1846,7 @@ Mitarbeiter: ${data.mitarbeiter||'—'}
 Tag: ${data.day||'—'}, ${data.date||'—'}
 Status: ${data.status?'Regulär':'Vorfall aktiv'}
 Einsätze:\n${rows}
-
+ 
 Schreibe einen strukturierten Bericht mit: Zusammenfassung, Einsatz-Details, Besondere Vorkommnisse, Empfehlungen.`;
   return await callClaude([{role:'user',content:prompt}],`Du bist ein professioneller Sicherheitsdienst-Berichtschreiber. Schreibe auf ${names[lang]}.`,900);
 }
@@ -1644,6 +1859,7 @@ async function generateReport(){
     currentReportText=text;
     closeAI();
     document.getElementById('reportPreviewBox').textContent=text;
+    // Reset lang tabs in report modal
     document.querySelectorAll('.report-overlay .lang-tab').forEach((b,i)=>{
       b.classList.toggle('active',
         (repLang==='de'&&i===0)||(repLang==='en'&&i===1)||(repLang==='ar'&&i===2));
@@ -1655,9 +1871,12 @@ async function generateReport(){
   }
   btn.innerHTML=orig;btn.disabled=false;
 }
-
+ 
+/* ============================================================
+   DIGITAL SIGNATURE
+   ============================================================ */
 let sigCtx=null, sigDrawing=false, sigHasData=false;
-
+ 
 function openSigModal(){
   document.getElementById('sigOverlay').style.display='flex';
   setTimeout(()=>{
@@ -1705,11 +1924,15 @@ function updateSigChip(dataUrl){
   chip.innerHTML=`<img src="${dataUrl}" style="height:30px;border:1.5px solid var(--border);border-radius:6px;background:white;padding:2px;" title="Unterschrift">
     <span style="font-size:9px;font-weight:700;color:var(--muted);margin-left:4px;">✍️ Unterschrieben</span>`;
 }
+// Restore sig on load
 (function(){
   const s=localStorage.getItem('denis_signature');
   if(s) setTimeout(()=>updateSigChip(s),600);
 })();
-
+ 
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
 function openDashboard(){
   const data=collectData();
   const rows=data.rows.filter(r=>r.k&&r.k!=='— Standort —');
@@ -1727,8 +1950,10 @@ function openDashboard(){
     }
   });
   const totalH=Math.floor(totalMins/60), totalM=totalMins%60;
+ 
   const body=document.getElementById('dashBody');
   body.innerHTML=`
+    <!-- KPI -->
     <div class="dash-kpis">
       <div class="dash-kpi" style="background:#3d526812;border:1.5px solid #3d526830;">
         <div class="dash-kpi-icon">🏢</div>
@@ -1746,6 +1971,7 @@ function openDashboard(){
         <div class="dash-kpi-label">Notfälle</div>
       </div>
     </div>
+    <!-- Time -->
     <div class="dash-time-box">
       <div style="font-size:28px;">⏱</div>
       <div>
@@ -1753,6 +1979,7 @@ function openDashboard(){
         <div class="dash-time-sub">Einsatzzeit · ${rows.length} Besuche</div>
       </div>
     </div>
+    <!-- Kunden -->
     <div class="dash-section">
       <div class="dash-section-title">📍 Standorte</div>
       ${Object.entries(kundenMap).length
@@ -1766,6 +1993,7 @@ function openDashboard(){
           </div>`).join('')
         : '<div style="font-size:11px;color:var(--muted);">Keine Daten</div>'}
     </div>
+    <!-- Events -->
     ${topEvents.length?`
     <div class="dash-section">
       <div class="dash-section-title">🔝 Häufigste Ereignisse</div>
@@ -1776,15 +2004,20 @@ function openDashboard(){
           <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#3d5268;background:#e8edf2;border-radius:6px;padding:1px 7px;">${cnt}x</span>
         </div>`).join('')}
     </div>`:''}
+    <!-- Generate Report -->
     <button class="dash-gen-btn" onclick="closeDashboard();openAI();setTimeout(()=>{const tabs=document.querySelectorAll('.ai-tab');if(tabs[5])tabs[5].click();},200);">
       📋 KI-Schichtbericht generieren
     </button>`;
+ 
   document.getElementById('dashOverlay').style.display='flex';
 }
 function closeDashboard(){document.getElementById('dashOverlay').style.display='none';}
-
+ 
+/* ============================================================
+   PATROL TIMER
+   ============================================================ */
 let patrolTimer=null, patrolSecs=0, patrolRunning=false;
-
+ 
 function togglePatrolPopup(){
   const pp=document.getElementById('patrolPopup');
   pp.style.display=pp.style.display==='none'||!pp.style.display?'block':'none';
@@ -1815,9 +2048,12 @@ function savePatrolLap(){
   div.textContent=`🕐 ${nowHM()} · Dauer: ${time}`;laps.appendChild(div);
   showToast(`📌 Runde: ${time}`,'success');
 }
-
+ 
+/* ============================================================
+   CHECK-IN SCREEN
+   ============================================================ */
 let ciSelected=null, ciClockInterval=null;
-
+ 
 function showCheckin(){
   document.getElementById('checkinScreen').style.display='block';
   document.body.style.overflow='hidden';
@@ -1927,7 +2163,10 @@ function ciShowToast(msg){
   document.getElementById('checkinScreen').appendChild(t);
   setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},2200);
 }
-
+ 
+/* ============================================================
+   KEYBOARD SHORTCUTS
+   ============================================================ */
 document.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey){
     if(e.key==='s'){e.preventDefault();manualSave();}
