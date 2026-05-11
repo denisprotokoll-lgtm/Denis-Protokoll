@@ -461,19 +461,7 @@ body::before{display:none!important;}
   </div>
 </div>
  
-<div class="patrol-popup" id="patrolPopup" style="display:none">
-  <div class="patrol-hdr">
-    <span class="patrol-title">⏱ Rundgang</span>
-    <button class="patrol-close" onclick="document.getElementById('patrolPopup').style.display='none'">✕</button>
-  </div>
-  <div class="patrol-display" id="patrolDisplay">00:00</div>
-  <div class="patrol-btns">
-    <button class="patrol-start" id="patrolStartBtn" onclick="togglePatrol()">▶ Start</button>
-    <button class="patrol-reset-btn" onclick="resetPatrol()">↺</button>
-  </div>
-  <div class="patrol-laps" id="patrolLaps"></div>
-  <button class="patrol-lap-btn" onclick="savePatrolLap()">📌 Runde speichern</button>
-</div>
+ 
  
 <div class="modal-overlay" id="aiOverlay" style="display:none" onclick="maybeCloseAI(event)">
   <div class="ai-modal" onclick="event.stopPropagation()">
@@ -624,13 +612,7 @@ body::before{display:none!important;}
     </div>
     <div class="header-right">
       <div class="header-meta-fields">
-        <div class="meta-field">
-          <span class="meta-field-label">Protokoll-Nr.</span>
-          <div style="display:flex;gap:5px;align-items:center;">
-            <div class="proto-nr-display"><span class="proto-nr-dot"></span><span id="protoNrText">Wird generiert…</span></div>
-            <button class="proto-refresh no-print" onclick="refreshProtoNr()">↺</button>
-          </div>
-        </div>
+ 
         <div class="meta-field">
           <span class="meta-field-label">Mitarbeiter</span>
           <input class="meta-field-input" type="text" id="mitarbeiterName" placeholder="Vorname Nachname">
@@ -675,7 +657,7 @@ body::before{display:none!important;}
  
 <button class="fab fab-ai no-print" onclick="openAI()">🤖</button>
 <button class="fab fab-ci no-print" onclick="showCheckin()">⏱</button>
-<button class="fab fab-patrol no-print" onclick="togglePatrolPopup()">🚶</button>
+ 
 <button class="fab fab-left no-print" onclick="openArchive()">📁</button>
  
 <div class="autosave-bar no-print" id="autosaveBar">
@@ -1098,62 +1080,55 @@ async function generatePDFAndSave(){
     const{jsPDF}=window.jspdf;
     const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const data=collectData();
-    const pageW=210,margin=12,cW=pageW-2*margin;let y=margin;
-    // Header
-    doc.setFillColor(61,82,104);doc.rect(0,0,pageW,32,'F');
-    doc.setTextColor(255,255,255);doc.setFontSize(20);doc.setFont('helvetica','bold');doc.text('Denis Protokoll',margin,14);
-    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(255,200,200);doc.text('TAGESBERICHT · VORFALLPROTOKOLL',margin,20);
-    doc.setTextColor(255,255,255);doc.setFontSize(8);
-    doc.text(`Nr: ${data.protokollNr||'—'}`,margin,26);doc.text(`Mitarbeiter: ${data.mitarbeiter||'—'}`,margin+55,26);doc.text(`${data.day||''} ${data.date||''}`,margin+130,26);
-    y=38;
-    // Col headers
-    doc.setFillColor(240,241,244);doc.rect(margin,y,cW,8,'F');doc.setDrawColor(220,220,220);doc.rect(margin,y,cW,8);
+    const pageW=210,margin=10,cW=pageW-2*margin;let y=margin;
+    doc.setFillColor(61,82,104);doc.rect(0,0,pageW,28,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(18);doc.setFont('helvetica','bold');
+    doc.text('Denis Protokoll',margin,12);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');
+    doc.text('Tagesbericht · Vorfallprotokoll',margin,18);
+    doc.setFontSize(9);
+    doc.text(`Mitarbeiter: ${data.mitarbeiter||'—'}`,margin,23);
+    doc.text(`${data.day||''} ${data.date||''}`,160,23);y=33;
+    doc.setFillColor(240,241,244);doc.rect(margin,y,cW,7,'F');
     doc.setTextColor(80,80,80);doc.setFontSize(8);doc.setFont('helvetica','bold');
-    doc.text('KUNDE',margin+2,y+5.5);doc.text('BEGINN',margin+42,y+5.5);doc.text('ENDE',margin+62,y+5.5);doc.text('DIENSTNOTIZ',margin+84,y+5.5);
-    y+=10;
-    // Rows
+    doc.text('Kunde',margin+2,y+5);doc.text('Beginn',margin+38,y+5);doc.text('Ende',margin+60,y+5);doc.text('Dienstnotiz',margin+82,y+5);y+=9;
     doc.setFont('helvetica','normal');doc.setFontSize(9);
     data.rows.forEach((row,i)=>{
-      if(y>272){doc.addPage();y=margin;}
-      const noteLines=row.n?.filter(n=>n.ev&&n.ev!=='— Ereignis —'&&n.ev!=='Freitext…')||[];
-      const rH=Math.max(10,noteLines.length*7+5);
-      if(i%2===0){doc.setFillColor(250,250,252);doc.rect(margin,y,cW,rH,'F');}
-      doc.setDrawColor(230,230,230);doc.rect(margin,y,cW,rH);
-      doc.line(margin+40,y,margin+40,y+rH);doc.line(margin+60,y,margin+60,y+rH);doc.line(margin+82,y,margin+82,y+rH);
-      doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');doc.setFontSize(9);
-      doc.text(row.k==='— Standort —'?'—':row.k,margin+2,y+7,{maxWidth:36});
-      doc.setFont('helvetica','normal');
-      doc.setTextColor(26,102,48);doc.text(row.b||'—',margin+42,y+7);
-      doc.setTextColor(122,72,0);doc.text(row.e||'—',margin+62,y+7);
-      let ny=y+6;
-      if(noteLines.length){
-        noteLines.forEach(n=>{
-          if(ny>y+rH-1)return;
-          const isDanger=DANGER_EVENTS.includes(n.ev);const isOrange=ORANGE_EVENTS.includes(n.ev);
-          doc.setTextColor(isDanger?183:isOrange?122:60,isDanger?28:isOrange?72:60,isDanger?28:isOrange?0:60);
-          doc.setFontSize(8);doc.text('• '+(n.c>1?`[${n.c}x] ${n.ev}`:n.ev),margin+84,ny,{maxWidth:cW-86});ny+=6.5;
+      if(y>270){doc.addPage();y=margin;}
+      const rH=Math.max(9,(row.n?.length||0)*6+6);
+      if(i%2===0){doc.setFillColor(252,252,252);doc.rect(margin,y,cW,rH,'F');}
+      doc.setDrawColor(220,220,220);doc.rect(margin,y,cW,rH);
+      doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');
+      doc.text(row.k==='— Standort —'?'':row.k,margin+2,y+5,{maxWidth:34});
+      doc.setFont('helvetica','normal');doc.text(row.b||'',margin+38,y+5);doc.text(row.e||'',margin+60,y+5);
+      let ny=y+4;
+      if(row.n?.length){
+        row.n.forEach(n=>{
+          if(!n.ev||n.ev==='— Ereignis —') return;
+          doc.setFontSize(7.5);
+          doc.text('• '+(n.c>0?`[${n.c}x] ${n.ev}`:n.ev),margin+82,ny,{maxWidth:cW-84});
+          ny+=5.5;
         });
-      } else {doc.setFontSize(8);doc.setTextColor(180,180,180);doc.text('—',margin+84,y+7);}
+      } else {doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
       y+=rH+1;
     });
-    // Footer
-    y+=4;if(y>265){doc.addPage();y=margin;}
-    doc.setFillColor(61,82,104);doc.rect(margin,y,cW,8,'F');doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+    y+=4;if(y>250){doc.addPage();y=margin;}
+    doc.setFillColor(61,82,104);doc.rect(margin,y,cW,7,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
     const rows2=document.querySelectorAll('.proto-row');let kC2=0,vC2=0;
     rows2.forEach(row=>{const sel=row.querySelector('select');if(sel&&sel.value!=='— Standort —')kC2++;row.querySelectorAll('.nc-num').forEach(n=>{vC2+=parseInt(n.textContent)||0;});});
-    doc.text(`Standorte: ${kC2}   Vorfälle: ${vC2}   Zeilen: ${data.rows.length}   Status: ${data.status?'Regulär':'Vorfall aktiv'}`,margin+2,y+5.5);
-    y+=14;
-    // Signature lines
-    if(y<250){
-      doc.setDrawColor(180,180,180);doc.setLineWidth(0.4);
-      doc.line(margin,y+18,margin+80,y+18);doc.line(margin+100,y+18,margin+cW,y+18);
-      doc.setTextColor(140,140,140);doc.setFontSize(7.5);doc.setFont('helvetica','normal');
-      doc.text('Mitarbeiter / Unterschrift',margin,y+23);doc.text('Vorgesetzter / Unterschrift',margin+100,y+23);
-      const sig=localStorage.getItem('denis_signature');
-      if(sig){try{doc.addImage(sig,'PNG',margin,y-2,55,18);}catch(e){}}
+    doc.text(`Kunden: ${kC2}   Vorfälle: ${vC2}   Zeilen: ${data.rows.length}`,margin+2,y+5);
+    y+=12;
+    if(y<245){
+      doc.setDrawColor(200,200,200);doc.setLineWidth(0.5);
+      doc.line(margin,y+15,margin+85,y+15);doc.line(margin+95,y+15,margin+cW,y+15);
+      doc.setTextColor(120,120,120);doc.setFontSize(8);doc.setFont('helvetica','normal');
+      doc.text('Mitarbeiter',margin+2,y+19);doc.text('Vorgesetzter',margin+97,y+19);
     }
-    doc.setFontSize(7);doc.setTextColor(190,190,190);
-    doc.text(`Denis Protokoll · ${new Date().toLocaleString('de-DE')} · Vertraulich`,margin,290);
+    const sig=localStorage.getItem('denis_signature');
+    if(sig&&y<240){try{doc.addImage(sig,'PNG',margin,y-16,60,18);}catch(e){}}
+    doc.setFontSize(7);doc.setTextColor(180,180,180);
+    doc.text(`Denis Protokoll · Erstellt am ${new Date().toLocaleString('de-DE')}`,margin,292);
     doc.save(`denis-protokoll-${data.date||'export'}.pdf`);
     showToast('📄 PDF gespeichert!','success');playBeep('success');saveToArchive();
   }catch(e){showToast('❌ Fehler: '+e.message,'error');}
@@ -1367,7 +1342,56 @@ function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_lo
 function ciSaveLog(log){localStorage.setItem('denis_checkin_log',JSON.stringify(log));}
 function ciIn(){if(!ciSelected)return;const vorfall=document.getElementById('ciVorfallInput').value.trim();const log=ciGetLog();log.push({kunde:ciSelected,type:'in',time:nowHM(),ts:Date.now(),vorfall});ciSaveLog(log);ciRenderLog();ciShowToast('✅ '+ciSelected+' – Eingang');playBeep('success');addRow({k:ciSelected,b:nowHM(),e:'',n:vorfall?[{ev:'Freitext…',c:0,ft:vorfall}]:[]});saveData();document.getElementById('ciVorfallInput').value='';}
 function ciOut(){if(!ciSelected)return;const vorfall=document.getElementById('ciVorfallInput').value.trim();const log=ciGetLog();log.push({kunde:ciSelected,type:'out',time:nowHM(),ts:Date.now(),vorfall});ciSaveLog(log);ciRenderLog();ciShowToast('🚪 '+ciSelected+' – Ausgang');playBeep('success');document.querySelectorAll('.proto-row').forEach(row=>{const id=row.id.replace('row-','');const ksel=document.getElementById(`ksel-${id}`);const kcust=document.getElementById(`kcust-${id}`);const ed=document.getElementById(`ed-${id}`);const isC=kcust&&kcust.style.display!=='none';const k=isC?kcust.value:(ksel?ksel.value:'');if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){ed.value=nowHM();colorTime(ed);if(vorfall)addNotiz(parseInt(id),'Freitext…',0,vorfall);saveData();}});document.getElementById('ciVorfallInput').value='';}
-function ciRenderLog(){const list=document.getElementById('ciLogList');if(!list)return;const log=ciGetLog();if(!log.length){list.innerHTML='<div class="ci-log-empty">Noch keine Einträge heute</div>';return;}list.innerHTML='';[...log].reverse().forEach((entry,i)=>{const item=document.createElement('div');item.className='ci-log-item';item.innerHTML=`<div class="ci-log-dot ${entry.type}"></div><div class="ci-log-info"><div class="ci-log-kunde">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div><div class="ci-log-time">${entry.time} Uhr</div>${entry.vorfall?`<div class="ci-log-vorfall-text">⚠️ ${entry.vorfall}</div>`:''}</div><span class="ci-log-type ${entry.type}">${entry.type==='in'?'Eingang':'Ausgang'}</span><button class="ci-log-del" onclick="ciDeleteEntry(${log.length-1-i})">🗑</button>`;list.appendChild(item);});}
+function ciRenderLog(){
+  const list=document.getElementById('ciLogList');if(!list)return;
+  const log=ciGetLog();
+  if(!log.length){list.innerHTML='<div class="ci-log-empty">Noch keine Einträge heute</div>';return;}
+  list.innerHTML='';
+  [...log].reverse().forEach((entry,i)=>{
+    const realIdx=log.length-1-i;
+    const item=document.createElement('div');item.className='ci-log-item';item.id=`ci-item-${realIdx}`;
+    item.innerHTML=`
+      <div class="ci-log-dot ${entry.type}"></div>
+      <div class="ci-log-info">
+        <div class="ci-log-kunde">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div>
+        <div class="ci-log-time" id="ci-time-display-${realIdx}">${entry.time} Uhr</div>
+        <div id="ci-time-edit-${realIdx}" style="display:none;margin-top:4px;">
+          <input type="time" value="${entry.time}" id="ci-time-input-${realIdx}"
+            style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:white;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:8px;padding:3px 8px;outline:none;width:110px;">
+          <button onclick="ciSaveTime(${realIdx})"
+            style="margin-left:6px;background:#4cba6b;border:none;border-radius:7px;color:white;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">✅</button>
+          <button onclick="ciCancelEdit(${realIdx})"
+            style="margin-left:4px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:7px;color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✕</button>
+        </div>
+        ${entry.vorfall?`<div class="ci-log-vorfall-text">⚠️ ${entry.vorfall}</div>`:''}
+      </div>
+      <span class="ci-log-type ${entry.type}">${entry.type==='in'?'Eingang':'Ausgang'}</span>
+      <button onclick="ciStartEdit(${realIdx})" title="Zeit bearbeiten"
+        style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:7px;color:rgba(255,255,255,0.5);font-size:12px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;"
+        onmouseover="this.style.background='rgba(245,166,35,0.2)';this.style.borderColor='rgba(245,166,35,0.5)';this.style.color='#f5a623'"
+        onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">✏️</button>
+      <button class="ci-log-del" onclick="ciDeleteEntry(${realIdx})">🗑</button>`;
+    list.appendChild(item);
+  });
+}
+function ciStartEdit(idx){
+  document.getElementById(`ci-time-display-${idx}`).style.display='none';
+  document.getElementById(`ci-time-edit-${idx}`).style.display='flex';
+  document.getElementById(`ci-time-edit-${idx}`).style.alignItems='center';
+  document.getElementById(`ci-time-input-${idx}`).focus();
+}
+function ciCancelEdit(idx){
+  document.getElementById(`ci-time-display-${idx}`).style.display='block';
+  document.getElementById(`ci-time-edit-${idx}`).style.display='none';
+}
+function ciSaveTime(idx){
+  const newTime=document.getElementById(`ci-time-input-${idx}`).value;
+  if(!newTime){ciShowToast('⚠️ Bitte Zeit eingeben');return;}
+  const log=ciGetLog();
+  log[idx].time=newTime;
+  ciSaveLog(log);ciRenderLog();
+  ciShowToast('✅ Zeit gespeichert: '+newTime);playBeep('success');
+}
 function ciDeleteEntry(idx){const log=ciGetLog();log.splice(idx,1);ciSaveLog(log);ciRenderLog();ciShowToast('🗑 Gelöscht');}
 function ciClearLog(){if(!confirm('Alle löschen?'))return;localStorage.removeItem('denis_checkin_log');ciRenderLog();ciShowToast('🗑 Alle gelöscht');}
 function ciImport(){hideCheckin();showToast('✅ Einträge im Protokoll!','success');}
@@ -1376,7 +1400,7 @@ function ciShowToast(msg){const old=document.querySelector('.ci-toast');if(old)o
 document.addEventListener('keydown',e=>{
   if(document.getElementById('pinScreen').style.display!=='none')return;
   if(e.ctrlKey||e.metaKey){if(e.key==='s'){e.preventDefault();manualSave();}if(e.key==='Enter'){e.preventDefault();addRow();}}
-  if(e.key==='Escape'){closeReportModal();closeAI();closeSigModal();closeDashboard();closeArchive();document.getElementById('patrolPopup').style.display='none';}
+  if(e.key==='Escape'){closeReportModal();closeAI();closeSigModal();closeDashboard();closeArchive();}
 });
 </script>
 </body>
