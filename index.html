@@ -1367,6 +1367,7 @@ function ciRenderLog(){
   [...log].reverse().forEach((entry,i)=>{
     const realIdx=log.length-1-i;
     const item=document.createElement('div');item.className='ci-log-item';item.id=`ci-item-${realIdx}`;
+    const isIn=entry.type==='in';
     item.innerHTML=`
       <div class="ci-log-dot ${entry.type}"></div>
       <div class="ci-log-info">
@@ -1382,7 +1383,9 @@ function ciRenderLog(){
         </div>
         ${entry.vorfall?`<div class="ci-log-vorfall-text">⚠️ ${entry.vorfall}</div>`:''}
       </div>
-      <span class="ci-log-type ${entry.type}">${entry.type==='in'?'Eingang':'Ausgang'}</span>
+      <button onclick="ciToggleType(${realIdx})" title="${isIn?'Zu Ausgang wechseln':'Zu Eingang wechseln'}"
+        style="background:${isIn?'rgba(76,186,107,0.15)':'rgba(232,57,74,0.15)'};border:1.5px solid ${isIn?'rgba(76,186,107,0.4)':'rgba(232,57,74,0.4)'};border-radius:8px;color:${isIn?'#4cba6b':'var(--red)'};font-size:10px;font-weight:800;padding:3px 7px;cursor:pointer;flex-shrink:0;transition:all 0.15s;white-space:nowrap;">
+        ${isIn?'✅ Ein':'🚪 Aus'}</button>
       <button onclick="ciStartEdit(${realIdx})" title="Zeit bearbeiten"
         style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:7px;color:rgba(255,255,255,0.5);font-size:12px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;"
         onmouseover="this.style.background='rgba(245,166,35,0.2)';this.style.borderColor='rgba(245,166,35,0.5)';this.style.color='#f5a623'"
@@ -1390,6 +1393,13 @@ function ciRenderLog(){
       <button class="ci-log-del" onclick="ciDeleteEntry(${realIdx})">🗑</button>`;
     list.appendChild(item);
   });
+}
+function ciToggleType(idx){
+  const log=ciGetLog();
+  log[idx].type=log[idx].type==='in'?'out':'in';
+  ciSaveLog(log);ciRenderLog();
+  ciShowToast(log[idx].type==='in'?'✅ Geändert zu Eingang':'🚪 Geändert zu Ausgang');
+  playBeep('success');
 }
 function ciStartEdit(idx){
   document.getElementById(`ci-time-display-${idx}`).style.display='none';
