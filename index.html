@@ -406,6 +406,10 @@ body::before{display:none!important;}
     <button class="pin-btn zero" onclick="pinPress('0')">0</button>
     <button class="pin-btn del" onclick="pinDel()">⌫</button>
   </div>
+  <button id="faceIdBtn" onclick="tryFaceID()"
+    style="margin-top:24px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:16px;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:12px 28px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;">
+    <span style="font-size:22px;">🔐</span> Face ID / Touch ID
+  </button>
   <div class="pin-error" id="pinError">❌ PIN falsch — bitte erneut versuchen</div>
 </div>
  
@@ -685,7 +689,68 @@ body::before{display:none!important;}
 <script>
 'use strict';
  
-/* ===== PIN ===== */
+/* ===== FACE ID ===== */
+async function tryFaceID(){
+  const btn=document.getElementById('faceIdBtn');
+  if(btn){btn.innerHTML='<span style="font-size:22px;">⏳</span> Wird geprüft…';btn.disabled=true;}
+  try{
+    if(!window.PublicKeyCredential){throw new Error('not supported');}
+    const available=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(!available){throw new Error('not available');}
+    // Try biometric via WebAuthn
+    const cred=await navigator.credentials.get({
+      publicKey:{
+        challenge:new Uint8Array(32),
+        timeout:30000,
+        userVerification:'required',
+        rpId:window.location.hostname||'localhost'
+      }
+    });
+    if(cred){
+      unlockApp();
+    }
+  } catch(e){
+    // If no credential registered yet, try create
+    if(e.name==='NotAllowedError'){
+      if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
+      showPinError('Face ID abgebrochen — bitte PIN eingeben');
+    } else if(e.name==='InvalidStateError'||e.message==='not supported'||e.message==='not available'){
+      if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
+      showPinError('Face ID nicht verfügbar — bitte PIN eingeben');
+    } else {
+      // Try register biometric first time
+      try{
+        await navigator.credentials.create({
+          publicKey:{
+            challenge:new Uint8Array(32),
+            rp:{name:'Denis Protokoll',id:window.location.hostname||'localhost'},
+            user:{id:new Uint8Array(16),name:'denis',displayName:'Denis'},
+            pubKeyCredParams:[{type:'public-key',alg:-7}],
+            authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},
+            timeout:30000
+          }
+        });
+        unlockApp();
+      } catch(e2){
+        if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
+        showPinError('Face ID nicht verfügbar — bitte PIN eingeben');
+      }
+    }
+  }
+}
+function showPinError(msg){
+  const el=document.getElementById('pinError');
+  if(el){el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
+}
+function unlockApp(){
+  document.getElementById('pinScreen').style.display='none';
+  document.getElementById('appContent').style.display='block';
+  initApp();
+}
+// Auto-try Face ID on load
+window.addEventListener('load',()=>{
+  setTimeout(()=>tryFaceID(),500);
+});
 const CORRECT_PIN='1947';
 let pinEntry='';
 function pinPress(d){
@@ -703,9 +768,7 @@ function updatePinDots(){
 }
 function checkPin(){
   if(pinEntry===CORRECT_PIN){
-    document.getElementById('pinScreen').style.display='none';
-    document.getElementById('appContent').style.display='block';
-    initApp();
+    unlockApp();
   } else {
     for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.add('error');
     document.getElementById('pinError').classList.add('show');
@@ -723,6 +786,15 @@ document.addEventListener('keydown',e=>{
 /* ===== CONSTANTS ===== */
 const KUNDEN=['— Standort —','Galerie','Lüneburg Parkhaus','Fuhle','Parking Millerntorplatz','Parkhaus My Falkenried'];
 const KUNDE_ICONS={'Galerie':'🏛️','Lüneburg Parkhaus':'🅿️','Fuhle':'🏢','Parking Millerntorplatz':'🅿️','Parkhaus My Falkenried':'🚗'};
+ 
+// Kunde Photos - stored in localStorage
+function getKundePhoto(kunde){return localStorage.getItem('denis_kunde_photo_'+kunde)||null;}
+function setKundePhoto(kunde,b64){localStorage.setItem('denis_kunde_photo_'+kunde,b64);}
+function kundeImgOrIcon(kunde,size=40){
+  const photo=getKundePhoto(kunde);
+  if(photo) return `<img src="${photo}" style="width:${size}px;height:${size}px;border-radius:${size/4}px;object-fit:cover;border:2px solid rgba(255,255,255,0.3);margin-bottom:4px;">`;
+  return `<span style="font-size:${size*0.55}px;margin-bottom:4px;display:block;">${KUNDE_ICONS[kunde]||'📍'}</span>`;
+}
 const EREIGNISSE=[
   {g:true,label:'── Regulär ──'},
   {label:'Obdachlose nach draußen gebracht'},
@@ -870,7 +942,7 @@ function addRow(data){
         ${KUNDEN.map(x=>`<option${x===k?' selected':''}>${x}</option>`).join('')}
         <option value="__custom__">✏️ Eigener Name…</option>
       </select>
-      <div class="kunde-label" id="klabel-${id}" style="display:${isCustom?'none':'block'}">${k==='— Standort —'?'— Standort —':k}</div>
+      <div class="kunde-label" id="klabel-${id}" style="display:${isCustom?'none':'block'}">${k==='— Standort —'?'— Standort —':(getKundePhoto(k)?`<img src="${getKundePhoto(k)}" style="width:28px;height:28px;border-radius:6px;object-fit:cover;margin-right:4px;vertical-align:middle;">`:'')+'<span>'+k+'</span>'}</div>
       <input class="kunde-custom" id="kcust-${id}" type="text" value="${isCustom?k:''}" style="display:${isCustom?'block':'none'}" oninput="updateSummary();document.getElementById('klabel-${id}').textContent=this.value||'— Standort —'">
       <span class="kunde-back no-print" id="kback-${id}" style="display:${isCustom?'inline':'none'}" onclick="resetKunde(${id})">↩</span>
     </div>
@@ -1360,7 +1432,37 @@ function savePatrolLap(){const m=Math.floor(patrolSecs/60),s=patrolSecs%60;const
 let ciSelected=null,ciClockInterval=null;
 function showCheckin(){document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';ciRenderKunden();ciRenderLog();if(ciClockInterval)clearInterval(ciClockInterval);function tick(){const now=new Date();const ts=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];const ds=`${days[now.getDay()]}, ${p2(now.getDate())}.${p2(now.getMonth()+1)}.${now.getFullYear()}`;const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');if(c)c.textContent=ts;if(d)d.textContent=ds;}tick();ciClockInterval=setInterval(tick,1000);}
 function hideCheckin(){document.getElementById('checkinScreen').style.display='none';document.body.style.overflow='';if(ciClockInterval)clearInterval(ciClockInterval);}
-function ciRenderKunden(){const grid=document.getElementById('ciKundeGrid');if(!grid)return;grid.innerHTML='';KUNDEN.filter(k=>k!=='— Standort —').forEach(k=>{const btn=document.createElement('button');btn.className='ci-kunde-btn'+(ciSelected===k?' selected':'');btn.innerHTML=`<span class="ci-kunde-icon">${KUNDE_ICONS[k]||'📍'}</span>${k}`;btn.onclick=()=>ciSelectKunde(k);grid.appendChild(btn);});}
+function ciRenderKunden(){
+  const grid=document.getElementById('ciKundeGrid');if(!grid)return;
+  grid.innerHTML='';
+  KUNDEN.filter(k=>k!=='— Standort —').forEach(k=>{
+    const wrap=document.createElement('div');wrap.style.cssText='position:relative;';
+    const btn=document.createElement('button');
+    btn.className='ci-kunde-btn'+(ciSelected===k?' selected':'');
+    btn.innerHTML=`${kundeImgOrIcon(k,44)}${k}`;
+    btn.onclick=()=>ciSelectKunde(k);
+    // Camera button to upload photo
+    const cam=document.createElement('button');
+    cam.innerHTML='📷';
+    cam.title='Foto hinzufügen';
+    cam.style.cssText='position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.4);border:none;border-radius:6px;color:white;font-size:12px;width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;';
+    cam.onclick=e=>{e.stopPropagation();uploadKundePhoto(k);};
+    wrap.appendChild(btn);wrap.appendChild(cam);
+    grid.appendChild(wrap);
+  });
+}
+function uploadKundePhoto(kunde){
+  const input=document.createElement('input');input.type='file';input.accept='image/*';
+  input.onchange=()=>{
+    if(!input.files[0])return;
+    compressImg(input.files[0],200,200,0.8,b64=>{
+      setKundePhoto(kunde,b64);
+      ciRenderKunden();
+      ciShowToast('📷 Foto gespeichert für '+kunde);
+    });
+  };
+  input.click();
+}
 function ciSelectKunde(k){ciSelected=k;ciRenderKunden();document.getElementById('ciBtnIn').disabled=false;document.getElementById('ciBtnOut').disabled=false;document.getElementById('ciBtnInSub').textContent=k;document.getElementById('ciBtnOutSub').textContent=k;}
 function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return[];}}
 function ciSaveLog(log){localStorage.setItem('denis_checkin_log',JSON.stringify(log));}
