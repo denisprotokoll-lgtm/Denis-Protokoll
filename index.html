@@ -694,47 +694,59 @@ async function tryFaceID(){
   const btn=document.getElementById('faceIdBtn');
   if(btn){btn.innerHTML='<span style="font-size:22px;">⏳</span> Wird geprüft…';btn.disabled=true;}
   try{
+    // Use Web Authentication with conditional mediation for biometrics
     if(!window.PublicKeyCredential){throw new Error('not supported');}
     const available=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
     if(!available){throw new Error('not available');}
-    // Try biometric via WebAuthn
-    const cred=await navigator.credentials.get({
-      publicKey:{
-        challenge:new Uint8Array(32),
-        timeout:30000,
-        userVerification:'required',
-        rpId:window.location.hostname||'localhost'
+ 
+    // Check if we have a stored credential
+    const storedCred=localStorage.getItem('denis_faceid_cred');
+ 
+    if(!storedCred){
+      // First time - register biometric
+      const regResult=await navigator.credentials.create({
+        publicKey:{
+          challenge:crypto.getRandomValues(new Uint8Array(32)),
+          rp:{name:'Denis Protokoll'},
+          user:{
+            id:crypto.getRandomValues(new Uint8Array(16)),
+            name:'denis@protokoll',
+            displayName:'Denis'
+          },
+          pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+          authenticatorSelection:{
+            authenticatorAttachment:'platform',
+            userVerification:'required',
+            residentKey:'preferred'
+          },
+          timeout:60000
+        }
+      });
+      if(regResult){
+        // Save credential ID
+        const credId=btoa(String.fromCharCode(...new Uint8Array(regResult.rawId)));
+        localStorage.setItem('denis_faceid_cred',credId);
+        unlockApp();
       }
-    });
-    if(cred){
-      unlockApp();
+    } else {
+      // Already registered - authenticate
+      const credIdBytes=Uint8Array.from(atob(storedCred),c=>c.charCodeAt(0));
+      const authResult=await navigator.credentials.get({
+        publicKey:{
+          challenge:crypto.getRandomValues(new Uint8Array(32)),
+          allowCredentials:[{type:'public-key',id:credIdBytes}],
+          userVerification:'required',
+          timeout:60000
+        }
+      });
+      if(authResult) unlockApp();
     }
   } catch(e){
-    // If no credential registered yet, try create
+    if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
     if(e.name==='NotAllowedError'){
-      if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
-      showPinError('Face ID abgebrochen — bitte PIN eingeben');
-    } else if(e.name==='InvalidStateError'||e.message==='not supported'||e.message==='not available'){
-      if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
-      showPinError('Face ID nicht verfügbar — bitte PIN eingeben');
+      showPinError('Face ID abgebrochen — PIN eingeben');
     } else {
-      // Try register biometric first time
-      try{
-        await navigator.credentials.create({
-          publicKey:{
-            challenge:new Uint8Array(32),
-            rp:{name:'Denis Protokoll',id:window.location.hostname||'localhost'},
-            user:{id:new Uint8Array(16),name:'denis',displayName:'Denis'},
-            pubKeyCredParams:[{type:'public-key',alg:-7}],
-            authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},
-            timeout:30000
-          }
-        });
-        unlockApp();
-      } catch(e2){
-        if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
-        showPinError('Face ID nicht verfügbar — bitte PIN eingeben');
-      }
+      showPinError('Face ID nicht verfügbar — PIN eingeben');
     }
   }
 }
@@ -749,7 +761,7 @@ function unlockApp(){
 }
 // Auto-try Face ID on load
 window.addEventListener('load',()=>{
-  setTimeout(()=>tryFaceID(),500);
+  setTimeout(()=>tryFaceID(),600);
 });
 const CORRECT_PIN='1947';
 let pinEntry='';
