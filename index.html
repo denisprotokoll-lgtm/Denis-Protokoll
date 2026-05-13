@@ -594,7 +594,18 @@ body::before{display:none!important;}
     </div>
     <div class="ci-vorfall-wrap">
       <span class="ci-vorfall-label">⚠️ Vorfall (optional)</span>
-      <textarea class="ci-vorfall-input" id="ciVorfallInput" placeholder="Vorfall beschreiben…"></textarea>
+      <!-- Vorfall dropdown with counter -->
+      <div id="ciVorfallList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+        <select id="ciVorfallSelect"
+          style="flex:1;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;">
+          <option value="">— Ereignis wählen —</option>
+          ${EREIGNISSE.filter(e=>!e.g).map(e=>`<option value="${e.label}">${e.label}</option>`).join('')}
+        </select>
+        <button onclick="ciAddVorfall()"
+          style="background:rgba(76,186,107,0.2);border:1.5px solid rgba(76,186,107,0.4);border-radius:10px;color:#4cba6b;font-size:18px;width:40px;height:40px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;">＋</button>
+      </div>
+      <textarea class="ci-vorfall-input" id="ciVorfallInput" placeholder="Freitext Vorfall…" style="min-height:44px;"></textarea>
     </div>
     <div class="ci-log-box">
       <div class="ci-log-title">📋 Protokoll Heute</div>
@@ -627,14 +638,14 @@ body::before{display:none!important;}
     <div class="header-left">
       <div class="header-eyebrow">Tagesbericht · Vorfallprotokoll</div>
       <div class="header-title">Denis <span>Protokoll</span></div>
-      <div class="no-print" style="display:flex;align-items:center;gap:4px;margin-top:3px;">
-        <button onclick="changeProtoNr(-1)"
+      <div style="display:flex;align-items:center;gap:4px;margin-top:3px;">
+        <button class="no-print" onclick="changeProtoNr(-1)"
           style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
         <div style="font-size:8px;font-weight:800;color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:2px 6px;letter-spacing:0.5px;display:flex;align-items:center;gap:3px;">
           <span style="width:4px;height:4px;border-radius:50%;background:#4cba6b;display:inline-block;flex-shrink:0;"></span>
           <span id="protoNrText">—</span>
         </div>
-        <button onclick="changeProtoNr(1)"
+        <button class="no-print" onclick="changeProtoNr(1)"
           style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
       </div>
       <div class="live-clock no-print" id="liveClock">00:00:00</div>
@@ -1531,11 +1542,88 @@ function ciAddNewKunde(){
   ciShowToast('✅ '+name+' hinzugefügt');
   playBeep('success');
 }
+let ciVorfallItems=[];
+function ciAddVorfall(){
+  const sel=document.getElementById('ciVorfallSelect');
+  const val=sel.value;
+  if(!val){ciShowToast('⚠️ Bitte Ereignis wählen');return;}
+  const existing=ciVorfallItems.find(v=>v.ev===val);
+  if(existing){existing.c++;} else {ciVorfallItems.push({ev:val,c:1});}
+  sel.value='';
+  ciRenderVorfallList();
+  playBeep('success');
+}
+function ciRenderVorfallList(){
+  const list=document.getElementById('ciVorfallList');if(!list)return;
+  list.innerHTML='';
+  ciVorfallItems.forEach((item,i)=>{
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:6px 8px;animation:rowIn 0.18s ease;';
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+        <button onclick="ciChVorfall(${i},-1)" style="width:20px;height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:white;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+        <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:white;min-width:22px;text-align:center;">${item.c}</span>
+        <button onclick="ciChVorfall(${i},1)" style="width:20px;height:20px;border-radius:4px;border:1px solid rgba(76,186,107,0.4);background:rgba(76,186,107,0.15);color:#4cba6b;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+      </div>
+      <span style="flex:1;font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);line-height:1.3;">${item.ev}</span>
+      <button onclick="ciRemoveVorfall(${i})" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px;">🗑</button>`;
+    list.appendChild(div);
+  });
+}
+function ciChVorfall(idx,d){
+  ciVorfallItems[idx].c=Math.max(1,ciVorfallItems[idx].c+d);
+  ciRenderVorfallList();
+}
+function ciRemoveVorfall(idx){
+  ciVorfallItems.splice(idx,1);ciRenderVorfallList();
+}
+function ciGetVorfallText(){
+  const items=ciVorfallItems.map(v=>v.c>1?`[${v.c}x] ${v.ev}`:v.ev).join(', ');
+  const free=document.getElementById('ciVorfallInput')?.value.trim()||'';
+  return[items,free].filter(Boolean).join(' | ');
+}
+function ciResetVorfall(){
+  ciVorfallItems=[];ciRenderVorfallList();
+  const inp=document.getElementById('ciVorfallInput');if(inp)inp.value='';
+}
 function ciSelectKunde(k){ciSelected=k;ciRenderKunden();document.getElementById('ciBtnIn').disabled=false;document.getElementById('ciBtnOut').disabled=false;document.getElementById('ciBtnInSub').textContent=k;document.getElementById('ciBtnOutSub').textContent=k;}
 function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return[];}}
 function ciSaveLog(log){localStorage.setItem('denis_checkin_log',JSON.stringify(log));}
-function ciIn(){if(!ciSelected)return;const vorfall=document.getElementById('ciVorfallInput').value.trim();const log=ciGetLog();log.push({kunde:ciSelected,type:'in',time:nowHM(),ts:Date.now(),vorfall});ciSaveLog(log);ciRenderLog();ciShowToast('✅ '+ciSelected+' – Eingang');playBeep('success');addRow({k:ciSelected,b:nowHM(),e:'',n:vorfall?[{ev:'Freitext…',c:0,ft:vorfall}]:[]});saveData();document.getElementById('ciVorfallInput').value='';}
-function ciOut(){if(!ciSelected)return;const vorfall=document.getElementById('ciVorfallInput').value.trim();const log=ciGetLog();log.push({kunde:ciSelected,type:'out',time:nowHM(),ts:Date.now(),vorfall});ciSaveLog(log);ciRenderLog();ciShowToast('🚪 '+ciSelected+' – Ausgang');playBeep('success');document.querySelectorAll('.proto-row').forEach(row=>{const id=row.id.replace('row-','');const ksel=document.getElementById(`ksel-${id}`);const kcust=document.getElementById(`kcust-${id}`);const ed=document.getElementById(`ed-${id}`);const isC=kcust&&kcust.style.display!=='none';const k=isC?kcust.value:(ksel?ksel.value:'');if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){ed.value=nowHM();colorTime(ed);if(vorfall)addNotiz(parseInt(id),'Freitext…',0,vorfall);saveData();}});document.getElementById('ciVorfallInput').value='';}
+function ciIn(){
+  if(!ciSelected)return;
+  const vorfall=ciGetVorfallText();
+  const log=ciGetLog();
+  log.push({kunde:ciSelected,type:'in',time:nowHM(),ts:Date.now(),vorfall});
+  ciSaveLog(log);ciRenderLog();
+  ciShowToast('✅ '+ciSelected+' – Eingang');playBeep('success');
+  const notizen=ciVorfallItems.map(v=>({ev:v.ev,c:v.c,ft:''}));
+  const free=document.getElementById('ciVorfallInput')?.value.trim();
+  if(free) notizen.push({ev:'Freitext…',c:0,ft:free});
+  addRow({k:ciSelected,b:nowHM(),e:'',n:notizen});
+  saveData();ciResetVorfall();
+}
+function ciOut(){
+  if(!ciSelected)return;
+  const vorfall=ciGetVorfallText();
+  const log=ciGetLog();
+  log.push({kunde:ciSelected,type:'out',time:nowHM(),ts:Date.now(),vorfall});
+  ciSaveLog(log);ciRenderLog();
+  ciShowToast('🚪 '+ciSelected+' – Ausgang');playBeep('success');
+  document.querySelectorAll('.proto-row').forEach(row=>{
+    const id=row.id.replace('row-','');
+    const ksel=document.getElementById(`ksel-${id}`);const kcust=document.getElementById(`kcust-${id}`);
+    const ed=document.getElementById(`ed-${id}`);
+    const isC=kcust&&kcust.style.display!=='none';const k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){
+      ed.value=nowHM();colorTime(ed);
+      ciVorfallItems.forEach(v=>addNotiz(parseInt(id),v.ev,v.c,''));
+      const free=document.getElementById('ciVorfallInput')?.value.trim();
+      if(free)addNotiz(parseInt(id),'Freitext…',0,free);
+      saveData();
+    }
+  });
+  ciResetVorfall();
+}
 function ciRenderLog(){
   const list=document.getElementById('ciLogList');if(!list)return;
   const log=ciGetLog();
