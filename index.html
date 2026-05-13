@@ -387,13 +387,13 @@ body::before{display:none!important;}
 <div id="pinScreen">
   <div class="pin-logo">Denis <span>Protokoll</span></div>
   <div class="pin-sub">Sicherheitsdienst · Zugang</div>
-  <div class="pin-dots">
+  <div class="pin-dots" id="pinDots" style="display:none;">
     <div class="pin-dot" id="pd0"></div>
     <div class="pin-dot" id="pd1"></div>
     <div class="pin-dot" id="pd2"></div>
     <div class="pin-dot" id="pd3"></div>
   </div>
-  <div class="pin-grid">
+  <div class="pin-grid" id="pinGrid" style="display:none;">
     <button class="pin-btn" onclick="pinPress('1')">1</button>
     <button class="pin-btn" onclick="pinPress('2')">2</button>
     <button class="pin-btn" onclick="pinPress('3')">3</button>
@@ -627,12 +627,15 @@ body::before{display:none!important;}
     <div class="header-left">
       <div class="header-eyebrow">Tagesbericht · Vorfallprotokoll</div>
       <div class="header-title">Denis <span>Protokoll</span></div>
-      <div style="display:flex;align-items:center;gap:4px;margin-top:3px;">
+      <div class="no-print" style="display:flex;align-items:center;gap:4px;margin-top:3px;">
+        <button onclick="changeProtoNr(-1)"
+          style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
         <div style="font-size:8px;font-weight:800;color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:2px 6px;letter-spacing:0.5px;display:flex;align-items:center;gap:3px;">
           <span style="width:4px;height:4px;border-radius:50%;background:#4cba6b;display:inline-block;flex-shrink:0;"></span>
           <span id="protoNrText">—</span>
         </div>
-        <button class="proto-refresh no-print" onclick="refreshProtoNr()" title="Neue Nummer" style="width:18px;height:18px;font-size:9px;">↺</button>
+        <button onclick="changeProtoNr(1)"
+          style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
       </div>
       <div class="live-clock no-print" id="liveClock">00:00:00</div>
       <div class="shift-day-info no-print" id="shiftDayInfo">📅 Schicht: —</div>
@@ -726,46 +729,42 @@ window.addEventListener('beforeunload',()=>{
 });
  
 /* ===== FACE ID ===== */
+let faceIdAttempts=0;
+const MAX_FACEID_ATTEMPTS=3;
+ 
+function showPinFallback(){
+  document.getElementById('pinDots').style.display='flex';
+  document.getElementById('pinGrid').style.display='grid';
+  const btn=document.getElementById('faceIdBtn');
+  if(btn)btn.style.display='none';
+  showPinError('Bitte PIN eingeben');
+}
+ 
 async function tryFaceID(){
   const btn=document.getElementById('faceIdBtn');
   if(btn){btn.innerHTML='<span style="font-size:22px;">⏳</span> Wird geprüft…';btn.disabled=true;}
   try{
-    // Use Web Authentication with conditional mediation for biometrics
     if(!window.PublicKeyCredential){throw new Error('not supported');}
     const available=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
     if(!available){throw new Error('not available');}
- 
-    // Check if we have a stored credential
     const storedCred=localStorage.getItem('denis_faceid_cred');
- 
     if(!storedCred){
-      // First time - register biometric
       const regResult=await navigator.credentials.create({
         publicKey:{
           challenge:crypto.getRandomValues(new Uint8Array(32)),
           rp:{name:'Denis Protokoll'},
-          user:{
-            id:crypto.getRandomValues(new Uint8Array(16)),
-            name:'denis@protokoll',
-            displayName:'Denis'
-          },
+          user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'denis@protokoll',displayName:'Denis'},
           pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
-          authenticatorSelection:{
-            authenticatorAttachment:'platform',
-            userVerification:'required',
-            residentKey:'preferred'
-          },
+          authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'preferred'},
           timeout:60000
         }
       });
       if(regResult){
-        // Save credential ID
         const credId=btoa(String.fromCharCode(...new Uint8Array(regResult.rawId)));
         localStorage.setItem('denis_faceid_cred',credId);
-        unlockApp();
+        faceIdAttempts=0;unlockApp();
       }
     } else {
-      // Already registered - authenticate
       const credIdBytes=Uint8Array.from(atob(storedCred),c=>c.charCodeAt(0));
       const authResult=await navigator.credentials.get({
         publicKey:{
@@ -775,14 +774,16 @@ async function tryFaceID(){
           timeout:60000
         }
       });
-      if(authResult) unlockApp();
+      if(authResult){faceIdAttempts=0;unlockApp();}
     }
   } catch(e){
+    faceIdAttempts++;
     if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
-    if(e.name==='NotAllowedError'){
-      showPinError('Face ID abgebrochen — PIN eingeben');
+    if(faceIdAttempts>=MAX_FACEID_ATTEMPTS){
+      showPinFallback();
     } else {
-      showPinError('Face ID nicht verfügbar — PIN eingeben');
+      const rem=MAX_FACEID_ATTEMPTS-faceIdAttempts;
+      showPinError(`Face ID fehlgeschlagen — noch ${rem} Versuch${rem>1?'e':''}`);
     }
   }
 }
@@ -795,10 +796,7 @@ function unlockApp(){
   document.getElementById('appContent').style.display='block';
   initApp();
 }
-// Auto-try Face ID on load
-window.addEventListener('load',()=>{
-  setTimeout(()=>tryFaceID(),600);
-});
+window.addEventListener('load',()=>{setTimeout(()=>tryFaceID(),600);});
 const CORRECT_PIN='1947';
 let pinEntry='';
 function pinPress(d){
@@ -916,6 +914,16 @@ function generateProtoNr(increment=true){
   if(stored===dk){counter=parseInt(localStorage.getItem('denis_proto_seq')||'0');if(increment)counter++;}
   if(increment||stored!==dk){localStorage.setItem('denis_proto_date',dk);localStorage.setItem('denis_proto_seq',counter);}
   return`${p2(d.getDate())}.${p2(d.getMonth()+1)} – NR-${String(counter).padStart(3,'0')}`;
+}
+function changeProtoNr(dir){
+  const d=getShiftDate();
+  const dk=`${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}`;
+  let counter=parseInt(localStorage.getItem('denis_proto_seq')||'1');
+  counter=Math.max(1,counter+dir);
+  localStorage.setItem('denis_proto_date',dk);
+  localStorage.setItem('denis_proto_seq',counter);
+  const nr=`${p2(d.getDate())}.${p2(d.getMonth()+1)} – NR-${String(counter).padStart(3,'0')}`;
+  applyProtoNr(nr);saveData();
 }
 function applyProtoNr(nr){
   currentProtoNr=nr;
