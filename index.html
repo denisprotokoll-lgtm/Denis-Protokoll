@@ -627,6 +627,17 @@ body::before{display:none!important;}
     <div class="header-left">
       <div class="header-eyebrow">Tagesbericht · Vorfallprotokoll</div>
       <div class="header-title">Denis <span>Protokoll</span></div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:3px;">
+        <div style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 7px;letter-spacing:0.5px;display:flex;align-items:center;gap:4px;">
+          <span style="width:5px;height:5px;border-radius:50%;background:#4cba6b;display:inline-block;"></span>
+          <span id="protoNrText">—</span>
+        </div>
+        <input id="protoNrManual" type="text" placeholder="manuell"
+          style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:2px 6px;outline:none;width:65px;"
+          oninput="currentProtoNr=this.value;saveData()"
+          placeholder="manuell…">
+        <button class="proto-refresh no-print" onclick="refreshProtoNr()" title="Neue Nummer" style="width:20px;height:20px;font-size:10px;">↺</button>
+      </div>
       <div class="live-clock no-print" id="liveClock">00:00:00</div>
       <div class="shift-day-info no-print" id="shiftDayInfo">📅 Schicht: —</div>
       <div class="progress-wrap no-print">
@@ -908,9 +919,13 @@ function generateProtoNr(increment=true){
   let counter=1;
   if(stored===dk){counter=parseInt(localStorage.getItem('denis_proto_seq')||'0');if(increment)counter++;}
   if(increment||stored!==dk){localStorage.setItem('denis_proto_date',dk);localStorage.setItem('denis_proto_seq',counter);}
-  return`${deDate(d)} – NR-${String(counter).padStart(3,'0')}`;
+  return`${p2(d.getDate())}.${p2(d.getMonth()+1)} – NR-${String(counter).padStart(3,'0')}`;
 }
-function applyProtoNr(nr){currentProtoNr=nr;const el=document.getElementById('protoNrText');if(el)el.textContent=nr;}
+function applyProtoNr(nr){
+  currentProtoNr=nr;
+  const el=document.getElementById('protoNrText');if(el)el.textContent=nr;
+  const manual=document.getElementById('protoNrManual');if(manual)manual.value='';
+}
 function refreshProtoNr(){applyProtoNr(generateProtoNr(true));showToast('🔄 Neue Nr.','info');saveData();}
  
 let _audioCtx=null;
