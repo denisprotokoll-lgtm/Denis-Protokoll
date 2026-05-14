@@ -108,8 +108,6 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .meta-field-input{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:white;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.18);border-radius:7px;padding:4px 8px;outline:none;width:120px;}
 .meta-field-input::placeholder{color:rgba(255,255,255,0.3);}
 .meta-field-input:focus{border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15);}
-.proto-refresh{background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);border-radius:6px;color:white;font-size:12px;width:26px;height:26px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
-.proto-refresh:hover{background:rgba(255,255,255,0.25);transform:rotate(180deg);}
 .proto-nr-display{font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.25);border-radius:8px;padding:4px 10px;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;}
 .proto-nr-dot{width:6px;height:6px;border-radius:50%;background:#4cba6b;}
 .day-select{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:white;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;padding:4px 8px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;}
@@ -144,9 +142,9 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .cell-notiz{align-items:flex-start;flex-direction:column;gap:4px;padding:6px 8px;height:auto;}
 .cell-kunde{flex-direction:column;gap:2px;padding:4px 6px;justify-content:center;overflow:visible;position:relative;}
 .cell-kunde select{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:2;}
-.cell-kunde .kunde-label{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;font-style:italic;color:var(--text);text-align:center;word-break:break-word;white-space:normal;line-height:1.3;width:100%;pointer-events:none;}.cell-time{flex-direction:column;gap:3px;padding:4px;}
+.cell-kunde .kunde-label{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;font-style:italic;color:var(--text);text-align:center;word-break:break-word;white-space:normal;line-height:1.3;width:100%;pointer-events:none;}
+.cell-time{flex-direction:column;gap:3px;padding:4px;}
 .row-num{font-size:8px;font-weight:700;color:var(--muted);letter-spacing:1px;align-self:flex-start;}
-.cell-kunde-select-hidden{display:none;}
 .time-input-direct{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text);border:1.5px solid var(--border);border-radius:7px;padding:3px 4px;background:#fafafa;outline:none;width:100%;text-align:center;cursor:pointer;transition:border-color 0.15s;}
 .time-input-direct:focus{border-color:var(--red);background:white;}
 .time-input-direct.t-night{color:#7c6fcd;border-color:#c4b8ff;background:#f5f3ff;}
@@ -194,7 +192,6 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .fab:hover{transform:scale(1.12);}
 .fab-ai{bottom:54px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;animation:aipulse 2s infinite;}
 .fab-ci{bottom:106px;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;}
-.fab-patrol{bottom:158px;background:linear-gradient(135deg,#f5a623,#e08020);color:white;}
 .fab-left{left:12px;right:auto;bottom:54px;background:#3d5268;color:white;}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9995;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
 .ai-modal{background:var(--card);border-radius:24px 24px 0 0;padding:20px 18px 32px;width:100%;max-width:540px;box-shadow:0 -8px 40px rgba(0,0,0,0.25);animation:slideUp 0.3s ease;max-height:90vh;overflow-y:auto;}
@@ -284,18 +281,6 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .dash-time-sub{font-size:10px;color:#4cba6b;font-weight:700;}
 .dash-gen-btn{width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;}
 .dash-gen-btn:hover{transform:translateY(-1px);}
-.patrol-popup{position:fixed;bottom:118px;right:64px;z-index:9993;background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.2);border:1.5px solid var(--border);width:204px;animation:rowIn 0.2s ease;}
-.patrol-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.patrol-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--text);}
-.patrol-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;}
-.patrol-display{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:#3d5268;text-align:center;margin:8px 0;letter-spacing:2px;}
-.patrol-btns{display:flex;gap:6px;}
-.patrol-start{flex:1;padding:8px;border-radius:8px;border:none;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
-.patrol-reset-btn{padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:11px;cursor:pointer;color:#888;}
-.patrol-laps{margin-top:8px;display:flex;flex-direction:column;gap:3px;max-height:80px;overflow-y:auto;}
-.patrol-lap{font-size:9px;font-weight:700;color:var(--muted);padding:2px 6px;background:#f0f1f4;border-radius:5px;}
-.patrol-lap-btn{width:100%;margin-top:8px;padding:6px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;font-size:10px;font-weight:700;color:var(--muted);cursor:pointer;transition:all 0.15s;}
-.patrol-lap-btn:hover{border-color:var(--orange);color:var(--orange);}
 .archive-overlay-bg{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:9989;}
 .archive-panel{position:fixed;left:0;top:0;bottom:0;width:300px;background:var(--card);box-shadow:4px 0 24px rgba(0,0,0,0.18);z-index:9990;transform:translateX(-100%);transition:transform 0.3s ease;display:flex;flex-direction:column;}
 .archive-panel.open{transform:translateX(0);}
@@ -383,17 +368,17 @@ body::before{display:none!important;}
 </head>
 <body>
  
-<!-- PIN SCREEN -->
+<!-- PIN SCREEN — dots + grid SICHTBAR von Anfang an -->
 <div id="pinScreen">
   <div class="pin-logo">Denis <span>Protokoll</span></div>
   <div class="pin-sub">Sicherheitsdienst · Zugang</div>
-  <div class="pin-dots" id="pinDots" style="display:none;">
+  <div class="pin-dots" id="pinDots">
     <div class="pin-dot" id="pd0"></div>
     <div class="pin-dot" id="pd1"></div>
     <div class="pin-dot" id="pd2"></div>
     <div class="pin-dot" id="pd3"></div>
   </div>
-  <div class="pin-grid" id="pinGrid" style="display:none;">
+  <div class="pin-grid" id="pinGrid">
     <button class="pin-btn" onclick="pinPress('1')">1</button>
     <button class="pin-btn" onclick="pinPress('2')">2</button>
     <button class="pin-btn" onclick="pinPress('3')">3</button>
@@ -406,9 +391,10 @@ body::before{display:none!important;}
     <button class="pin-btn zero" onclick="pinPress('0')">0</button>
     <button class="pin-btn del" onclick="pinDel()">⌫</button>
   </div>
+  <!-- Face ID als optionaler Zusatz, nicht als Hauptweg -->
   <button id="faceIdBtn" onclick="tryFaceID()"
-    style="margin-top:24px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:16px;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:12px 28px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;">
-    <span style="font-size:22px;">🔐</span> Face ID / Touch ID
+    style="margin-top:20px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:16px;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;padding:10px 24px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;opacity:0.7;">
+    <span style="font-size:20px;">🔐</span> Face ID / Touch ID
   </button>
   <div class="pin-error" id="pinError">❌ PIN falsch — bitte erneut versuchen</div>
 </div>
@@ -475,8 +461,6 @@ body::before{display:none!important;}
     <div class="dash-body" id="dashBody">Lädt…</div>
   </div>
 </div>
- 
- 
  
 <div class="modal-overlay" id="aiOverlay" style="display:none" onclick="maybeCloseAI(event)">
   <div class="ai-modal" onclick="event.stopPropagation()">
@@ -572,7 +556,6 @@ body::before{display:none!important;}
   <div class="ci-body">
     <div class="ci-section-label">📍 Kunde auswählen</div>
     <div class="ci-kunde-grid" id="ciKundeGrid"></div>
-    <!-- New Kunde Field -->
     <div id="ciNewKundeWrap" style="margin-bottom:16px;">
       <div style="display:flex;gap:8px;align-items:center;">
         <input id="ciNewKundeInput" type="text" placeholder="＋ Neuer Kunde…"
@@ -593,8 +576,26 @@ body::before{display:none!important;}
       </button>
     </div>
     <div class="ci-vorfall-wrap">
-      <span class="ci-vorfall-label">⚠️ Vorfall (optional)</span>
-      <textarea class="ci-vorfall-input" id="ciVorfallInput" placeholder="Vorfall beschreiben…"></textarea>
+      <span class="ci-vorfall-label">⚠️ Vorfall hinzufügen</span>
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px;">① Ereignis</div>
+        <select id="ciVorfallSelect" style="width:100%;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;margin-bottom:8px;">
+          <option value="">— Ereignis wählen —</option>
+        </select>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px;">② Kunde</div>
+        <select id="ciVorfallKundeSelect" onchange="ciUpdateVisitSelect()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;margin-bottom:8px;">
+          <option value="">— Kunde wählen —</option>
+        </select>
+        <div id="ciVisitSelectWrap" style="display:none;margin-bottom:8px;">
+          <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,179,0,0.7);margin-bottom:5px;">③ Welcher Besuch?</div>
+          <select id="ciVisitSelect" style="width:100%;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:white;background:rgba(255,179,0,0.12);border:1.5px solid rgba(255,179,0,0.35);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;">
+          </select>
+        </div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px;">④ Freitext (optional)</div>
+        <textarea class="ci-vorfall-input" id="ciVorfallInput" placeholder="Zusätzliche Notiz…" style="min-height:36px;margin-bottom:8px;"></textarea>
+        <button onclick="ciAddVorfall()" style="width:100%;background:rgba(76,186,107,0.2);border:1.5px solid rgba(76,186,107,0.4);border-radius:10px;color:#4cba6b;font-size:13px;font-weight:800;padding:9px;cursor:pointer;">＋ Vorfall hinzufügen</button>
+      </div>
+      <div id="ciVorfallList" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
     <div class="ci-log-box">
       <div class="ci-log-title">📋 Protokoll Heute</div>
@@ -603,8 +604,8 @@ body::before{display:none!important;}
         <button class="ci-log-act" onclick="ciClearLog()">🗑 Alle löschen</button>
       </div>
     </div>
-    <button class="ci-import-btn" onclick="ciImport()">📥 Einträge → Protokoll übertragen</button>
-    <button class="ci-back-btn" onclick="hideCheckin()">← Zurück zum Protokoll</button>
+    <button class="ci-import-btn" onclick="ciFinish()" style="background:linear-gradient(135deg,#4cba6b,#2e8b47);box-shadow:0 4px 16px rgba(76,186,107,0.3);">✅ Schicht fertig – Schließen</button>
+    <button class="ci-back-btn" onclick="hideCheckin()">← Zurück ohne Schließen</button>
   </div>
 </div>
  
@@ -627,14 +628,14 @@ body::before{display:none!important;}
     <div class="header-left">
       <div class="header-eyebrow">Tagesbericht · Vorfallprotokoll</div>
       <div class="header-title">Denis <span>Protokoll</span></div>
-      <div class="no-print" style="display:flex;align-items:center;gap:4px;margin-top:3px;">
-        <button onclick="changeProtoNr(-1)"
+      <div style="display:flex;align-items:center;gap:4px;margin-top:3px;">
+        <button class="no-print" onclick="changeProtoNr(-1)"
           style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
         <div style="font-size:8px;font-weight:800;color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:2px 6px;letter-spacing:0.5px;display:flex;align-items:center;gap:3px;">
           <span style="width:4px;height:4px;border-radius:50%;background:#4cba6b;display:inline-block;flex-shrink:0;"></span>
           <span id="protoNrText">—</span>
         </div>
-        <button onclick="changeProtoNr(1)"
+        <button class="no-print" onclick="changeProtoNr(1)"
           style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
       </div>
       <div class="live-clock no-print" id="liveClock">00:00:00</div>
@@ -647,7 +648,6 @@ body::before{display:none!important;}
     </div>
     <div class="header-right">
       <div class="header-meta-fields">
- 
         <div class="meta-field">
           <span class="meta-field-label">Mitarbeiter</span>
           <input class="meta-field-input" type="text" id="mitarbeiterName" placeholder="Vorname Nachname">
@@ -692,7 +692,6 @@ body::before{display:none!important;}
  
 <button class="fab fab-ai no-print" onclick="openAI()">🤖</button>
 <button class="fab fab-ci no-print" onclick="showCheckin()">⏱</button>
- 
 <button class="fab fab-left no-print" onclick="openArchive()">📁</button>
  
 <div class="autosave-bar no-print" id="autosaveBar">
@@ -712,46 +711,63 @@ body::before{display:none!important;}
 /* ===== WAKE LOCK ===== */
 let wakeLock=null;
 async function requestWakeLock(){
-  try{
-    if('wakeLock' in navigator){
-      wakeLock=await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release',()=>{wakeLock=null;});
-    }
-  } catch(e){}
+  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}}catch(e){}
 }
-document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='visible'&&wakeLock===null){
-    await requestWakeLock();
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&wakeLock===null)await requestWakeLock();});
+window.addEventListener('beforeunload',()=>{if(wakeLock)wakeLock.release();});
+ 
+/* ===== PIN (PRIMÄR) + FACE ID (OPTIONAL) ===== */
+// FIX: PIN ist immer sichtbar und primärer Weg.
+// Face ID ist nur ein optionaler Shortcut.
+ 
+const CORRECT_PIN='1947';
+let pinEntry='';
+ 
+// Beim Laden: PIN direkt anzeigen, Face ID im Hintergrund versuchen
+window.addEventListener('load',()=>{
+  // Versuche Face ID nach kurzer Pause — aber PIN bleibt sichtbar
+  setTimeout(()=>{
+    tryFaceIDSilent();
+  }, 400);
+});
+ 
+// Face ID still im Hintergrund — bei Fehler passiert nichts (PIN bleibt)
+async function tryFaceIDSilent(){
+  try{
+    if(!window.PublicKeyCredential) return;
+    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(!available) return;
+    const storedCred = localStorage.getItem('denis_faceid_cred');
+    if(!storedCred) return; // Kein Credential gespeichert → nicht stören
+    const credIdBytes = Uint8Array.from(atob(storedCred), c=>c.charCodeAt(0));
+    const authResult = await navigator.credentials.get({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials:[{type:'public-key', id:credIdBytes}],
+        userVerification:'required',
+        timeout:10000
+      }
+    });
+    if(authResult) unlockApp();
+  } catch(e){
+    // Still — face id failed silently, user uses PIN
   }
-});
-window.addEventListener('beforeunload',()=>{
-  if(wakeLock) wakeLock.release();
-});
- 
-/* ===== FACE ID ===== */
-let faceIdAttempts=0;
-const MAX_FACEID_ATTEMPTS=3;
- 
-function showPinFallback(){
-  document.getElementById('pinDots').style.display='flex';
-  document.getElementById('pinGrid').style.display='grid';
-  const btn=document.getElementById('faceIdBtn');
-  if(btn)btn.style.display='none';
-  showPinError('Bitte PIN eingeben');
 }
  
+// Face ID Button (explizit vom User gedrückt)
 async function tryFaceID(){
-  const btn=document.getElementById('faceIdBtn');
-  if(btn){btn.innerHTML='<span style="font-size:22px;">⏳</span> Wird geprüft…';btn.disabled=true;}
+  const btn = document.getElementById('faceIdBtn');
+  if(btn){btn.innerHTML='<span style="font-size:20px;">⏳</span> Prüfe…';btn.disabled=true;}
   try{
-    if(!window.PublicKeyCredential){throw new Error('not supported');}
-    const available=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    if(!available){throw new Error('not available');}
-    const storedCred=localStorage.getItem('denis_faceid_cred');
+    if(!window.PublicKeyCredential) throw new Error('not supported');
+    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(!available) throw new Error('not available');
+    const storedCred = localStorage.getItem('denis_faceid_cred');
     if(!storedCred){
-      const regResult=await navigator.credentials.create({
+      // Erstmalig registrieren
+      const regResult = await navigator.credentials.create({
         publicKey:{
-          challenge:crypto.getRandomValues(new Uint8Array(32)),
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
           rp:{name:'Denis Protokoll'},
           user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'denis@protokoll',displayName:'Denis'},
           pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
@@ -760,33 +776,29 @@ async function tryFaceID(){
         }
       });
       if(regResult){
-        const credId=btoa(String.fromCharCode(...new Uint8Array(regResult.rawId)));
-        localStorage.setItem('denis_faceid_cred',credId);
-        faceIdAttempts=0;unlockApp();
+        const credId = btoa(String.fromCharCode(...new Uint8Array(regResult.rawId)));
+        localStorage.setItem('denis_faceid_cred', credId);
+        unlockApp();
+        return;
       }
     } else {
-      const credIdBytes=Uint8Array.from(atob(storedCred),c=>c.charCodeAt(0));
-      const authResult=await navigator.credentials.get({
+      const credIdBytes = Uint8Array.from(atob(storedCred), c=>c.charCodeAt(0));
+      const authResult = await navigator.credentials.get({
         publicKey:{
-          challenge:crypto.getRandomValues(new Uint8Array(32)),
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
           allowCredentials:[{type:'public-key',id:credIdBytes}],
           userVerification:'required',
           timeout:60000
         }
       });
-      if(authResult){faceIdAttempts=0;unlockApp();}
+      if(authResult){unlockApp();return;}
     }
   } catch(e){
-    faceIdAttempts++;
-    if(btn){btn.innerHTML='<span style="font-size:22px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
-    if(faceIdAttempts>=MAX_FACEID_ATTEMPTS){
-      showPinFallback();
-    } else {
-      const rem=MAX_FACEID_ATTEMPTS-faceIdAttempts;
-      showPinError(`Face ID fehlgeschlagen — noch ${rem} Versuch${rem>1?'e':''}`);
-    }
+    showPinError('Face ID fehlgeschlagen — bitte PIN nutzen');
   }
+  if(btn){btn.innerHTML='<span style="font-size:20px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
 }
+ 
 function showPinError(msg){
   const el=document.getElementById('pinError');
   if(el){el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
@@ -796,9 +808,6 @@ function unlockApp(){
   document.getElementById('appContent').style.display='block';
   initApp();
 }
-window.addEventListener('load',()=>{setTimeout(()=>tryFaceID(),600);});
-const CORRECT_PIN='1947';
-let pinEntry='';
 function pinPress(d){
   if(pinEntry.length>=4)return;
   pinEntry+=d;updatePinDots();
@@ -817,7 +826,7 @@ function checkPin(){
     unlockApp();
   } else {
     for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.add('error');
-    document.getElementById('pinError').classList.add('show');
+    showPinError('❌ PIN falsch — bitte erneut versuchen');
     document.getElementById('pinScreen').style.animation='shake 0.4s ease';
     setTimeout(()=>{pinEntry='';updatePinDots();document.getElementById('pinScreen').style.animation='';},500);
   }
@@ -861,8 +870,41 @@ const EREIGNISSE=[
   {label:'Fahrzeug unberechtigt geparkt – Abschlepper verständigt'},
   {label:'Freitext…'},
 ];
+const CI_EREIGNISSE=[
+  {g:true,label:'👤 Personen'},
+  {label:'Unbefugte Person entfernt'},
+  {label:'Obdachlose Person hinausbegleitet'},
+  {label:'Ruhestörung – Personen verwiesen'},
+  {label:'Streit geschlichtet'},
+  {g:true,label:'🚨 Polizei / Notfall'},
+  {label:'Polizei informiert'},
+  {label:'Polizei eingetroffen'},
+  {label:'Notruf / Notfall'},
+  {g:true,label:'🚗 Fahrzeuge / Parkplatz'},
+  {label:'Fahrzeug ohne Berechtigung festgestellt'},
+  {label:'Parkverstoß dokumentiert'},
+  {label:'Fahrzeugschaden festgestellt'},
+  {g:true,label:'🔨 Schäden / Vandalismus'},
+  {label:'Sachschaden festgestellt'},
+  {label:'Vandalismus gemeldet'},
+  {label:'Bereich abgesichert'},
+  {g:true,label:'⚙️ Technik / Schrankenstörung'},
+  {label:'Technischer Defekt an der Einfahrtschranke gemeldet'},
+  {label:'Störung an der Einfahrtschranke festgestellt'},
+  {label:'Technischer Defekt an der Ausfahrtschranke gemeldet'},
+  {label:'Störung an der Ausfahrtschranke festgestellt'},
+  {label:'Dauersignal an der Einfahrtschranke festgestellt'},
+  {label:'Schrankenstörung (Ein- und Ausfahrt) gemeldet'},
+  {label:'Defekte Beleuchtung festgestellt'},
+  {label:'Sicherungsausfall festgestellt'},
+  {g:true,label:'✅ Kontrolle / Allgemein'},
+  {label:'Kontrollgang durchgeführt'},
+  {label:'Parkplatz kontrolliert'},
+  {label:'Eingang kontrolliert'},
+  {label:'Objekt geschlossen'},
+  {label:'Keine besonderen Vorkommnisse festgestellt'},
+];
 const DANGER_EVENTS=['Polizei eingetroffen – Obdachlose Person entfernt 🚨','Polizei eingetroffen – Personalien aufgenommen 🚨','Vandalismus gemeldet – Polizei informiert 🚨','Notruf / Notfall gemeldet 🚨','Rettungsdienst angefordert 🚑','Diebstahl gemeldet – Polizei verständigt 🚨','Streit geschlichtet','Ruhestörung – Personen verwiesen'];
-const RED_EVENTS=DANGER_EVENTS.slice(0,6);
 const ORANGE_EVENTS=['Sicherungsausfall ⚡','Dauersignal an Schranke ⚠️','Ruhestörung – Personen verwiesen','Streit geschlichtet','Fahrzeug unberechtigt geparkt – Abschlepper verständigt'];
 const BLUE_EVENTS=['Technischer Defekt gemeldet 🔧','Defekte Beleuchtung 💡','Schrankenstörung 🚧'];
  
@@ -898,12 +940,8 @@ function initApp(){
   const s=localStorage.getItem('denis_signature');if(s)setTimeout(()=>updateSigChip(s),600);
   document.addEventListener('input',()=>scheduleSave());
   document.addEventListener('change',()=>scheduleSave());
-  // Wake Lock - keep screen on
   requestWakeLock();
-  // Auto-open checkin if URL has #checkin
-  if(window.location.hash==='#checkin'){
-    setTimeout(()=>showCheckin(),300);
-  }
+  if(window.location.hash==='#checkin'){setTimeout(()=>showCheckin(),300);}
 }
  
 function generateProtoNr(increment=true){
@@ -928,9 +966,7 @@ function changeProtoNr(dir){
 function applyProtoNr(nr){
   currentProtoNr=nr;
   const el=document.getElementById('protoNrText');if(el)el.textContent=nr;
-  const manual=document.getElementById('protoNrManual');if(manual)manual.value='';
 }
-function refreshProtoNr(){applyProtoNr(generateProtoNr(true));showToast('🔄 Neue Nr.','info');saveData();}
  
 let _audioCtx=null;
 function getACtx(){if(!_audioCtx)try{_audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _audioCtx;}
@@ -963,7 +999,7 @@ function toggleStatus(){
 function buildEreignisOpts(selected=''){
   return'<option value="">— Ereignis —</option>'+EREIGNISSE.map(g=>g.g?`<option disabled style="color:#aaa;font-size:10px;">${g.label}</option>`:`<option${g.label===selected?' selected':''}>${g.label}</option>`).join('');
 }
-function eventColor(val){if(RED_EVENTS.includes(val))return'red';if(ORANGE_EVENTS.includes(val))return'orange';if(BLUE_EVENTS.includes(val))return'blue';return'none';}
+function eventColor(val){if(DANGER_EVENTS.includes(val))return'red';if(ORANGE_EVENTS.includes(val))return'orange';if(BLUE_EVENTS.includes(val))return'blue';return'none';}
 function styleNotizSelect(sel){
   const c=eventColor(sel.value);
   sel.style.background=c==='red'?'#ffecec':c==='orange'?'#fff8e6':c==='blue'?'#e8f4ff':'';
@@ -1473,17 +1509,8 @@ function openDashboard(){
 }
 function closeDashboard(){document.getElementById('dashOverlay').style.display='none';}
  
-let patrolTimer=null,patrolSecs=0,patrolRunning=false;
-function togglePatrolPopup(){const pp=document.getElementById('patrolPopup');pp.style.display=pp.style.display==='none'||!pp.style.display?'block':'none';}
-function togglePatrol(){
-  patrolRunning=!patrolRunning;document.getElementById('patrolStartBtn').textContent=patrolRunning?'⏸ Stop':'▶ Start';
-  if(patrolRunning){patrolTimer=setInterval(()=>{patrolSecs++;const m=Math.floor(patrolSecs/60),s=patrolSecs%60;const d=document.getElementById('patrolDisplay');if(d)d.textContent=`${p2(m)}:${p2(s)}`;},1000);}else{clearInterval(patrolTimer);}
-}
-function resetPatrol(){clearInterval(patrolTimer);patrolRunning=false;patrolSecs=0;document.getElementById('patrolDisplay').textContent='00:00';document.getElementById('patrolStartBtn').textContent='▶ Start';document.getElementById('patrolLaps').innerHTML='';}
-function savePatrolLap(){const m=Math.floor(patrolSecs/60),s=patrolSecs%60;const time=`${p2(m)}:${p2(s)}`;const laps=document.getElementById('patrolLaps');const div=document.createElement('div');div.className='patrol-lap';div.textContent=`🕐 ${nowHM()} · ${time}`;laps.appendChild(div);showToast(`📌 Runde: ${time}`,'success');}
- 
 let ciSelected=null,ciClockInterval=null;
-function showCheckin(){document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';ciRenderKunden();ciRenderLog();if(ciClockInterval)clearInterval(ciClockInterval);function tick(){const now=new Date();const ts=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];const ds=`${days[now.getDay()]}, ${p2(now.getDate())}.${p2(now.getMonth()+1)}.${now.getFullYear()}`;const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');if(c)c.textContent=ts;if(d)d.textContent=ds;}tick();ciClockInterval=setInterval(tick,1000);}
+function showCheckin(){document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';ciPopulateSelect();ciPopulateKundeSelect();ciRenderKunden();ciRenderLog();if(ciClockInterval)clearInterval(ciClockInterval);function tick(){const now=new Date();const ts=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];const ds=`${days[now.getDay()]}, ${p2(now.getDate())}.${p2(now.getMonth()+1)}.${now.getFullYear()}`;const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');if(c)c.textContent=ts;if(d)d.textContent=ds;}tick();ciClockInterval=setInterval(tick,1000);}
 function hideCheckin(){document.getElementById('checkinScreen').style.display='none';document.body.style.overflow='';if(ciClockInterval)clearInterval(ciClockInterval);}
 function ciRenderKunden(){
   const grid=document.getElementById('ciKundeGrid');if(!grid)return;
@@ -1497,7 +1524,6 @@ function ciRenderKunden(){
     btn.innerHTML=`<span class="ci-kunde-icon">${KUNDE_ICONS[k]||'📍'}</span>${k}`;
     btn.onclick=()=>ciSelectKunde(k);
     wrap.appendChild(btn);
-    // Delete button for extra kunden only
     if(extraKunden.includes(k)){
       const del=document.createElement('button');
       del.innerHTML='✕';del.title='Entfernen';
@@ -1512,7 +1538,7 @@ function removeExtraKunde(k){
   const extra=JSON.parse(localStorage.getItem('denis_extra_kunden')||'[]');
   const updated=extra.filter(e=>e!==k);
   localStorage.setItem('denis_extra_kunden',JSON.stringify(updated));
-  if(ciSelected===k) ciSelected=null;
+  if(ciSelected===k)ciSelected=null;
   ciRenderKunden();
   ciShowToast('🗑 '+k+' entfernt');
 }
@@ -1531,11 +1557,238 @@ function ciAddNewKunde(){
   ciShowToast('✅ '+name+' hinzugefügt');
   playBeep('success');
 }
-function ciSelectKunde(k){ciSelected=k;ciRenderKunden();document.getElementById('ciBtnIn').disabled=false;document.getElementById('ciBtnOut').disabled=false;document.getElementById('ciBtnInSub').textContent=k;document.getElementById('ciBtnOutSub').textContent=k;}
+let ciVorfallItems=[];
+function ciPopulateSelect(){
+  const sel=document.getElementById('ciVorfallSelect');if(!sel)return;
+  sel.innerHTML='<option value="">— Ereignis wählen —</option>';
+  CI_EREIGNISSE.forEach(e=>{
+    if(e.g){const og=document.createElement('optgroup');og.label=e.label;sel.appendChild(og);}
+    else{const opt=document.createElement('option');opt.value=e.label;opt.textContent=e.label;sel.appendChild(opt);}
+  });
+  const custom=JSON.parse(localStorage.getItem('denis_ci_custom_ereignisse')||'[]');
+  if(custom.length){const og=document.createElement('optgroup');og.label='✏️ Eigene';custom.forEach(c=>{const opt=document.createElement('option');opt.value=c;opt.textContent=c;og.appendChild(opt);});sel.appendChild(og);}
+}
+function ciGetAllKunden(){
+  const extra=JSON.parse(localStorage.getItem('denis_extra_kunden')||'[]');
+  return [...KUNDEN.filter(k=>k!=='— Standort —'), ...extra];
+}
+ 
+// يملأ قائمة الكند في فورم الـ Vorfall
+function ciPopulateKundeSelect(){
+  const sel=document.getElementById('ciVorfallKundeSelect');if(!sel)return;
+  const allK=ciGetAllKunden();
+  sel.innerHTML='<option value="">— Kunde wählen —</option>'+
+    allK.map(k=>`<option value="${k}"${k===ciSelected?' selected':''}>${KUNDE_ICONS[k]||'📍'} ${k}</option>`).join('');
+  ciUpdateVisitSelect();
+}
+ 
+// يحدّث قائمة الزيارات لما يتغير الكند المختار
+function ciUpdateVisitSelect(){
+  const kundeSel=document.getElementById('ciVorfallKundeSelect');
+  const visitWrap=document.getElementById('ciVisitSelectWrap');
+  const visitSel=document.getElementById('ciVisitSelect');
+  if(!kundeSel||!visitWrap||!visitSel)return;
+  const k=kundeSel.value;
+  if(!k){visitWrap.style.display='none';return;}
+  // جمّع كل الصفوف الموجودة لهذا الكند في البروتوكول
+  const rows=[];
+  document.querySelectorAll('.proto-row').forEach(row=>{
+    const id=row.id.replace('row-','');
+    const ksel=document.getElementById('ksel-'+id);
+    const kcust=document.getElementById('kcust-'+id);
+    const bd=document.getElementById('bd-'+id);
+    const isC=kcust&&kcust.style.display!=='none';
+    const rowK=isC?kcust.value:(ksel?ksel.value:'');
+    if(rowK===k) rows.push({id,time:bd?bd.value:''});
+  });
+  if(rows.length<=1){
+    visitWrap.style.display='none';
+    visitSel.dataset.rowId=rows.length===1?rows[0].id:'';
+  } else {
+    visitWrap.style.display='block';
+    visitSel.innerHTML=rows.map((r,i)=>`<option value="${r.id}">Besuch ${i+1}${r.time?' ('+r.time+')':''}</option>`).join('');
+  }
+}
+ 
+function ciAddVorfall(){
+  const evSel=document.getElementById('ciVorfallSelect');
+  const kundeSel=document.getElementById('ciVorfallKundeSelect');
+  const visitSel=document.getElementById('ciVisitSelect');
+  const visitWrap=document.getElementById('ciVisitSelectWrap');
+  const val=evSel.value;
+  const kunde=kundeSel?kundeSel.value:ciSelected||'';
+  const ft=document.getElementById('ciVorfallInput')?.value.trim();
+  // تحديد rowId (للزيارة المحددة)
+  let rowId='';
+  if(visitWrap&&visitWrap.style.display!=='none'&&visitSel){
+    rowId=visitSel.value||'';
+  } else if(visitSel&&visitSel.dataset.rowId){
+    rowId=visitSel.dataset.rowId;
+  }
+  if(!val&&!ft){ciShowToast('⚠️ Bitte Ereignis oder Freitext eingeben');return;}
+  if(!kunde){ciShowToast('⚠️ Bitte Kunde auswählen');return;}
+  if(val){
+    const existing=ciVorfallItems.find(v=>v.ev===val&&v.kunde===kunde&&v.rowId===rowId);
+    if(existing){existing.c++;}
+    else{ciVorfallItems.push({ev:val,c:1,kunde,rowId});}
+  }
+  if(ft){
+    const custom=JSON.parse(localStorage.getItem('denis_ci_custom_ereignisse')||'[]');
+    if(!custom.includes(ft)){custom.push(ft);localStorage.setItem('denis_ci_custom_ereignisse',JSON.stringify(custom));}
+    ciVorfallItems.push({ev:ft,c:1,kunde,rowId,isFree:true});
+    document.getElementById('ciVorfallInput').value='';
+    ciPopulateSelect();
+  }
+  evSel.value='';
+  ciRenderVorfallList();playBeep('success');
+}
+ 
+function ciRenderVorfallList(){
+  const list=document.getElementById('ciVorfallList');if(!list)return;
+  list.innerHTML='';
+  ciVorfallItems.forEach((item,i)=>{
+    const div=document.createElement('div');
+    div.style.cssText='display:flex;flex-direction:column;gap:4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px;animation:rowIn 0.18s ease;';
+    // صف ١: العداد + الحدث + حذف
+    const topRow=`<div style="display:flex;align-items:center;gap:6px;">
+      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+        <button onclick="ciChVorfall(${i},-1)" style="width:20px;height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:white;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+        <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:white;min-width:22px;text-align:center;">${item.c}</span>
+        <button onclick="ciChVorfall(${i},1)" style="width:20px;height:20px;border-radius:4px;border:1px solid rgba(76,186,107,0.4);background:rgba(76,186,107,0.15);color:#4cba6b;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+      </div>
+      <span style="flex:1;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.3;">${item.ev}</span>
+      <button onclick="ciRemoveVorfall(${i})" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px;flex-shrink:0;">🗑</button>
+    </div>`;
+    // صف ٢: الكند + الزيارة (لو موجودة)
+    const kundeIcon=KUNDE_ICONS[item.kunde]||'📍';
+    // احسب رقم الزيارة
+    let visitLabel='';
+    if(item.rowId){
+      const allRowsForKunde=[];
+      document.querySelectorAll('.proto-row').forEach(row=>{
+        const id=row.id.replace('row-','');
+        const ksel=document.getElementById('ksel-'+id);
+        const kcust=document.getElementById('kcust-'+id);
+        const isC=kcust&&kcust.style.display!=='none';
+        const rowK=isC?kcust.value:(ksel?ksel.value:'');
+        if(rowK===item.kunde)allRowsForKunde.push(id);
+      });
+      const vIdx=allRowsForKunde.indexOf(item.rowId);
+      if(vIdx>=0)visitLabel=` · Besuch ${vIdx+1}`;
+    }
+    const bottomRow=`<div style="display:flex;align-items:center;gap:4px;padding-left:2px;">
+      <span style="font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 7px;color:rgba(255,255,255,0.7);font-weight:700;">${kundeIcon} ${item.kunde||'—'}${visitLabel}</span>
+    </div>`;
+    div.innerHTML=topRow+bottomRow;
+    list.appendChild(div);
+  });
+}
+ 
+function ciChVorfall(idx,d){ciVorfallItems[idx].c=Math.max(1,ciVorfallItems[idx].c+d);ciRenderVorfallList();}
+function ciRemoveVorfall(idx){ciVorfallItems.splice(idx,1);ciRenderVorfallList();}
+function ciGetVorfallText(){
+  const items=ciVorfallItems.map(v=>{
+    const k=v.kunde?` [${v.kunde}]`:'';
+    return(v.c>1?`[${v.c}x] ${v.ev}`:v.ev)+k;
+  }).join(', ');
+  return items||'';
+}
+function ciResetVorfall(){
+  ciVorfallItems=[];ciRenderVorfallList();
+  const inp=document.getElementById('ciVorfallInput');if(inp)inp.value='';
+}
+function ciSelectKunde(k){ciSelected=k;ciRenderKunden();document.getElementById('ciBtnIn').disabled=false;document.getElementById('ciBtnOut').disabled=false;document.getElementById('ciBtnInSub').textContent=k;document.getElementById('ciBtnOutSub').textContent=k;ciPopulateKundeSelect();}
 function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return[];}}
 function ciSaveLog(log){localStorage.setItem('denis_checkin_log',JSON.stringify(log));}
-function ciIn(){if(!ciSelected)return;const vorfall=document.getElementById('ciVorfallInput').value.trim();const log=ciGetLog();log.push({kunde:ciSelected,type:'in',time:nowHM(),ts:Date.now(),vorfall});ciSaveLog(log);ciRenderLog();ciShowToast('✅ '+ciSelected+' – Eingang');playBeep('success');addRow({k:ciSelected,b:nowHM(),e:'',n:vorfall?[{ev:'Freitext…',c:0,ft:vorfall}]:[]});saveData();document.getElementById('ciVorfallInput').value='';}
-function ciOut(){if(!ciSelected)return;const vorfall=document.getElementById('ciVorfallInput').value.trim();const log=ciGetLog();log.push({kunde:ciSelected,type:'out',time:nowHM(),ts:Date.now(),vorfall});ciSaveLog(log);ciRenderLog();ciShowToast('🚪 '+ciSelected+' – Ausgang');playBeep('success');document.querySelectorAll('.proto-row').forEach(row=>{const id=row.id.replace('row-','');const ksel=document.getElementById(`ksel-${id}`);const kcust=document.getElementById(`kcust-${id}`);const ed=document.getElementById(`ed-${id}`);const isC=kcust&&kcust.style.display!=='none';const k=isC?kcust.value:(ksel?ksel.value:'');if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){ed.value=nowHM();colorTime(ed);if(vorfall)addNotiz(parseInt(id),'Freitext…',0,vorfall);saveData();}});document.getElementById('ciVorfallInput').value='';}
+function ciGroupByKunde(){
+  const grouped={};
+  ciVorfallItems.forEach(v=>{
+    const k=v.kunde||ciSelected;
+    if(!grouped[k])grouped[k]=[];
+    grouped[k].push(v);
+  });
+  return grouped;
+}
+// يرجع map: rowId -> [vorfälle] للحالات اللي عندها rowId محدد
+function ciGroupByRowId(){
+  const grouped={};
+  ciVorfallItems.forEach(v=>{
+    if(v.rowId){
+      if(!grouped[v.rowId])grouped[v.rowId]=[];
+      grouped[v.rowId].push(v);
+    }
+  });
+  return grouped;
+}
+function ciIn(){
+  if(!ciSelected)return;
+  const vorfall=ciGetVorfallText();
+  const log=ciGetLog();
+  log.push({kunde:ciSelected,type:'in',time:nowHM(),ts:Date.now(),vorfall});
+  ciSaveLog(log);ciRenderLog();
+  ciShowToast('✅ '+ciSelected+' – Eingang');playBeep('success');
+  const time=nowHM();
+  const grouped=ciGroupByKunde();
+  if(!grouped[ciSelected])grouped[ciSelected]=[];
+  Object.entries(grouped).forEach(([k,vorfaelle])=>{
+    const notizen=vorfaelle.map(v=>({ev:v.ev,c:v.c,ft:''}));
+    const free=document.getElementById('ciVorfallInput')?.value.trim();
+    if(k===ciSelected&&free)notizen.push({ev:'Freitext\u2026',c:0,ft:free});
+    addRow({k,b:time,e:'',n:notizen});
+  });
+  saveData();ciResetVorfall();
+}
+function ciOut(){
+  if(!ciSelected)return;
+  const vorfall=ciGetVorfallText();
+  const log=ciGetLog();
+  log.push({kunde:ciSelected,type:'out',time:nowHM(),ts:Date.now(),vorfall});
+  ciSaveLog(log);ciRenderLog();
+  ciShowToast('🚪 '+ciSelected+' – Ausgang');playBeep('success');
+  const time=nowHM();
+  const grouped=ciGroupByKunde();
+  const byRowId=ciGroupByRowId();
+  // أولاً: الأحداث اللي عندها rowId محدد — تضاف مباشرة للصف المحدد
+  Object.entries(byRowId).forEach(([rowId,vorfaelle])=>{
+    const ed=document.getElementById('ed-'+rowId);
+    if(ed&&(!ed.value||ed.value==='00:00')){ed.value=time;colorTime(ed);}
+    vorfaelle.forEach(v=>addNotiz(parseInt(rowId),v.ev,v.c,v.isFree?v.ev:''));
+    saveData();
+  });
+  // ثانياً: الأحداث بدون rowId — تضاف لآخر صف مفتوح للكند
+  const vorfaelleOhneRow=ciVorfallItems.filter(v=>!v.rowId);
+  const groupedOhne={};
+  vorfaelleOhneRow.forEach(v=>{
+    const k=v.kunde||ciSelected;
+    if(!groupedOhne[k])groupedOhne[k]=[];
+    groupedOhne[k].push(v);
+  });
+  const allKunden=new Set([ciSelected,...Object.keys(groupedOhne)]);
+  allKunden.forEach(targetKunde=>{
+    let found=false;
+    document.querySelectorAll('.proto-row').forEach(row=>{
+      if(found)return;
+      const id=row.id.replace('row-','');
+      if(byRowId[id])return; // هذا الصف تمت معالجته فوق
+      const ksel=document.getElementById('ksel-'+id);
+      const kcust=document.getElementById('kcust-'+id);
+      const ed=document.getElementById('ed-'+id);
+      const isC=kcust&&kcust.style.display!=='none';
+      const k=isC?kcust.value:(ksel?ksel.value:'');
+      if(k===targetKunde&&ed&&(!ed.value||ed.value==='00:00')){
+        ed.value=time;colorTime(ed);
+        const vorfaelle=groupedOhne[targetKunde]||[];
+        vorfaelle.forEach(v=>addNotiz(parseInt(id),v.ev,v.c,v.isFree?v.ev:''));
+        found=true;saveData();
+      }
+    });
+    if(!found&&targetKunde!==ciSelected){
+      const vorfaelle=groupedOhne[targetKunde]||[];
+      if(vorfaelle.length)addRow({k:targetKunde,b:'',e:time,n:vorfaelle.map(v=>({ev:v.ev,c:v.c,ft:v.isFree?v.ev:''}))});
+    }
+  });
+  ciResetVorfall();saveData();
+}
 function ciRenderLog(){
   const list=document.getElementById('ciLogList');if(!list)return;
   const log=ciGetLog();
@@ -1543,107 +1796,85 @@ function ciRenderLog(){
   list.innerHTML='';
   [...log].reverse().forEach((entry,i)=>{
     const realIdx=log.length-1-i;
-    const item=document.createElement('div');item.className='ci-log-item';item.id=`ci-item-${realIdx}`;
+    const item=document.createElement('div');item.className='ci-log-item';
     const isIn=entry.type==='in';
-    const kundeOpts=KUNDEN.filter(k=>k!=='— Standort —').map(k=>`<option value="${k}"${k===entry.kunde?' selected':''}>${KUNDE_ICONS[k]||'📍'} ${k}</option>`).join('');
     item.innerHTML=`
       <div class="ci-log-dot ${entry.type}"></div>
       <div class="ci-log-info">
-        <div class="ci-log-kunde" id="ci-kunde-display-${realIdx}">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div>
-        <div id="ci-kunde-edit-${realIdx}" style="display:none;margin-top:4px;">
-          <select id="ci-kunde-input-${realIdx}"
-            style="font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:white;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:8px;padding:3px 8px;outline:none;max-width:140px;">
-            ${kundeOpts}
-          </select>
-          <button onclick="ciSaveKunde(${realIdx})"
-            style="margin-left:6px;background:#4cba6b;border:none;border-radius:7px;color:white;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">✅</button>
-          <button onclick="ciCancelKunde(${realIdx})"
-            style="margin-left:4px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:7px;color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✕</button>
-        </div>
-        <div class="ci-log-time" id="ci-time-display-${realIdx}">${entry.time} Uhr</div>
-        <div id="ci-time-edit-${realIdx}" style="display:none;margin-top:4px;">
-          <input type="time" value="${entry.time}" id="ci-time-input-${realIdx}"
-            style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:white;background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);border-radius:8px;padding:3px 8px;outline:none;width:110px;">
-          <button onclick="ciSaveTime(${realIdx})"
-            style="margin-left:6px;background:#4cba6b;border:none;border-radius:7px;color:white;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;">✅</button>
-          <button onclick="ciCancelEdit(${realIdx})"
-            style="margin-left:4px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:7px;color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;">✕</button>
-        </div>
+        <div class="ci-log-kunde">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div>
+        <div class="ci-log-time">${entry.time} Uhr</div>
         ${entry.vorfall?`<div class="ci-log-vorfall-text">⚠️ ${entry.vorfall}</div>`:''}
       </div>
-      <button onclick="ciToggleType(${realIdx})" title="${isIn?'Zu Ausgang wechseln':'Zu Eingang wechseln'}"
-        style="background:${isIn?'rgba(76,186,107,0.15)':'rgba(232,57,74,0.15)'};border:1.5px solid ${isIn?'rgba(76,186,107,0.4)':'rgba(232,57,74,0.4)'};border-radius:8px;color:${isIn?'#4cba6b':'var(--red)'};font-size:10px;font-weight:800;padding:3px 7px;cursor:pointer;flex-shrink:0;transition:all 0.15s;white-space:nowrap;">
-        ${isIn?'✅ Ein':'🚪 Aus'}</button>
-      <button onclick="ciStartKunde(${realIdx})" title="Kunde ändern"
-        style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:7px;color:rgba(255,255,255,0.5);font-size:11px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📍</button>
-      <button onclick="ciStartEdit(${realIdx})" title="Zeit bearbeiten"
-        style="background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:7px;color:rgba(255,255,255,0.5);font-size:12px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
-        onmouseover="this.style.background='rgba(245,166,35,0.2)';this.style.borderColor='rgba(245,166,35,0.5)';this.style.color='#f5a623'"
-        onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='rgba(255,255,255,0.5)'">✏️</button>
+      <span style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:10px;flex-shrink:0;background:${isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)'};color:${isIn?'#4cba6b':'var(--red)'};">${isIn?'✅ Ein':'🚪 Aus'}</span>
       <button class="ci-log-del" onclick="ciDeleteEntry(${realIdx})">🗑</button>`;
     list.appendChild(item);
   });
 }
-function ciStartKunde(idx){
-  document.getElementById(`ci-kunde-display-${idx}`).style.display='none';
-  document.getElementById(`ci-kunde-edit-${idx}`).style.display='flex';
-  document.getElementById(`ci-kunde-edit-${idx}`).style.alignItems='center';
-  document.getElementById(`ci-kunde-edit-${idx}`).style.flexWrap='wrap';
-  document.getElementById(`ci-kunde-edit-${idx}`).style.gap='4px';
-}
-function ciCancelKunde(idx){
-  document.getElementById(`ci-kunde-display-${idx}`).style.display='block';
-  document.getElementById(`ci-kunde-edit-${idx}`).style.display='none';
-}
-function ciSaveKunde(idx){
-  const newKunde=document.getElementById(`ci-kunde-input-${idx}`).value;
-  if(!newKunde){ciShowToast('⚠️ Bitte Kunde wählen');return;}
-  const log=ciGetLog();
-  log[idx].kunde=newKunde;
-  ciSaveLog(log);ciRenderLog();
-  ciShowToast('✅ Kunde gespeichert: '+(KUNDE_ICONS[newKunde]||'📍')+' '+newKunde);
-  playBeep('success');
-}
-function ciToggleType(idx){
-  const log=ciGetLog();
-  log[idx].type=log[idx].type==='in'?'out':'in';
-  ciSaveLog(log);ciRenderLog();
-  ciShowToast(log[idx].type==='in'?'✅ Geändert zu Eingang':'🚪 Geändert zu Ausgang');
-  playBeep('success');
-}
-function ciStartEdit(idx){
-  document.getElementById(`ci-time-display-${idx}`).style.display='none';
-  document.getElementById(`ci-time-edit-${idx}`).style.display='flex';
-  document.getElementById(`ci-time-edit-${idx}`).style.alignItems='center';
-  document.getElementById(`ci-time-input-${idx}`).focus();
-}
-function ciCancelEdit(idx){
-  document.getElementById(`ci-time-display-${idx}`).style.display='block';
-  document.getElementById(`ci-time-edit-${idx}`).style.display='none';
-}
-function ciSaveTime(idx){
-  const newTime=document.getElementById(`ci-time-input-${idx}`).value;
-  if(!newTime){ciShowToast('⚠️ Bitte Zeit eingeben');return;}
-  const log=ciGetLog();
-  log[idx].time=newTime;
-  ciSaveLog(log);ciRenderLog();
-  ciShowToast('✅ Zeit gespeichert: '+newTime);playBeep('success');
-}
 function ciDeleteEntry(idx){const log=ciGetLog();log.splice(idx,1);ciSaveLog(log);ciRenderLog();ciShowToast('🗑 Gelöscht');}
 function ciClearLog(){if(!confirm('Alle löschen?'))return;localStorage.removeItem('denis_checkin_log');ciRenderLog();ciShowToast('🗑 Alle gelöscht');}
-function ciCopyLink(){
-  const url=window.location.href.split('#')[0]+'#checkin';
-  navigator.clipboard.writeText(url).then(()=>{
-    ciShowToast('🔗 Schnelllink kopiert!');
-  }).catch(()=>{
-    prompt('Schnelllink — kopieren:',url);
+function ciFinish(){
+  // ملخص الشفت
+  const log=ciGetLog();
+  const rows=document.querySelectorAll('.proto-row');
+  const kundenSet=new Set();
+  rows.forEach(row=>{
+    const id=row.id.replace('row-','');
+    const ksel=document.getElementById('ksel-'+id);
+    const kcust=document.getElementById('kcust-'+id);
+    const isC=kcust&&kcust.style.display!=='none';
+    const k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k&&k!=='— Standort —')kundenSet.add(k);
   });
+  let totalVorf=0;
+  rows.forEach(row=>{row.querySelectorAll('.nc-num').forEach(n=>{totalVorf+=parseInt(n.textContent)||0;});});
+  const inCount=log.filter(e=>e.type==='in').length;
+  const outCount=log.filter(e=>e.type==='out').length;
+  // بناء رسالة الملخص
+  const lines=[
+    '📋 ' + (currentProtoNr||'—'),
+    '',
+    '✅ Eingänge: ' + inCount,
+    '🚪 Ausgänge: ' + outCount,
+    '🏢 Standorte: ' + kundenSet.size,
+    '⚠️ Vorfälle: ' + totalVorf,
+    '',
+    'Protokoll wurde automatisch gespeichert.'
+  ];
+  // عرض الملخص كـ toast ثم إغلاق
+  showToast('✅ '+inCount+' Ein · '+outCount+' Aus · '+totalVorf+' Vorfälle','success',4000);
+  saveData();
+  // نافذة ملخص مخصصة
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
+  overlay.innerHTML=`<div style="background:linear-gradient(160deg,#2d3f52,#1a2535);border-radius:20px;padding:24px 20px;max-width:320px;width:100%;border:1px solid rgba(255,255,255,0.12);box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:white;margin-bottom:4px;">✅ Schicht beendet</div>
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:18px;">${currentProtoNr||'—'}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
+      <div style="background:rgba(76,186,107,0.12);border:1px solid rgba(76,186,107,0.3);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#4cba6b;">${inCount}</div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Eingänge</div>
+      </div>
+      <div style="background:rgba(232,57,74,0.12);border:1px solid rgba(232,57,74,0.3);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#E8394A;">${outCount}</div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Ausgänge</div>
+      </div>
+      <div style="background:rgba(61,82,104,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:white;">${kundenSet.size}</div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Standorte</div>
+      </div>
+      <div style="background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:12px;text-align:center;">
+        <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#f5a623;">${totalVorf}</div>
+        <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Vorfälle</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:16px;">💾 Protokoll wurde gespeichert</div>
+    <button onclick="this.closest('div[style]').parentElement.remove();hideCheckin();"
+      style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">
+      ✓ Zum Protokoll
+    </button>
+  </div>`;
+  document.body.appendChild(overlay);
 }
-function ciShowInstall(){
-  const box=document.getElementById('ciInstallBox');
-  box.style.display=box.style.display==='none'?'block':'none';
-}
-function ciImport(){hideCheckin();showToast('✅ Einträge im Protokoll!','success');}
 function ciShowToast(msg){const old=document.querySelector('.ci-toast');if(old)old.remove();const t=document.createElement('div');t.className='ci-toast';t.textContent=msg;document.getElementById('checkinScreen').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},2200);}
  
 document.addEventListener('keydown',e=>{
