@@ -710,11 +710,44 @@ body::before{display:none!important;}
  
 /* ===== WAKE LOCK ===== */
 let wakeLock=null;
+let wakeLockInterval=null;
+ 
 async function requestWakeLock(){
-  try{if('wakeLock' in navigator){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}}catch(e){}
+  try{
+    if('wakeLock' in navigator){
+      wakeLock=await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release',()=>{wakeLock=null;});
+    }
+  }catch(e){}
 }
-document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&wakeLock===null)await requestWakeLock();});
-window.addEventListener('beforeunload',()=>{if(wakeLock)wakeLock.release();});
+ 
+async function ensureWakeLock(){
+  // لو مش موجود أو انتهى — جدّده
+  if(!wakeLock||wakeLock.released){
+    await requestWakeLock();
+  }
+}
+ 
+function startWakeLockLoop(){
+  // جدّد كل 25 ثانية ضمان
+  if(wakeLockInterval)clearInterval(wakeLockInterval);
+  wakeLockInterval=setInterval(()=>{
+    if(document.visibilityState==='visible') ensureWakeLock();
+  },25000);
+  // أول استدعاء فوري
+  requestWakeLock();
+}
+ 
+// لما يعود المستخدم للتبويب
+document.addEventListener('visibilitychange',async()=>{
+  if(document.visibilityState==='visible') await ensureWakeLock();
+});
+ 
+// لما يُغلق التطبيق
+window.addEventListener('beforeunload',()=>{
+  if(wakeLockInterval)clearInterval(wakeLockInterval);
+  if(wakeLock)wakeLock.release();
+});
  
 /* ===== PIN (PRIMÄR) + FACE ID (OPTIONAL) ===== */
 // FIX: PIN ist immer sichtbar und primärer Weg.
@@ -940,7 +973,7 @@ function initApp(){
   const s=localStorage.getItem('denis_signature');if(s)setTimeout(()=>updateSigChip(s),600);
   document.addEventListener('input',()=>scheduleSave());
   document.addEventListener('change',()=>scheduleSave());
-  requestWakeLock();
+  startWakeLockLoop();
   if(window.location.hash==='#checkin'){setTimeout(()=>showCheckin(),300);}
 }
  
