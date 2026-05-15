@@ -299,6 +299,14 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-title span{color:#ffb3b9;}
 .ci-subtitle{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;}
 .ci-clock{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:white;text-align:center;margin:24px 0 4px;letter-spacing:2px;}
+.ci-quickbar{display:flex;align-items:stretch;gap:0;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.08);overflow:hidden;}
+.ci-qb-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 6px;gap:2px;border-right:1px solid rgba(255,255,255,0.07);}
+.ci-qb-item:last-child{border-right:none;}
+.ci-qb-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);}
+.ci-qb-val{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:white;text-align:center;line-height:1.2;}
+.ci-qb-val.green{color:#4cba6b;}
+.ci-qb-val.orange{color:#f5a623;}
+.ci-qb-val.red{color:#E8394A;}
 .ci-date{font-size:12px;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:24px;}
 .ci-body{padding:0 16px;}
 .ci-section-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin:20px 0 10px;}
@@ -550,6 +558,21 @@ body::before{display:none!important;}
   <div class="ci-hdr">
     <div class="ci-title">⏱ Check<span>in</span></div>
     <div class="ci-subtitle">Eingang · Ausgang · Kunde</div>
+  </div>
+  <!-- شريط النظرة السريعة -->
+  <div class="ci-quickbar" id="ciQuickBar">
+    <div class="ci-qb-item">
+      <span class="ci-qb-label">Noch drin</span>
+      <span class="ci-qb-val green" id="qbActive">—</span>
+    </div>
+    <div class="ci-qb-item">
+      <span class="ci-qb-label">Schichtende</span>
+      <span class="ci-qb-val orange" id="qbRemain">—</span>
+    </div>
+    <div class="ci-qb-item">
+      <span class="ci-qb-label">Letzter</span>
+      <span class="ci-qb-val" id="qbLast" style="font-size:11px;">—</span>
+    </div>
   </div>
   <div class="ci-clock" id="ciClock">00:00:00</div>
   <div class="ci-date" id="ciDate">—</div>
@@ -1581,7 +1604,87 @@ function openDashboard(){
 function closeDashboard(){document.getElementById('dashOverlay').style.display='none';}
  
 let ciSelected=null,ciClockInterval=null;
-function showCheckin(){document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';const fc=document.getElementById('fabCheckin');if(fc)fc.style.display='none';ciPopulateSelect();ciPopulateKundeSelect();ciRenderKunden();ciRenderLog();if(ciClockInterval)clearInterval(ciClockInterval);function tick(){const now=new Date();const ts=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];const ds=`${days[now.getDay()]}, ${p2(now.getDate())}.${p2(now.getMonth()+1)}.${now.getFullYear()}`;const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');if(c)c.textContent=ts;if(d)d.textContent=ds;}tick();ciClockInterval=setInterval(tick,1000);}
+function updateQuickBar(){
+  // ① كم موقع لازال داخل (دخل بدون خروج)
+  const log=ciGetLog();
+  const activeKunden=new Set();
+  log.forEach(e=>{
+    if(e.type==='in') activeKunden.add(e.kunde);
+    else activeKunden.delete(e.kunde);
+  });
+  const qbActive=document.getElementById('qbActive');
+  if(qbActive){
+    if(activeKunden.size===0){
+      qbActive.textContent='—';qbActive.className='ci-qb-val';
+    } else {
+      // أظهر اسم الكند لو واحد، أو عدد لو أكثر
+      if(activeKunden.size===1){
+        const k=[...activeKunden][0];
+        qbActive.textContent=(KUNDE_ICONS[k]||'📍')+' '+k.split(' ')[0];
+      } else {
+        qbActive.textContent=activeKunden.size+' aktiv';
+      }
+      qbActive.className='ci-qb-val green';
+    }
+  }
+  // ② كم وقت باقي في الدوام (07:00 نهاية الشفت)
+  const qbRemain=document.getElementById('qbRemain');
+  if(qbRemain){
+    const now=new Date();
+    const endH=7,endM=0;
+    let endMins=endH*60+endM;
+    let nowMins=now.getHours()*60+now.getMinutes();
+    let diff=endMins-nowMins;
+    if(diff<0)diff+=24*60;
+    const h=Math.floor(diff/60),m=diff%60;
+    if(diff>12*60){
+      qbRemain.textContent='— h';qbRemain.className='ci-qb-val';
+    } else if(diff<=60){
+      qbRemain.textContent=m+'min';qbRemain.className='ci-qb-val red';
+    } else {
+      qbRemain.textContent=h+'h '+p2(m)+'m';
+      qbRemain.className='ci-qb-val orange';
+    }
+  }
+  // ③ آخر حدث مسجّل
+  const qbLast=document.getElementById('qbLast');
+  if(qbLast){
+    if(!log.length){
+      qbLast.textContent='—';qbLast.style.color='rgba(255,255,255,0.4)';
+    } else {
+      const last=log[log.length-1];
+      const icon=last.type==='in'?'✅':'🚪';
+      // كم دقيقة مضت
+      const [lh,lm]=last.time.split(':').map(Number);
+      const now=new Date();
+      const nowMins=now.getHours()*60+now.getMinutes();
+      const lastMins=lh*60+lm;
+      let diff=nowMins-lastMins;if(diff<0)diff+=24*60;
+      const agoText=diff<60?diff+'min':Math.floor(diff/60)+'h';
+      qbLast.textContent=icon+' '+(last.kunde||'').split(' ')[0]+' · '+agoText;
+      qbLast.style.color='rgba(255,255,255,0.7)';
+    }
+  }
+}
+ 
+function showCheckin(){
+  document.getElementById('checkinScreen').style.display='block';
+  document.body.style.overflow='hidden';
+  const fc=document.getElementById('fabCheckin');if(fc)fc.style.display='none';
+  ciPopulateSelect();ciPopulateKundeSelect();ciRenderKunden();ciRenderLog();
+  if(ciClockInterval)clearInterval(ciClockInterval);
+  function tick(){
+    const now=new Date();
+    const ts=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;
+    const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    const ds=`${days[now.getDay()]}, ${p2(now.getDate())}.${p2(now.getMonth()+1)}.${now.getFullYear()}`;
+    const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');
+    if(c)c.textContent=ts;if(d)d.textContent=ds;
+    updateQuickBar();
+  }
+  tick();
+  ciClockInterval=setInterval(tick,1000);
+}
 function hideCheckin(){
   document.getElementById('checkinScreen').style.display='none';
   document.body.style.overflow='';
@@ -1802,7 +1905,7 @@ function ciIn(){
   const vorfall=ciGetVorfallText();
   const log=ciGetLog();
   log.push({kunde:ciSelected,type:'in',time:nowHM(),ts:Date.now(),vorfall});
-  ciSaveLog(log);ciRenderLog();
+  ciSaveLog(log);ciRenderLog();updateQuickBar();
   ciShowToast('✅ '+ciSelected+' – Eingang');playBeep('success');
   const time=nowHM();
   const grouped=ciGroupByKunde();
@@ -1820,7 +1923,7 @@ function ciOut(){
   const vorfall=ciGetVorfallText();
   const log=ciGetLog();
   log.push({kunde:ciSelected,type:'out',time:nowHM(),ts:Date.now(),vorfall});
-  ciSaveLog(log);ciRenderLog();
+  ciSaveLog(log);ciRenderLog();updateQuickBar();
   ciShowToast('🚪 '+ciSelected+' – Ausgang');playBeep('success');
   const time=nowHM();
   const grouped=ciGroupByKunde();
@@ -2060,4 +2163,4 @@ document.addEventListener('keydown',e=>{
 });
 </script>
 </body>
-</html>
+</html
