@@ -605,7 +605,7 @@ body::before{display:none!important;}
       </div>
     </div>
     <button class="ci-import-btn" onclick="ciFinish()" style="background:linear-gradient(135deg,#4cba6b,#2e8b47);box-shadow:0 4px 16px rgba(76,186,107,0.3);">✅ Schicht fertig – Schließen</button>
-    <button class="ci-back-btn" onclick="hideCheckin()">← Zurück ohne Schließen</button>
+    <button class="ci-back-btn" onclick="hideCheckin()">📋 Protokoll anzeigen</button>
   </div>
 </div>
  
@@ -691,8 +691,11 @@ body::before{display:none!important;}
 </div>
  
 <button class="fab fab-ai no-print" onclick="openAI()">🤖</button>
-<button class="fab fab-ci no-print" onclick="showCheckin()">⏱</button>
 <button class="fab fab-left no-print" onclick="openArchive()">📁</button>
+<!-- زر Check-in الرئيسي — كبير وواضح في المنتصف أسفل -->
+<button id="fabCheckin" onclick="showCheckin()" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:998;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;border:none;border-radius:30px;padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(76,186,107,0.5);display:flex;align-items:center;gap:10px;transition:all 0.2s;" class="no-print">
+  <span style="font-size:22px;">✅</span> Check-in öffnen
+</button>
  
 <div class="autosave-bar no-print" id="autosaveBar">
   <span class="as-dot"></span>
@@ -709,44 +712,77 @@ body::before{display:none!important;}
 'use strict';
  
 /* ===== WAKE LOCK ===== */
+/* ===== WAKE LOCK — iOS Safari + Android ===== */
 let wakeLock=null;
 let wakeLockInterval=null;
+let iosAudioCtx=null;
+let iosVideoEl=null;
  
+// الحل الأساسي: Wake Lock API (Chrome/Android)
 async function requestWakeLock(){
   try{
     if('wakeLock' in navigator){
       wakeLock=await navigator.wakeLock.request('screen');
       wakeLock.addEventListener('release',()=>{wakeLock=null;});
+      return true;
     }
   }catch(e){}
+  return false;
 }
  
-async function ensureWakeLock(){
-  // لو مش موجود أو انتهى — جدّده
-  if(!wakeLock||wakeLock.released){
-    await requestWakeLock();
+// الحل البديل لـ iOS: فيديو صامت مستمر يمنع السكون
+function startIOSWakeLock(){
+  // إنشاء فيديو شفاف صامت
+  if(iosVideoEl) return;
+  iosVideoEl=document.createElement('video');
+  iosVideoEl.setAttribute('playsinline','');
+  iosVideoEl.setAttribute('muted','');
+  iosVideoEl.setAttribute('loop','');
+  iosVideoEl.style.cssText='position:fixed;width:1px;height:1px;opacity:0.01;top:0;left:0;z-index:-1;pointer-events:none;';
+  // فيديو بيانات base64 صغير جداً (1x1 pixel mp4)
+  iosVideoEl.src='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAAG21kYXQAAAGzABAHAAABthADAowdbb9/AAAC6W1vb3YAAABsbXZoZAAAAAB8JbCAfCWwgAAAA+gAAAAAAAEAAAEAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAIVdHJhawAAAFx0a2hkAAAAD3wlsIB8JbCAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAQAAAAAAIAAAACAAAAAABsW1kaWEAAAAgbWRoZAAAAAB8JbCAfCWwgAAAA+gAAAAAAABVxIAAAAAAAAAtaGRscgAAAAAAAAAAc291bgAAAAAAAAAAAAAAAABTb3VuZEhhbmRsZXIAAAABV21pbmYAAAAQc21oZAAAAAAAAAAAAAAAJGRpbmYAAAAcZHJlZgAAAAAAAAABAAAADHVybCAAAAABAAAA4XN0YmwAAABhc3RzZAAAAAAAAAACAAAAEmVuY3YAAAAAAAAAAAAAABJlbmN2AAAAAAAAAAAAAAAQY2xhcAAAAAAAAAAAAAAAABhzbWFwAAAABQAAAA0AAAARAAAAEgAAABNzdHRzAAAAAAAAAAEAAAABAAAABHN0c3oAAAAAAAAAAAAAAQAAAAEAAAAcc3RjbwAAAAAAAAABAAAALAAAAFt1ZHRhAAAAU21ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAG1kaXIAAAAAAAAAAAAAAABMaWxzdAAAADQtdG9vAAAALGRhdGEAAAABAAAAAExhdmY1Ni40MC4xMDE=';
+  document.body.appendChild(iosVideoEl);
+  iosVideoEl.play().catch(()=>{});
+}
+ 
+function stopIOSWakeLock(){
+  if(iosVideoEl){iosVideoEl.pause();iosVideoEl.remove();iosVideoEl=null;}
+}
+ 
+async function startWakeLockLoop(){
+  const gotWakeLock=await requestWakeLock();
+  // iOS لا يدعم Wake Lock API — استخدم الفيديو
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  if(!gotWakeLock||isIOS){
+    startIOSWakeLock();
   }
-}
- 
-function startWakeLockLoop(){
-  // جدّد كل 25 ثانية ضمان
+  // جدّد كل 20 ثانية
   if(wakeLockInterval)clearInterval(wakeLockInterval);
-  wakeLockInterval=setInterval(()=>{
-    if(document.visibilityState==='visible') ensureWakeLock();
-  },25000);
-  // أول استدعاء فوري
-  requestWakeLock();
+  wakeLockInterval=setInterval(async()=>{
+    if(document.visibilityState==='visible'){
+      if(!wakeLock||wakeLock.released) await requestWakeLock();
+      // تأكد الفيديو شغّال على iOS
+      if(iosVideoEl&&iosVideoEl.paused) iosVideoEl.play().catch(()=>{});
+    }
+  },20000);
 }
  
-// لما يعود المستخدم للتبويب
 document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState==='visible') await ensureWakeLock();
+  if(document.visibilityState==='visible'){
+    if(!wakeLock||wakeLock.released) await requestWakeLock();
+    if(iosVideoEl&&iosVideoEl.paused) iosVideoEl.play().catch(()=>{});
+  }
 });
  
-// لما يُغلق التطبيق
+// أول تفاعل من المستخدم — iOS يحتاج gesture لتشغيل الفيديو
+document.addEventListener('touchstart',()=>{
+  if(iosVideoEl&&iosVideoEl.paused) iosVideoEl.play().catch(()=>{});
+},{once:false,passive:true});
+ 
 window.addEventListener('beforeunload',()=>{
   if(wakeLockInterval)clearInterval(wakeLockInterval);
   if(wakeLock)wakeLock.release();
+  stopIOSWakeLock();
 });
  
 /* ===== PIN (PRIMÄR) + FACE ID (OPTIONAL) ===== */
@@ -840,6 +876,8 @@ function unlockApp(){
   document.getElementById('pinScreen').style.display='none';
   document.getElementById('appContent').style.display='block';
   initApp();
+  // افتح Check-in مباشرة بعد الدخول
+  setTimeout(()=>showCheckin(),300);
 }
 function pinPress(d){
   if(pinEntry.length>=4)return;
@@ -974,7 +1012,7 @@ function initApp(){
   document.addEventListener('input',()=>scheduleSave());
   document.addEventListener('change',()=>scheduleSave());
   startWakeLockLoop();
-  if(window.location.hash==='#checkin'){setTimeout(()=>showCheckin(),300);}
+  // Check-in يفتح تلقائياً من unlockApp
 }
  
 function generateProtoNr(increment=true){
@@ -1543,8 +1581,14 @@ function openDashboard(){
 function closeDashboard(){document.getElementById('dashOverlay').style.display='none';}
  
 let ciSelected=null,ciClockInterval=null;
-function showCheckin(){document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';ciPopulateSelect();ciPopulateKundeSelect();ciRenderKunden();ciRenderLog();if(ciClockInterval)clearInterval(ciClockInterval);function tick(){const now=new Date();const ts=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];const ds=`${days[now.getDay()]}, ${p2(now.getDate())}.${p2(now.getMonth()+1)}.${now.getFullYear()}`;const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');if(c)c.textContent=ts;if(d)d.textContent=ds;}tick();ciClockInterval=setInterval(tick,1000);}
-function hideCheckin(){document.getElementById('checkinScreen').style.display='none';document.body.style.overflow='';if(ciClockInterval)clearInterval(ciClockInterval);}
+function showCheckin(){document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';const fc=document.getElementById('fabCheckin');if(fc)fc.style.display='none';ciPopulateSelect();ciPopulateKundeSelect();ciRenderKunden();ciRenderLog();if(ciClockInterval)clearInterval(ciClockInterval);function tick(){const now=new Date();const ts=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;const days=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];const ds=`${days[now.getDay()]}, ${p2(now.getDate())}.${p2(now.getMonth()+1)}.${now.getFullYear()}`;const c=document.getElementById('ciClock'),d=document.getElementById('ciDate');if(c)c.textContent=ts;if(d)d.textContent=ds;}tick();ciClockInterval=setInterval(tick,1000);}
+function hideCheckin(){
+  document.getElementById('checkinScreen').style.display='none';
+  document.body.style.overflow='';
+  if(ciClockInterval)clearInterval(ciClockInterval);
+  const fc=document.getElementById('fabCheckin');if(fc)fc.style.display='flex';
+  showToast('📋 Protokoll-Ansicht — nur zum Drucken','info',3000);
+}
 function ciRenderKunden(){
   const grid=document.getElementById('ciKundeGrid');if(!grid)return;
   grid.innerHTML='';
@@ -1829,19 +1873,118 @@ function ciRenderLog(){
   list.innerHTML='';
   [...log].reverse().forEach((entry,i)=>{
     const realIdx=log.length-1-i;
-    const item=document.createElement('div');item.className='ci-log-item';
     const isIn=entry.type==='in';
-    item.innerHTML=`
+    const item=document.createElement('div');
+    item.className='ci-log-item';
+    item.style.flexDirection='column';
+    item.style.alignItems='stretch';
+    item.style.gap='6px';
+ 
+    // الصف الرئيسي
+    const mainRow=document.createElement('div');
+    mainRow.style.cssText='display:flex;align-items:center;gap:10px;';
+    mainRow.innerHTML=`
       <div class="ci-log-dot ${entry.type}"></div>
-      <div class="ci-log-info">
+      <div class="ci-log-info" style="flex:1;min-width:0;">
         <div class="ci-log-kunde">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div>
-        <div class="ci-log-time">${entry.time} Uhr</div>
+        <div class="ci-log-time" id="ci-time-lbl-${realIdx}">${entry.time} Uhr</div>
         ${entry.vorfall?`<div class="ci-log-vorfall-text">⚠️ ${entry.vorfall}</div>`:''}
       </div>
-      <span style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:10px;flex-shrink:0;background:${isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)'};color:${isIn?'#4cba6b':'var(--red)'};">${isIn?'✅ Ein':'🚪 Aus'}</span>
-      <button class="ci-log-del" onclick="ciDeleteEntry(${realIdx})">🗑</button>`;
+      <span style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:10px;flex-shrink:0;background:${isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)'};color:${isIn?'#4cba6b':'var(--red)'};">${isIn?'✅ Ein':'🚪 Aus'}</span>`;
+ 
+    // أزرار التعديل والحذف
+    const actRow=document.createElement('div');
+    actRow.style.cssText='display:flex;gap:5px;padding-left:18px;';
+    actRow.innerHTML=`
+      <button onclick="ciToggleEditTime(${realIdx})"
+        style="flex:1;background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);border-radius:7px;color:#f5a623;font-size:10px;font-weight:700;padding:4px 8px;cursor:pointer;">
+        ✏️ Zeit ändern
+      </button>
+      <button onclick="ciToggleType(${realIdx})"
+        style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;padding:4px 8px;cursor:pointer;">
+        🔄 ${isIn?'→ Ausgang':'→ Eingang'}
+      </button>
+      <button onclick="ciDeleteEntry(${realIdx})"
+        style="background:rgba(232,57,74,0.1);border:1px solid rgba(232,57,74,0.2);border-radius:7px;color:var(--red);font-size:12px;padding:4px 8px;cursor:pointer;">🗑</button>`;
+ 
+    // حقل تعديل الوقت (مخفي)
+    const editRow=document.createElement('div');
+    editRow.id='ci-edit-row-'+realIdx;
+    editRow.style.cssText='display:none;padding-left:18px;';
+    editRow.innerHTML=`
+      <div style="background:rgba(245,166,35,0.08);border:1.5px solid rgba(245,166,35,0.3);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(245,166,35,0.8);text-transform:uppercase;">⏱ Uhrzeit bearbeiten</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="time" id="ci-time-inp-${realIdx}" value="${entry.time}"
+            style="flex:1;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:800;color:white;background:rgba(255,255,255,0.1);border:1.5px solid rgba(245,166,35,0.4);border-radius:8px;padding:6px 10px;outline:none;">
+          <button onclick="ciSaveEditTime(${realIdx})"
+            style="background:#4cba6b;border:none;border-radius:8px;color:white;font-size:12px;font-weight:800;padding:8px 14px;cursor:pointer;">✅ OK</button>
+          <button onclick="ciToggleEditTime(${realIdx})"
+            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.5);font-size:12px;padding:8px 10px;cursor:pointer;">✕</button>
+        </div>
+        <button onclick="ciSetNowTime(${realIdx})"
+          style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;padding:5px;cursor:pointer;">
+          ⏱ Jetzt (${nowHM()})
+        </button>
+      </div>`;
+ 
+    item.appendChild(mainRow);
+    item.appendChild(actRow);
+    item.appendChild(editRow);
     list.appendChild(item);
   });
+}
+ 
+function ciToggleEditTime(idx){
+  const row=document.getElementById('ci-edit-row-'+idx);
+  if(!row)return;
+  const isOpen=row.style.display!=='none';
+  // أغلق كل الحقول المفتوحة
+  document.querySelectorAll('[id^="ci-edit-row-"]').forEach(r=>r.style.display='none');
+  if(!isOpen)row.style.display='block';
+}
+ 
+function ciSaveEditTime(idx){
+  const inp=document.getElementById('ci-time-inp-'+idx);
+  if(!inp||!inp.value){ciShowToast('⚠️ Bitte Zeit eingeben');return;}
+  const log=ciGetLog();
+  const oldTime=log[idx].time;
+  log[idx].time=inp.value;
+  ciSaveLog(log);
+  // حدّث الصف المرتبط في البروتوكول
+  ciSyncTimeToProtocol(idx, log[idx].kunde, log[idx].type, inp.value, oldTime);
+  ciRenderLog();
+  ciShowToast('✅ Zeit gespeichert: '+inp.value);
+  playBeep('success');
+}
+ 
+function ciSetNowTime(idx){
+  const inp=document.getElementById('ci-time-inp-'+idx);
+  if(inp)inp.value=nowHM();
+}
+ 
+function ciSyncTimeToProtocol(logIdx, kunde, type, newTime, oldTime){
+  // ابحث عن الصف المرتبط وحدّث وقته
+  document.querySelectorAll('.proto-row').forEach(row=>{
+    const id=row.id.replace('row-','');
+    const ksel=document.getElementById('ksel-'+id);
+    const kcust=document.getElementById('kcust-'+id);
+    const bd=document.getElementById('bd-'+id);
+    const ed=document.getElementById('ed-'+id);
+    const isC=kcust&&kcust.style.display!=='none';
+    const k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k!==kunde)return;
+    if(type==='in'&&bd&&bd.value===oldTime){bd.value=newTime;colorTime(bd);saveData();}
+    if(type==='out'&&ed&&ed.value===oldTime){ed.value=newTime;colorTime(ed);saveData();}
+  });
+}
+ 
+function ciToggleType(idx){
+  const log=ciGetLog();
+  log[idx].type=log[idx].type==='in'?'out':'in';
+  ciSaveLog(log);ciRenderLog();
+  ciShowToast(log[idx].type==='in'?'✅ → Eingang':'🚪 → Ausgang');
+  playBeep('success');
 }
 function ciDeleteEntry(idx){const log=ciGetLog();log.splice(idx,1);ciSaveLog(log);ciRenderLog();ciShowToast('🗑 Gelöscht');}
 function ciClearLog(){if(!confirm('Alle löschen?'))return;localStorage.removeItem('denis_checkin_log');ciRenderLog();ciShowToast('🗑 Alle gelöscht');}
