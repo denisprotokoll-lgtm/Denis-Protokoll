@@ -10,8 +10,10 @@
 <meta name="theme-color" content="#3d5268">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%233d5268'/%3E%3Ctext y='.9em' font-size='72' x='50%25' text-anchor='middle'%3E⏱%3C/text%3E%3C/svg%3E">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%233d5268'/%3E%3Ctext y='.9em' font-size='72' x='50%25' text-anchor='middle'%3E⏱%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -294,11 +296,12 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .archive-item-sub{font-size:9px;color:var(--muted);margin-top:2px;}
 .archive-empty{text-align:center;color:var(--muted);font-size:11px;padding:20px;}
 #checkinScreen{display:none;position:fixed;inset:0;z-index:99998;background:linear-gradient(160deg,#2d3f52 0%,#1a2535 100%);font-family:'DM Sans',sans-serif;overflow-y:auto;padding:0 0 40px;}
-.ci-hdr{background:linear-gradient(135deg,#4a6080,#3d5268);padding:52px 20px 20px;text-align:center;}
-.ci-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;margin-bottom:4px;}
+.ci-hdr{background:linear-gradient(135deg,#3d5268,#2d3f52);padding:44px 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.ci-hdr-left{display:flex;flex-direction:column;gap:1px;}
+.ci-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;line-height:1;}
 .ci-title span{color:#ffb3b9;}
 .ci-subtitle{font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;}
-.ci-clock{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:white;text-align:center;margin:24px 0 4px;letter-spacing:2px;}
+.ci-clock{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:1px;text-align:right;}
 .ci-quickbar{display:flex;align-items:stretch;gap:0;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.08);overflow:hidden;}
 .ci-qb-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 6px;gap:2px;border-right:1px solid rgba(255,255,255,0.07);}
 .ci-qb-item:last-child{border-right:none;}
@@ -308,25 +311,28 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-qb-val.orange{color:#f5a623;}
 .ci-qb-val.red{color:#E8394A;}
 .ci-date{font-size:12px;color:rgba(255,255,255,0.45);text-align:center;margin-bottom:24px;}
-.ci-body{padding:0 16px;}
+.ci-body{padding:0 12px 180px;overflow-y:auto;}
 .ci-section-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin:20px 0 10px;}
-.ci-kunde-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
-.ci-kunde-btn{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:all 0.2s;color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;}
-.ci-kunde-btn.selected,.ci-kunde-btn:hover{background:rgba(232,57,74,0.25);border-color:var(--red);transform:scale(1.03);}
-.ci-kunde-icon{font-size:22px;margin-bottom:6px;display:block;}
-.ci-actions{display:flex;gap:10px;margin-bottom:16px;}
-.ci-btn{flex:1;padding:16px 10px;border-radius:16px;border:none;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:4px;}
-.ci-btn:disabled{opacity:0.4;cursor:not-allowed;}
-.ci-btn-in{background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;box-shadow:0 6px 20px rgba(76,186,107,0.4);}
-.ci-btn-in:hover:not(:disabled){transform:translateY(-2px);}
-.ci-btn-out{background:linear-gradient(135deg,#E8394A,#c8102e);color:white;box-shadow:0 6px 20px rgba(232,57,74,0.4);}
-.ci-btn-out:hover:not(:disabled){transform:translateY(-2px);}
+.ci-kunde-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.ci-kunde-btn{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px 10px;text-align:center;cursor:pointer;transition:all 0.18s;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;-webkit-tap-highlight-color:transparent;}
+.ci-kunde-btn:active{transform:scale(0.96);}
+.ci-kunde-btn.selected{background:rgba(76,186,107,0.18);border-color:#4cba6b;box-shadow:0 0 0 3px rgba(76,186,107,0.12);}
+.ci-kunde-icon{font-size:28px;margin-bottom:6px;display:block;}
+.ci-actions{display:none;}
+.ci-actions-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:12px 12px 28px;background:linear-gradient(to top,rgba(26,37,53,0.98) 60%,transparent);display:flex;gap:10px;}
+.ci-btn{flex:1;padding:18px 10px;border-radius:18px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all 0.18s;display:flex;flex-direction:column;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent;}
+.ci-btn:active:not(:disabled){transform:scale(0.97);}
+.ci-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.ci-btn-in{background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;box-shadow:0 6px 24px rgba(76,186,107,0.45);}
+ 
+.ci-btn-out{background:linear-gradient(135deg,#E8394A,#c8102e);color:white;box-shadow:0 6px 24px rgba(232,57,74,0.45);}
+ 
 .ci-btn-sub{font-size:10px;font-weight:600;opacity:0.8;}
 .ci-vorfall-wrap{margin-bottom:14px;}
 .ci-vorfall-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:6px;display:block;}
 .ci-vorfall-input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;outline:none;resize:none;min-height:60px;}
 .ci-vorfall-input::placeholder{color:rgba(255,255,255,0.25);}
-.ci-log-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;overflow:hidden;}
+.ci-log-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;margin-bottom:10px;}
 .ci-log-title{padding:12px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);}
 .ci-log-empty{padding:24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);}
 .ci-log-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);animation:rowIn 0.2s ease;}
@@ -346,11 +352,11 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-log-actions-bar{display:flex;gap:6px;padding:8px 12px;border-top:1px solid rgba(255,255,255,0.08);}
 .ci-log-act{flex:1;padding:7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.12);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
 .ci-log-act:hover{background:rgba(232,57,74,0.15);color:var(--red);border-color:rgba(232,57,74,0.3);}
-.ci-import-btn{width:100%;margin-top:16px;padding:14px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:white;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;}
-.ci-import-btn:hover{transform:translateY(-1px);}
-.ci-back-btn{width:100%;margin-top:10px;padding:12px;background:transparent;color:rgba(255,255,255,0.4);border:1.5px solid rgba(255,255,255,0.12);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
-.ci-back-btn:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);}
-.ci-toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#141518;color:white;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:99999;animation:toastIn 0.25s ease;white-space:nowrap;}
+.ci-import-btn{width:100%;padding:13px;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(76,186,107,0.3);margin-bottom:8px;}
+ 
+.ci-back-btn{width:100%;padding:11px;background:transparent;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+ 
+.ci-toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:#141518;color:white;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:99999;animation:toastIn 0.25s ease;white-space:nowrap;}
 .pdf-loading{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(4px);}
 .pdf-loading-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;letter-spacing:2px;}
 .pdf-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;}
@@ -375,6 +381,14 @@ body::before{display:none!important;}
 </style>
 </head>
 <body>
+ 
+<!-- SPLASH SCREEN — يظهر فوراً أثناء التحميل -->
+<div id="splashScreen" style="position:fixed;inset:0;z-index:999999;background:linear-gradient(160deg,#2d3f52 0%,#1a2535 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;transition:opacity 0.4s ease;">
+  <div style="font-size:28px;font-weight:800;color:white;letter-spacing:2px;margin-bottom:6px;">Denis <span style="color:#ffb3b9;">Protokoll</span></div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:3px;text-transform:uppercase;margin-bottom:40px;">Sicherheitsdienst</div>
+  <div style="width:44px;height:44px;border:3px solid rgba(255,255,255,0.15);border-top-color:#E8394A;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div id="splashMsg" style="margin-top:20px;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:1px;">Wird geladen…</div>
+</div>
  
 <!-- PIN SCREEN — dots + grid SICHTBAR von Anfang an -->
 <div id="pinScreen">
@@ -556,8 +570,14 @@ body::before{display:none!important;}
  
 <div id="checkinScreen">
   <div class="ci-hdr">
-    <div class="ci-title">⏱ Check<span>in</span></div>
-    <div class="ci-subtitle">Eingang · Ausgang · Kunde</div>
+    <div class="ci-hdr-left">
+      <div class="ci-title">✅ Check<span>in</span></div>
+      <div class="ci-subtitle">Eingang · Ausgang · Kunde</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+      <div class="ci-clock" id="ciClock">00:00:00</div>
+      <div class="ci-date" id="ciDate">—</div>
+    </div>
   </div>
   <!-- شريط النظرة السريعة -->
   <div class="ci-quickbar" id="ciQuickBar">
@@ -588,13 +608,14 @@ body::before{display:none!important;}
           style="background:rgba(76,186,107,0.2);border:1.5px solid rgba(76,186,107,0.4);border-radius:12px;color:#4cba6b;font-size:20px;width:44px;height:44px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;">＋</button>
       </div>
     </div>
-    <div class="ci-actions">
+    <!-- الأزرار الثابتة في الأسفل — موضوعة هنا في HTML بس مثبتة بـ CSS -->
+    <div class="ci-actions-bar">
       <button class="ci-btn ci-btn-in" id="ciBtnIn" onclick="ciIn()" disabled>
-        <span style="font-size:22px">✅</span>Eingang
+        <span style="font-size:26px">✅</span>Eingang
         <span class="ci-btn-sub" id="ciBtnInSub">Kunde wählen</span>
       </button>
       <button class="ci-btn ci-btn-out" id="ciBtnOut" onclick="ciOut()" disabled>
-        <span style="font-size:22px">🚪</span>Ausgang
+        <span style="font-size:26px">🚪</span>Ausgang
         <span class="ci-btn-sub" id="ciBtnOutSub">Kunde wählen</span>
       </button>
     </div>
@@ -817,10 +838,18 @@ let pinEntry='';
  
 // Beim Laden: PIN direkt anzeigen, Face ID im Hintergrund versuchen
 window.addEventListener('load',()=>{
-  // Versuche Face ID nach kurzer Pause — aber PIN bleibt sichtbar
+  // أخفِ splash screen بعد تحميل كل شيء
+  const splash=document.getElementById('splashScreen');
+  const msg=document.getElementById('splashMsg');
+  if(msg)msg.textContent='Bereit ✓';
   setTimeout(()=>{
+    if(splash){
+      splash.style.opacity='0';
+      setTimeout(()=>{splash.style.display='none';},400);
+    }
+    // ثم حاول Face ID
     tryFaceIDSilent();
-  }, 400);
+  }, 300);
 });
  
 // Face ID still im Hintergrund — bei Fehler passiert nichts (PIN bleibt)
@@ -1111,13 +1140,25 @@ function colorTime(inp){
   inp.classList.remove('t-night','t-day','t-eve');
   if(h>=6&&h<17)inp.classList.add('t-day');else if(h>=17&&h<22)inp.classList.add('t-eve');else inp.classList.add('t-night');
 }
-function setNow(id){const el=document.getElementById(id);if(el){el.value=nowHM();colorTime(el);}}
+function setNow(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.value=nowHM();colorTime(el);
+  // sync مع Check-in
+  const rowEl=el.closest('.proto-row');
+  if(rowEl){
+    const type=id.startsWith('bd-')?'in':'out';
+    syncProtoToCI(rowEl,type,el.value);
+  }
+}
  
 function addRow(data){
   const id=++rowId;nCounts[id]=[];
   const k=data?.k||'— Standort —',bv=data?.b||'',ev=data?.e||'';
   const isCustom=!KUNDEN.includes(k)&&k!=='— Standort —';
   const div=document.createElement('div');div.className='proto-row';div.id=`row-${id}`;
+  // ربط بـ Check-in log index إذا موجود
+  if(data?.ciLogIdx!==undefined) div.dataset.ciLogIdx=data.ciLogIdx;
   div.innerHTML=`
     <div class="cell cell-kunde">
       <span class="row-num">#${String(id).padStart(2,'0')}</span>
@@ -1130,11 +1171,11 @@ function addRow(data){
       <span class="kunde-back no-print" id="kback-${id}" style="display:${isCustom?'inline':'none'}" onclick="resetKunde(${id})">↩</span>
     </div>
     <div class="cell cell-time">
-      <input class="time-input-direct" id="bd-${id}" type="time" value="${bv}" oninput="colorTime(this)">
+      <input class="time-input-direct" id="bd-${id}" type="time" value="${bv}" oninput="colorTime(this);syncProtoToCI(document.getElementById('row-${id}'),'in',this.value)">
       <button class="time-now-btn no-print" onclick="setNow('bd-${id}')">⏱ Jetzt</button>
     </div>
     <div class="cell cell-time">
-      <input class="time-input-direct" id="ed-${id}" type="time" value="${ev}" oninput="colorTime(this)">
+      <input class="time-input-direct" id="ed-${id}" type="time" value="${ev}" oninput="colorTime(this);syncProtoToCI(document.getElementById('row-${id}'),'out',this.value)">
       <button class="time-now-btn no-print" onclick="setNow('ed-${id}')">⏱ Jetzt</button>
     </div>
     <div class="cell cell-notiz">
@@ -1914,7 +1955,10 @@ function ciIn(){
     const notizen=vorfaelle.map(v=>({ev:v.ev,c:v.c,ft:''}));
     const free=document.getElementById('ciVorfallInput')?.value.trim();
     if(k===ciSelected&&free)notizen.push({ev:'Freitext\u2026',c:0,ft:free});
-    addRow({k,b:time,e:'',n:notizen});
+    addRow({k,b:time,e:'',n:notizen,ciLogIdx});
+    const updLog=ciGetLog();
+    if(updLog[ciLogIdx])updLog[ciLogIdx].rowId='row-'+rowId;
+    ciSaveLog(updLog);
   });
   saveData();ciResetVorfall();
 }
@@ -2067,7 +2111,20 @@ function ciSetNowTime(idx){
 }
  
 function ciSyncTimeToProtocol(logIdx, kunde, type, newTime, oldTime){
-  // ابحث عن الصف المرتبط وحدّث وقته
+  const log=ciGetLog();
+  const entry=log[logIdx];
+  // أولاً: حاول عبر rowId المحفوظ (الأدق)
+  if(entry&&entry.rowId){
+    const row=document.getElementById(entry.rowId);
+    if(row){
+      const id=entry.rowId.replace('row-','');
+      const bd=document.getElementById('bd-'+id);
+      const ed=document.getElementById('ed-'+id);
+      if(type==='in'&&bd){bd.value=newTime;colorTime(bd);saveData();return;}
+      if(type==='out'&&ed){ed.value=newTime;colorTime(ed);saveData();return;}
+    }
+  }
+  // ثانياً: fallback — ابحث بالكند والوقت القديم
   document.querySelectorAll('.proto-row').forEach(row=>{
     const id=row.id.replace('row-','');
     const ksel=document.getElementById('ksel-'+id);
@@ -2080,6 +2137,20 @@ function ciSyncTimeToProtocol(logIdx, kunde, type, newTime, oldTime){
     if(type==='in'&&bd&&bd.value===oldTime){bd.value=newTime;colorTime(bd);saveData();}
     if(type==='out'&&ed&&ed.value===oldTime){ed.value=newTime;colorTime(ed);saveData();}
   });
+}
+ 
+// تعديل مباشر في البروتوكول ينعكس على Check-in
+function syncProtoToCI(rowElement, type, newTime){
+  const ciIdx=rowElement.dataset.ciLogIdx;
+  if(ciIdx===undefined)return;
+  const log=ciGetLog();
+  const idx=parseInt(ciIdx);
+  if(!log[idx])return;
+  log[idx].time=newTime;
+  ciSaveLog(log);
+  // حدّث الـ display في ciRenderLog لو مفتوح
+  const lbl=document.getElementById('ci-time-lbl-'+idx);
+  if(lbl)lbl.textContent=newTime+' Uhr';
 }
  
 function ciToggleType(idx){
@@ -2163,4 +2234,4 @@ document.addEventListener('keydown',e=>{
 });
 </script>
 </body>
-</html
+</html>
