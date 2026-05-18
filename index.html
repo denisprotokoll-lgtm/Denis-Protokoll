@@ -396,6 +396,11 @@ body.dark-mode .settings-pin-btn{background:#3a3a3a;color:var(--text);}
 .ci-alert-banner.show{display:flex;align-items:center;gap:8px;}
 .ci-alert-text{flex:1;font-size:11px;font-weight:700;color:#f5a623;line-height:1.4;}
 .ci-alert-btn{background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.4);border-radius:8px;color:#f5a623;font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;white-space:nowrap;}
+.ci-sos-btn{position:fixed;right:12px;top:60px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#E8394A,#c8102e);border:none;color:white;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(232,57,74,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;animation:recpulse 2s infinite;letter-spacing:0.5px;}
+.ci-quicknote-bar{margin:8px 12px 0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;display:flex;align-items:center;gap:8px;padding:8px 12px;}
+.ci-quicknote-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:white;placeholder-color:rgba(255,255,255,0.25);}
+.ci-quicknote-input::placeholder{color:rgba(255,255,255,0.25);}
+.ci-quicknote-send{background:rgba(76,186,107,0.2);border:1px solid rgba(76,186,107,0.4);border-radius:8px;color:#4cba6b;font-size:18px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .pdf-loading-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;letter-spacing:2px;}
 .pdf-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;}
 @media print{
@@ -678,6 +683,16 @@ body::before{display:none!important;}
       <div class="ci-clock" id="ciClock">00:00:00</div>
       <div class="ci-date" id="ciDate">—</div>
     </div>
+  </div>
+  <!-- SOS Button -->
+  <button class="ci-sos-btn" id="ciSosBtn" onclick="ciSOS()" style="display:none;">
+    <span style="font-size:18px;">&#x1f6a8;</span>
+    <span>SOS</span>
+  </button>
+  <!-- Quick Note -->
+  <div class="ci-quicknote-bar">
+    <input class="ci-quicknote-input" id="ciQuickNoteInput" type="text" placeholder="&#x270f;&#xfe0f; Schnellnotiz..." onkeydown="if(event.key==='Enter')ciSendQuickNote()">
+    <button class="ci-quicknote-send" onclick="ciSendQuickNote()">&#x2197;&#xfe0f;</button>
   </div>
   <div class="ci-quickbar" id="ciQuickBar">
     <div class="ci-qb-item"><span class="ci-qb-label">Noch drin</span><span class="ci-qb-val green" id="qbActive">—</span></div>
@@ -1098,6 +1113,170 @@ function checkPin(){
     setTimeout(()=>{pinEntry='';updatePinDots();document.getElementById('pinScreen').style.animation='';},500);
   }
 }
+ 
+/* ===== SOS ===== */
+function ciSOS(){
+  // اهتزاز
+  if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+  // صوت طارئ
+  playBeep('danger');
+  // إظهار قائمة أحداث الطوارئ السريعة
+  const sosEvents=[
+    'Polizei eingetroffen – Personalien aufgenommen',
+    'Notruf / Notfall gemeldet',
+    'Rettungsdienst angefordert',
+    'Vandalismus gemeldet – Polizei informiert',
+    'Diebstahl gemeldet – Polizei verstaendigt',
+    'Streit geschlichtet',
+  ];
+  // إنشاء popup سريع
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:20px;backdrop-filter:blur(6px);';
+  let btns=sosEvents.map(ev=>`
+    <button onclick="ciSOSSelect('${ev.replace(/'/g,"\\'")}',this.closest('[style*=inset]'))"
+      style="width:100%;padding:14px 16px;border-radius:12px;border:none;background:rgba(232,57,74,0.15);border:1.5px solid rgba(232,57,74,0.4);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px;">
+      🚨 ${ev}
+    </button>`).join('');
+  overlay.innerHTML=`
+    <div style="width:100%;max-width:480px;padding:0 16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;text-align:center;margin-bottom:16px;">🚨 SOS — Ereignis wählen</div>
+      ${btns}
+      <button onclick="this.closest('[style*=inset]').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">Abbrechen</button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+ 
+function ciSOSSelect(ereignis, overlay){
+  if(overlay) overlay.remove();
+  // اهتزاز تأكيد
+  if(navigator.vibrate) navigator.vibrate(100);
+  // أضف للكند المحدد أو بدون كند
+  const time=nowHM();
+  const log=ciGetLog();
+  log.push({kunde:ciSelected||'SOS',type:'in',time,ts:Date.now(),vorfall:ereignis,rowId:null});
+  ciSaveLog(log);
+  // أضف صف في البروتوكول
+  addRow({k:ciSelected||'SOS',b:time,e:'',n:[{ev:ereignis,c:1,ft:''}]});
+  saveData();
+  ciRenderLog();updateQuickBar();
+  ciShowToast('SOS: '+ereignis.substring(0,30)+'...');
+  playBeep('danger');
+}
+ 
+// إظهار/إخفاء SOS عند اختيار كند
+const _origCiSelectKunde=ciSelectKunde;
+function ciSelectKunde(k){
+  _origCiSelectKunde(k);
+  const sosBtn=document.getElementById('ciSosBtn');
+  if(sosBtn) sosBtn.style.display='flex';
+}
+ 
+/* ===== QUICK NOTE ===== */
+function ciSendQuickNote(){
+  const inp=document.getElementById('ciQuickNoteInput');
+  const text=inp.value.trim();
+  if(!text) return;
+  const time=nowHM();
+  // أضف للبروتوكول كـ Freitext
+  const targetKunde=ciSelected||ciGetAllKunden()[0]||'';
+  if(targetKunde){
+    // ابحث عن آخر صف مفتوح
+    let added=false;
+    const rows=[...document.querySelectorAll('.proto-row')].reverse();
+    for(const row of rows){
+      const id=row.id.replace('row-','');
+      const ksel=document.getElementById('ksel-'+id);
+      const kcust=document.getElementById('kcust-'+id);
+      const isC=kcust&&kcust.style.display!=='none';
+      const k=isC?kcust.value:(ksel?ksel.value:'');
+      if(k===targetKunde){
+        addNotiz(parseInt(id),'Freitext...',0,text);
+        added=true;break;
+      }
+    }
+    if(!added){
+      addRow({k:targetKunde,b:time,e:'',n:[{ev:'Freitext...',c:0,ft:text}]});
+    }
+  } else {
+    addRow({k:'Notiz',b:time,e:'',n:[{ev:'Freitext...',c:0,ft:text}]});
+  }
+  inp.value='';
+  saveData();
+  // اهتزاز خفيف
+  if(navigator.vibrate) navigator.vibrate(50);
+  playBeep('success');
+  ciShowToast('Notiz gespeichert');
+}
+ 
+/* ===== HAPTIC + SOUNDS ===== */
+// استبدال playBeep بنسخة محسّنة مع أصوات مختلفة
+const _origPlayBeep=playBeep;
+function playBeep(type='save'){
+  // اهتزاز حسب النوع
+  if(navigator.vibrate){
+    if(type==='danger') navigator.vibrate([150,50,150]);
+    else if(type==='success') navigator.vibrate(60);
+    else if(type==='save') navigator.vibrate(30);
+  }
+  // صوت
+  if(!soundEnabled) return;
+  const ctx=getACtx();if(!ctx) return;
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.connect(gain);gain.connect(ctx.destination);
+  const t=ctx.currentTime;
+  if(type==='save'){
+    osc.frequency.value=880;
+    gain.gain.setValueAtTime(0.06,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.15);
+    osc.start();osc.stop(t+0.15);
+  } else if(type==='success'){
+    // صوتان صاعدان
+    osc.frequency.setValueAtTime(600,t);
+    osc.frequency.setValueAtTime(900,t+0.1);
+    gain.gain.setValueAtTime(0.08,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+    osc.start();osc.stop(t+0.25);
+  } else if(type==='danger'){
+    // صوت تنبيه متكرر
+    osc.type='sawtooth';
+    osc.frequency.setValueAtTime(440,t);
+    osc.frequency.setValueAtTime(380,t+0.15);
+    osc.frequency.setValueAtTime(440,t+0.3);
+    gain.gain.setValueAtTime(0.15,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+    osc.start();osc.stop(t+0.5);
+  }
+}
+ 
+// صوت Eingang (صاعد)
+function playCheckinSound(type){
+  if(!soundEnabled) return;
+  const ctx=getACtx();if(!ctx) return;
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.connect(gain);gain.connect(ctx.destination);
+  const t=ctx.currentTime;
+  if(type==='in'){
+    // صوت دخول — نغمتان صاعدتان
+    osc.frequency.setValueAtTime(500,t);
+    osc.frequency.linearRampToValueAtTime(800,t+0.2);
+    gain.gain.setValueAtTime(0.1,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+    osc.start();osc.stop(t+0.3);
+  } else {
+    // صوت خروج — نغمتان هابطتان
+    osc.frequency.setValueAtTime(800,t);
+    osc.frequency.linearRampToValueAtTime(400,t+0.2);
+    gain.gain.setValueAtTime(0.1,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+    osc.start();osc.stop(t+0.3);
+  }
+  // اهتزاز
+  if(navigator.vibrate){
+    if(type==='in') navigator.vibrate([80,30,80]);
+    else navigator.vibrate([120]);
+  }
+}
+ 
 document.addEventListener('keydown',e=>{
   if(document.getElementById('pinScreen').style.display!=='none'){
     if(e.key>='0'&&e.key<='9')pinPress(e.key);
@@ -2370,7 +2549,7 @@ function ciIn(){
   ciSaveLog(updLog);
   ciRenderLog();updateQuickBar();
   ciShowToast('✅ '+ciSelected+' – Eingang');
-  playBeep('success');saveData();ciResetVorfall();
+  playCheckinSound('in');saveData();ciResetVorfall();
 }
 function ciOut(){
   if(!ciSelected)return;
@@ -2402,7 +2581,7 @@ function ciOut(){
   }
   ciRenderLog();updateQuickBar();
   ciShowToast('🚪 '+ciSelected+' – Ausgang');
-  playBeep('success');ciResetVorfall();saveData();
+  playCheckinSound('out');ciResetVorfall();saveData();
 }
  
 function ciRenderLog(){
