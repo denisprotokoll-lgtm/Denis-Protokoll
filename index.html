@@ -47,7 +47,7 @@ body.dark-mode .proto-row.danger .cell{background:#3a1a1a!important;}
 @keyframes aipulse{0%,100%{box-shadow:0 3px 16px rgba(124,58,237,0.45)}50%{box-shadow:0 3px 28px rgba(124,58,237,0.8)}}
 @keyframes recpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
- 
+
 /* ===== PIN SCREEN ===== */
 #pinScreen{position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#2d3f52 0%,#1a2535 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
 .pin-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:white;margin-bottom:6px;letter-spacing:2px;}
@@ -65,7 +65,7 @@ body.dark-mode .proto-row.danger .cell{background:#3a1a1a!important;}
 .pin-btn.zero{grid-column:2;}
 .pin-error{font-size:12px;font-weight:700;color:var(--red);margin-top:16px;opacity:0;transition:opacity 0.2s;}
 .pin-error.show{opacity:1;}
- 
+
 body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;padding:24px 16px 80px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 1px 1px,#d4cdc6 1px,transparent 0);background-size:28px 28px;opacity:0.5;pointer-events:none;z-index:0;}
 .autosave-bar{position:fixed;bottom:0;left:0;right:0;z-index:999;background:#e8f5e9;border-top:2px solid #4cba6b;display:flex;align-items:center;justify-content:space-between;padding:6px 16px;font-size:11px;font-weight:700;color:#2e7d32;transition:all 0.3s;gap:10px;}
@@ -309,6 +309,40 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-qb-val.green{color:#4cba6b;}
 .ci-qb-val.orange{color:#f5a623;}
 .ci-qb-val.red{color:#E8394A;}
+.ci-sos-btn{position:fixed;right:12px;top:60px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#E8394A,#c8102e);border:none;color:white;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(232,57,74,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;animation:recpulse 2s infinite;letter-spacing:0.5px;}
+.ci-quicknote-bar{margin:8px 12px 0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;display:flex;align-items:center;gap:8px;padding:8px 12px;}
+.ci-quicknote-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:white;}
+.ci-quicknote-input::placeholder{color:rgba(255,255,255,0.25);}
+.ci-quicknote-send{background:rgba(76,186,107,0.2);border:1px solid rgba(76,186,107,0.4);border-radius:8px;color:#4cba6b;font-size:18px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ci-alert-banner{display:none;margin:8px 12px 0;background:rgba(245,166,35,0.15);border:1.5px solid rgba(245,166,35,0.4);border-radius:12px;padding:10px 12px;}
+.ci-alert-banner.show{display:flex;align-items:center;gap:8px;}
+.ci-alert-text{flex:1;font-size:11px;font-weight:700;color:#f5a623;line-height:1.4;}
+.ci-alert-btn{background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.4);border-radius:8px;color:#f5a623;font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;white-space:nowrap;}
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9996;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);}
+.settings-modal{background:var(--card);border-radius:20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.4);animation:modalIn 0.3s ease;}
+.settings-hdr{background:linear-gradient(135deg,#4a6080,#3d5268);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;}
+.settings-hdr-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;}
+.settings-close{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.settings-body{padding:16px;display:flex;flex-direction:column;gap:14px;}
+.settings-section{background:#f8f9fc;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+body.dark-mode .settings-section{background:#2a2a2a;border-color:#444;}
+.settings-section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px 6px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);gap:10px;}
+.settings-row-label{font-size:13px;font-weight:600;color:var(--text);}
+.settings-row-sub{font-size:10px;color:var(--muted);margin-top:1px;}
+.settings-input{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;background:#fafafa;outline:none;width:120px;text-align:center;}
+body.dark-mode .settings-input{background:#3a3a3a;color:var(--text);border-color:#555;}
+.settings-input:focus{border-color:var(--red);}
+.settings-btn{padding:6px 14px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
+.settings-btn-red{background:var(--red);color:white;}
+.settings-pin-dots{display:flex;gap:8px;justify-content:center;margin:8px 0;}
+.settings-pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(0,0,0,0.2);background:transparent;transition:all 0.15s;}
+.settings-pin-dot.filled{background:var(--red);border-color:var(--red);}
+.settings-pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0;}
+.settings-pin-btn{height:44px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--text);font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;}
+body.dark-mode .settings-pin-btn{background:#3a3a3a;color:var(--text);}
+.settings-pin-btn:active{transform:scale(0.94);}
+.settings-pin-btn.del{background:#fff0f1;border-color:#f5c0c4;color:var(--red);}
 .ci-clock{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:white;letter-spacing:1px;text-align:right;}
 .ci-quickbar{display:flex;align-items:stretch;gap:0;background:rgba(0,0,0,0.25);border-bottom:1px solid rgba(255,255,255,0.08);overflow:hidden;}
 .ci-qb-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 6px;gap:2px;border-right:1px solid rgba(255,255,255,0.07);}
@@ -332,9 +366,9 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-btn:active:not(:disabled){transform:scale(0.97);}
 .ci-btn:disabled{opacity:0.3;cursor:not-allowed;}
 .ci-btn-in{background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;box-shadow:0 6px 20px rgba(76,186,107,0.4);}
- 
+
 .ci-btn-out{background:linear-gradient(135deg,#E8394A,#c8102e);color:white;box-shadow:0 6px 20px rgba(232,57,74,0.4);}
- 
+
 .ci-btn-sub{font-size:10px;font-weight:600;opacity:0.8;}
 .ci-vorfall-wrap{margin-bottom:14px;}
 .ci-vorfall-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:6px;display:block;}
@@ -361,46 +395,14 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-log-act{flex:1;padding:7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.12);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
 .ci-log-act:hover{background:rgba(232,57,74,0.15);color:var(--red);border-color:rgba(232,57,74,0.3);}
 .ci-import-btn{width:100%;padding:13px;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;transition:all 0.2s;margin-bottom:8px;}
- 
+
 .ci-back-btn{width:100%;padding:11px;background:transparent;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
- 
+
 .ci-toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:#141518;color:white;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:99999;animation:toastIn 0.25s ease;white-space:nowrap;}
 .pdf-loading{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;backdrop-filter:blur(4px);}
-.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9996;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(6px);}
-.settings-modal{background:var(--card);border-radius:20px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.4);animation:modalIn 0.3s ease;}
-.settings-hdr{background:linear-gradient(135deg,#4a6080,#3d5268);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1;}
-.settings-hdr-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:white;}
-.settings-close{background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
-.settings-body{padding:16px;display:flex;flex-direction:column;gap:14px;}
-.settings-section{background:#f8f9fc;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
-body.dark-mode .settings-section{background:#2a2a2a;border-color:#444;}
-.settings-section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px 6px;}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);gap:10px;}
-.settings-row-label{font-size:13px;font-weight:600;color:var(--text);}
-.settings-row-sub{font-size:10px;color:var(--muted);margin-top:1px;}
-.settings-input{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;background:#fafafa;outline:none;width:120px;text-align:center;}
-body.dark-mode .settings-input{background:#3a3a3a;color:var(--text);border-color:#555;}
-.settings-input:focus{border-color:var(--red);}
-.settings-btn{padding:6px 14px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;}
-.settings-btn-red{background:var(--red);color:white;}
-.settings-btn-ghost{background:white;color:#555;border:1.5px solid var(--border);}
-.settings-pin-dots{display:flex;gap:8px;justify-content:center;margin:8px 0;}
-.settings-pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid rgba(0,0,0,0.2);background:transparent;transition:all 0.15s;}
-.settings-pin-dot.filled{background:var(--red);border-color:var(--red);}
-.settings-pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0;}
-.settings-pin-btn{height:44px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--text);font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all 0.12s;}
-body.dark-mode .settings-pin-btn{background:#3a3a3a;color:var(--text);}
-.settings-pin-btn:active{transform:scale(0.94);}
-.settings-pin-btn.del{background:#fff0f1;border-color:#f5c0c4;color:var(--red);}
-.ci-alert-banner{display:none;margin:8px 12px 0;background:rgba(245,166,35,0.15);border:1.5px solid rgba(245,166,35,0.4);border-radius:12px;padding:10px 12px;animation:rowIn 0.3s ease;}
-.ci-alert-banner.show{display:flex;align-items:center;gap:8px;}
-.ci-alert-text{flex:1;font-size:11px;font-weight:700;color:#f5a623;line-height:1.4;}
-.ci-alert-btn{background:rgba(245,166,35,0.2);border:1px solid rgba(245,166,35,0.4);border-radius:8px;color:#f5a623;font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;white-space:nowrap;}
-.ci-sos-btn{position:fixed;right:12px;top:60px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#E8394A,#c8102e);border:none;color:white;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(232,57,74,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;animation:recpulse 2s infinite;letter-spacing:0.5px;}
-.ci-quicknote-bar{margin:8px 12px 0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;display:flex;align-items:center;gap:8px;padding:8px 12px;}
-.ci-quicknote-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:white;placeholder-color:rgba(255,255,255,0.25);}
-.ci-quicknote-input::placeholder{color:rgba(255,255,255,0.25);}
-.ci-quicknote-send{background:rgba(76,186,107,0.2);border:1px solid rgba(76,186,107,0.4);border-radius:8px;color:#4cba6b;font-size:18px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.print-sig-area{display:none;margin-top:20px;border-top:1px solid #ddd;padding-top:16px;}
+@media print{.print-sig-area{display:block !important;}}
+
 .pdf-loading-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;letter-spacing:2px;}
 .pdf-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:var(--red);border-radius:50%;animation:spin 0.8s linear infinite;}
 @media print{
@@ -424,7 +426,7 @@ body::before{display:none!important;}
 </style>
 </head>
 <body>
- 
+
 <!-- SPLASH SCREEN — يظهر فوراً أثناء التحميل -->
 <div id="splashScreen" style="position:fixed;inset:0;z-index:999999;background:linear-gradient(160deg,#2d3f52 0%,#1a2535 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;transition:opacity 0.4s ease;">
   <div style="font-size:28px;font-weight:800;color:white;letter-spacing:2px;margin-bottom:6px;">Denis <span style="color:#ffb3b9;">Protokoll</span></div>
@@ -432,7 +434,7 @@ body::before{display:none!important;}
   <div style="width:44px;height:44px;border:3px solid rgba(255,255,255,0.15);border-top-color:#E8394A;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
   <div id="splashMsg" style="margin-top:20px;font-size:11px;color:rgba(255,255,255,0.25);letter-spacing:1px;">Wird geladen…</div>
 </div>
- 
+
 <!-- PIN SCREEN — dots + grid SICHTBAR von Anfang an -->
 <div id="pinScreen">
   <div class="pin-logo">Denis <span>Protokoll</span></div>
@@ -463,11 +465,11 @@ body::before{display:none!important;}
   </button>
   <div class="pin-error" id="pinError">❌ PIN falsch — bitte erneut versuchen</div>
 </div>
- 
+
 <!-- APP CONTENT -->
 <div id="appContent" style="display:none">
 <div class="toast-wrap" id="toastWrap"></div>
- 
+
 <!-- SETTINGS -->
 <div class="settings-overlay" id="settingsOverlay" style="display:none">
   <div class="settings-modal">
@@ -485,10 +487,8 @@ body::before{display:none!important;}
         <div id="pinChangeArea" style="display:none;padding:10px 14px;border-top:1px solid var(--border);">
           <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px;" id="pinChangeLabel">Neuen PIN eingeben:</div>
           <div class="settings-pin-dots" id="settingsPinDots">
-            <div class="settings-pin-dot" id="spd0"></div>
-            <div class="settings-pin-dot" id="spd1"></div>
-            <div class="settings-pin-dot" id="spd2"></div>
-            <div class="settings-pin-dot" id="spd3"></div>
+            <div class="settings-pin-dot" id="spd0"></div><div class="settings-pin-dot" id="spd1"></div>
+            <div class="settings-pin-dot" id="spd2"></div><div class="settings-pin-dot" id="spd3"></div>
           </div>
           <div class="settings-pin-grid">
             <button class="settings-pin-btn" onclick="settingsPinPress('1')">1</button>
@@ -518,13 +518,16 @@ body::before{display:none!important;}
           <input type="text" class="settings-input" id="settingsNewKunde" placeholder="Neuer Kunde..." style="width:auto;flex:1;text-align:left;" onkeydown="if(event.key==='Enter')settingsAddKunde()">
           <button class="settings-btn settings-btn-red" onclick="settingsAddKunde()">+</button>
         </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Alle zuruecksetzen</div><div class="settings-row-sub">Alle Kunden loeschen</div></div>
+          <button class="settings-btn" style="background:#fff0f1;border:1px solid #f5c0c4;color:var(--red);" onclick="if(confirm('Alle Kunden loeschen?')){localStorage.removeItem('denis_extra_kunden');settingsRenderKunden();showToast('Kunden geleert','info');}">Reset</button>
+        </div>
       </div>
       <button onclick="saveSettings()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#3d5268,#4a6080);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">Einstellungen speichern</button>
-      <button onclick="if(confirm('Alle Kunden löschen?')){localStorage.removeItem('denis_extra_kunden');settingsRenderKunden();showToast('Alle Kunden gelöscht','info');}" style="width:100%;padding:11px;border-radius:12px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">Alle Kunden zurücksetzen</button>
     </div>
   </div>
 </div>
- 
+
 <div class="archive-overlay-bg" id="archiveBg" style="display:none" onclick="closeArchive()"></div>
 <div class="archive-panel" id="archivePanel">
   <div class="archive-hdr">
@@ -533,7 +536,7 @@ body::before{display:none!important;}
   </div>
   <div class="archive-list" id="archiveList"></div>
 </div>
- 
+
 <div class="report-overlay" id="reportOverlay" style="display:none">
   <div class="report-modal">
     <div class="report-modal-hdr">
@@ -555,7 +558,7 @@ body::before{display:none!important;}
     </div>
   </div>
 </div>
- 
+
 <div class="sig-overlay" id="sigOverlay" style="display:none">
   <div class="sig-modal">
     <div class="sig-hdr">
@@ -566,14 +569,15 @@ body::before{display:none!important;}
       <div class="sig-hint">Mit dem Finger oder der Maus unterschreiben:</div>
       <canvas id="sigCanvas" class="sig-canvas" width="440" height="160"></canvas>
       <div class="sig-btns">
-        <button class="sig-clear" onclick="clearSig()">🗑 Löschen</button>
-        <button class="sig-save" onclick="saveSig()">✅ Unterschrift speichern</button>
+        <button class="sig-clear" onclick="clearSig()">Loeschen</button>
+        <button class="sig-save" onclick="saveSig()">Speichern</button>
       </div>
-      <div class="sig-saved-msg" id="sigSavedMsg">✅ Unterschrift gespeichert!</div>
+      <div class="sig-saved-msg" id="sigSavedMsg">Unterschrift gespeichert!</div>
+      <button id="sigDeleteBtn" onclick="deleteSig()" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:none;">Unterschrift entfernen</button>
     </div>
   </div>
 </div>
- 
+
 <div class="dashboard-overlay" id="dashOverlay" style="display:none">
   <div class="dashboard-modal">
     <div class="dash-hdr">
@@ -583,7 +587,7 @@ body::before{display:none!important;}
     <div class="dash-body" id="dashBody">Lädt…</div>
   </div>
 </div>
- 
+
 <div class="modal-overlay" id="aiOverlay" style="display:none" onclick="maybeCloseAI(event)">
   <div class="ai-modal" onclick="event.stopPropagation()">
     <div class="ai-handle"></div>
@@ -667,95 +671,38 @@ body::before{display:none!important;}
     </div>
   </div>
 </div>
- 
+
 <div id="checkinScreen">
   <div class="ci-alert-banner" id="ciAlertBanner">
-    <span style="font-size:20px;">⚠️</span>
+    <span style="font-size:18px;">(!)</span>
     <span class="ci-alert-text" id="ciAlertText">Vergessen auszuchecken?</span>
     <button class="ci-alert-btn" id="ciAlertBtn">Jetzt auschecken</button>
   </div>
+  <div class="ci-quicknote-bar">
+    <input class="ci-quicknote-input" id="ciQuickNoteInput" type="text"
+      placeholder="Schnellnotiz..." onkeydown="if(event.key==='Enter')ciSendQuickNote()">
+    <button class="ci-quicknote-send" onclick="ciSendQuickNote()">+</button>
+  </div>
+  <button class="ci-sos-btn" id="ciSosBtn" onclick="ciSOS()" style="display:none;">
+    <span style="font-size:20px;">!</span>
+    <span>SOS</span>
+  </button>
   <div class="ci-hdr">
     <div class="ci-hdr-left">
-      <div class="ci-title">✅ Check<span>in</span></div>
-      <div class="ci-subtitle">Eingang · Ausgang · Kunde</div>
+      <div class="ci-title">Check<span>in</span></div>
+      <div class="ci-subtitle">Eingang - Ausgang - Kunde</div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;">
       <div class="ci-clock" id="ciClock">00:00:00</div>
-      <div class="ci-date" id="ciDate">—</div>
+      <div class="ci-date" id="ciDate">--</div>
     </div>
-  </div>
-  <!-- SOS Button -->
-  <button class="ci-sos-btn" id="ciSosBtn" onclick="ciSOS()" style="display:none;">
-    <span style="font-size:18px;">&#x1f6a8;</span>
-    <span>SOS</span>
-  </button>
-  <!-- Quick Note -->
-  <div class="ci-quicknote-bar">
-    <input class="ci-quicknote-input" id="ciQuickNoteInput" type="text" placeholder="&#x270f;&#xfe0f; Schnellnotiz..." onkeydown="if(event.key==='Enter')ciSendQuickNote()">
-    <button class="ci-quicknote-send" onclick="ciSendQuickNote()">&#x2197;&#xfe0f;</button>
   </div>
   <div class="ci-quickbar" id="ciQuickBar">
-    <div class="ci-qb-item"><span class="ci-qb-label">Noch drin</span><span class="ci-qb-val green" id="qbActive">—</span></div>
-    <div class="ci-qb-item"><span class="ci-qb-label">Schichtende</span><span class="ci-qb-val orange" id="qbRemain">—</span></div>
-    <div class="ci-qb-item"><span class="ci-qb-label">Letzter</span><span class="ci-qb-val" id="qbLast" style="font-size:11px;">—</span></div>
+    <div class="ci-qb-item"><span class="ci-qb-label">Noch drin</span><span class="ci-qb-val green" id="qbActive">--</span></div>
+    <div class="ci-qb-item"><span class="ci-qb-label">Schichtende</span><span class="ci-qb-val orange" id="qbRemain">--</span></div>
+    <div class="ci-qb-item"><span class="ci-qb-label">Letzter</span><span class="ci-qb-val" id="qbLast" style="font-size:11px;">--</span></div>
   </div>
-  <!-- SETTINGS -->
-<div class="settings-overlay" id="settingsOverlay" style="display:none">
-  <div class="settings-modal">
-    <div class="settings-hdr">
-      <div class="settings-hdr-title">⚙️ Einstellungen</div>
-      <button class="settings-close" onclick="closeSettings()">✕</button>
-    </div>
-    <div class="settings-body">
-      <div class="settings-section">
-        <div class="settings-section-title">🔒 Sicherheit</div>
-        <div class="settings-row">
-          <div><div class="settings-row-label">PIN ändern</div><div class="settings-row-sub">4-stelliger Code</div></div>
-          <button class="settings-btn settings-btn-red" onclick="startPinChange()">✏️ Ändern</button>
-        </div>
-        <div id="pinChangeArea" style="display:none;padding:10px 14px;border-top:1px solid var(--border);">
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px;" id="pinChangeLabel">Neuen PIN eingeben:</div>
-          <div class="settings-pin-dots" id="settingsPinDots">
-            <div class="settings-pin-dot" id="spd0"></div>
-            <div class="settings-pin-dot" id="spd1"></div>
-            <div class="settings-pin-dot" id="spd2"></div>
-            <div class="settings-pin-dot" id="spd3"></div>
-          </div>
-          <div class="settings-pin-grid">
-            <button class="settings-pin-btn" onclick="settingsPinPress('1')">1</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('2')">2</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('3')">3</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('4')">4</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('5')">5</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('6')">6</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('7')">7</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('8')">8</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('9')">9</button>
-            <button class="settings-pin-btn" onclick="settingsPinPress('0')" style="grid-column:2;">0</button>
-            <button class="settings-pin-btn del" onclick="settingsPinDel()">⌫</button>
-          </div>
-        </div>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">⏱ Schichtzeiten</div>
-        <div class="settings-row"><div><div class="settings-row-label">Schichtbeginn</div><div class="settings-row-sub">Standard: 19:45</div></div><input type="time" class="settings-input" id="settingsShiftStart" value="19:45"></div>
-        <div class="settings-row"><div><div class="settings-row-label">Schichtende</div><div class="settings-row-sub">Standard: 07:00</div></div><input type="time" class="settings-input" id="settingsShiftEnd" value="07:00"></div>
-        <div class="settings-row"><div><div class="settings-row-label">Vergessen-Alarm</div><div class="settings-row-sub">Minuten ohne Ausgang</div></div><input type="number" class="settings-input" id="settingsAlarmMin" value="120" min="30" max="480" style="width:70px;"></div>
-      </div>
-      <div class="settings-section">
-        <div class="settings-section-title">🏢 Kunden verwalten</div>
-        <div id="settingsKundenList" style="padding:6px 14px;"></div>
-        <div class="settings-row" style="gap:6px;">
-          <input type="text" class="settings-input" id="settingsNewKunde" placeholder="Neuer Kunde..." style="width:auto;flex:1;text-align:left;" onkeydown="if(event.key==='Enter')settingsAddKunde()">
-          <button class="settings-btn settings-btn-red" onclick="settingsAddKunde()">＋</button>
-        </div>
-      </div>
-      <button onclick="saveSettings()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#3d5268,#4a6080);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">✅ Einstellungen speichern</button>
-    </div>
-  </div>
-</div>
- 
-<div class="ci-body">
+  <div class="ci-body">
     <div class="ci-section-label">📍 Kunde auswählen</div>
     <div class="ci-kunde-grid" id="ciKundeGrid"></div>
     <div id="ciNewKundeWrap" style="margin-bottom:16px;">
@@ -810,12 +757,12 @@ body::before{display:none!important;}
     <button class="ci-back-btn" onclick="hideCheckin()">📋 Protokoll anzeigen</button>
   </div>
 </div>
- 
+
 <div class="toolbar no-print">
   <div class="toolbar-brand">Denis <span>Protokoll</span> · Sicherheitsdienst</div>
   <div class="toolbar-right">
     <button class="btn btn-ghost" onclick="openDashboard()">📊</button>
-    <button class="btn btn-ghost" onclick="openSettings()">⚙️</button>
+    <button class="btn btn-ghost" onclick="openSettings()">&#x2699;</button>
     <button class="btn btn-ghost" onclick="openSigModal()">✍️</button>
     <button class="btn btn-ghost" onclick="toggleDark()">🌙</button>
     <button class="btn btn-ghost" onclick="toggleSound()" id="soundBtn">🔔</button>
@@ -825,7 +772,7 @@ body::before{display:none!important;}
     <button class="btn btn-red" onclick="window.print()">🖨 Drucken</button>
   </div>
 </div>
- 
+
 <div class="card" id="mainCard">
   <div class="card-header">
     <div class="header-left">
@@ -881,6 +828,23 @@ body::before{display:none!important;}
     <span id="rowCountLabel" style="font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--muted);min-width:55px;text-align:center;">0 Zeilen</span>
     <button class="add-row-btn" onclick="addRow()">＋ Zeile</button>
   </div>
+  <!-- Unterschrift Druck-Bereich -->
+  <div class="print-sig-area" id="printSigArea">
+    <div style="display:flex;gap:40px;align-items:flex-end;">
+      <div style="flex:1;">
+        <div id="printSigImg" style="height:60px;display:flex;align-items:flex-end;"><span style="font-size:11px;color:#999;">Unterschrift nicht vorhanden</span></div>
+        <div style="border-top:1px solid #333;margin-top:4px;padding-top:4px;">
+          <span style="font-size:10px;color:#555;" id="printSigName">Mitarbeiter</span>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div style="height:60px;"></div>
+        <div style="border-top:1px solid #333;margin-top:4px;padding-top:4px;">
+          <span style="font-size:10px;color:#555;">Vorgesetzter</span>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="card-footer">
     <div class="chips">
       <div class="chip"><span class="chip-dot"></span><span id="chipK">0 Kunden</span></div>
@@ -892,14 +856,14 @@ body::before{display:none!important;}
     <div class="footer-brand">Denis <span>Protokoll</span></div>
   </div>
 </div>
- 
+
 <button class="fab fab-ai no-print" onclick="openAI()">🤖</button>
 <button class="fab fab-left no-print" onclick="openArchive()">📁</button>
 <!-- زر Check-in الرئيسي — كبير وواضح في المنتصف أسفل -->
 <button id="fabCheckin" onclick="showCheckin()" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:998;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;border:none;border-radius:30px;padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(76,186,107,0.5);display:flex;align-items:center;gap:10px;transition:all 0.2s;" class="no-print">
   <span style="font-size:22px;">✅</span> Check-in öffnen
 </button>
- 
+
 <div class="autosave-bar no-print" id="autosaveBar">
   <span class="as-dot"></span>
   <span class="as-text" id="autosaveText">💾 Automatisch gespeichert</span>
@@ -910,17 +874,17 @@ body::before{display:none!important;}
   </div>
 </div>
 </div><!-- end appContent -->
- 
+
 <script>
 'use strict';
- 
+
 /* ===== WAKE LOCK ===== */
 /* ===== WAKE LOCK — iOS Safari + Android ===== */
 let wakeLock=null;
 let wakeLockInterval=null;
 let iosAudioCtx=null;
 let iosVideoEl=null;
- 
+
 // الحل الأساسي: Wake Lock API (Chrome/Android)
 async function requestWakeLock(){
   try{
@@ -932,7 +896,7 @@ async function requestWakeLock(){
   }catch(e){}
   return false;
 }
- 
+
 // الحل البديل لـ iOS: فيديو صامت مستمر يمنع السكون
 function startIOSWakeLock(){
   // إنشاء فيديو شفاف صامت
@@ -947,11 +911,11 @@ function startIOSWakeLock(){
   document.body.appendChild(iosVideoEl);
   iosVideoEl.play().catch(()=>{});
 }
- 
+
 function stopIOSWakeLock(){
   if(iosVideoEl){iosVideoEl.pause();iosVideoEl.remove();iosVideoEl=null;}
 }
- 
+
 async function startWakeLockLoop(){
   const gotWakeLock=await requestWakeLock();
   // iOS لا يدعم Wake Lock API — استخدم الفيديو
@@ -969,32 +933,32 @@ async function startWakeLockLoop(){
     }
   },20000);
 }
- 
+
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState==='visible'){
     if(!wakeLock||wakeLock.released) await requestWakeLock();
     if(iosVideoEl&&iosVideoEl.paused) iosVideoEl.play().catch(()=>{});
   }
 });
- 
+
 // أول تفاعل من المستخدم — iOS يحتاج gesture لتشغيل الفيديو
 document.addEventListener('touchstart',()=>{
   if(iosVideoEl&&iosVideoEl.paused) iosVideoEl.play().catch(()=>{});
 },{once:false,passive:true});
- 
+
 window.addEventListener('beforeunload',()=>{
   if(wakeLockInterval)clearInterval(wakeLockInterval);
   if(wakeLock)wakeLock.release();
   stopIOSWakeLock();
 });
- 
+
 /* ===== PIN (PRIMÄR) + FACE ID (OPTIONAL) ===== */
 // FIX: PIN ist immer sichtbar und primärer Weg.
 // Face ID ist nur ein optionaler Shortcut.
- 
+
 const CORRECT_PIN='1947';
 let pinEntry='';
- 
+
 // Beim Laden: PIN direkt anzeigen, Face ID im Hintergrund versuchen
 window.addEventListener('load',()=>{
   // أخفِ splash screen بعد تحميل كل شيء
@@ -1010,7 +974,7 @@ window.addEventListener('load',()=>{
     tryFaceIDSilent();
   }, 300);
 });
- 
+
 // Face ID still im Hintergrund — bei Fehler passiert nichts (PIN bleibt)
 async function tryFaceIDSilent(){
   try{
@@ -1033,7 +997,7 @@ async function tryFaceIDSilent(){
     // Still — face id failed silently, user uses PIN
   }
 }
- 
+
 // Face ID Button (explizit vom User gedrückt)
 async function tryFaceID(){
   const btn = document.getElementById('faceIdBtn');
@@ -1078,7 +1042,7 @@ async function tryFaceID(){
   }
   if(btn){btn.innerHTML='<span style="font-size:20px;">🔐</span> Face ID / Touch ID';btn.disabled=false;}
 }
- 
+
 function showPinError(msg){
   const el=document.getElementById('pinError');
   if(el){el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
@@ -1108,182 +1072,18 @@ function checkPin(){
   if(pinEntry===savedPin){unlockApp();}
   else{
     for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.add('error');
-    showPinError('❌ PIN falsch — bitte erneut versuchen');
+    showPinError('PIN falsch');
     document.getElementById('pinScreen').style.animation='shake 0.4s ease';
     setTimeout(()=>{pinEntry='';updatePinDots();document.getElementById('pinScreen').style.animation='';},500);
   }
 }
- 
-/* ===== SOS ===== */
-function ciSOS(){
-  // اهتزاز
-  if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
-  // صوت طارئ
-  playBeep('danger');
-  // إظهار قائمة أحداث الطوارئ السريعة
-  const sosEvents=[
-    'Polizei eingetroffen – Personalien aufgenommen',
-    'Notruf / Notfall gemeldet',
-    'Rettungsdienst angefordert',
-    'Vandalismus gemeldet – Polizei informiert',
-    'Diebstahl gemeldet – Polizei verstaendigt',
-    'Streit geschlichtet',
-  ];
-  // إنشاء popup سريع
-  const overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:20px;backdrop-filter:blur(6px);';
-  let btns=sosEvents.map(ev=>`
-    <button onclick="ciSOSSelect('${ev.replace(/'/g,"\\'")}',this.closest('[style*=inset]'))"
-      style="width:100%;padding:14px 16px;border-radius:12px;border:none;background:rgba(232,57,74,0.15);border:1.5px solid rgba(232,57,74,0.4);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px;">
-      🚨 ${ev}
-    </button>`).join('');
-  overlay.innerHTML=`
-    <div style="width:100%;max-width:480px;padding:0 16px;">
-      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;text-align:center;margin-bottom:16px;">🚨 SOS — Ereignis wählen</div>
-      ${btns}
-      <button onclick="this.closest('[style*=inset]').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">Abbrechen</button>
-    </div>`;
-  document.body.appendChild(overlay);
-}
- 
-function ciSOSSelect(ereignis, overlay){
-  if(overlay) overlay.remove();
-  // اهتزاز تأكيد
-  if(navigator.vibrate) navigator.vibrate(100);
-  // أضف للكند المحدد أو بدون كند
-  const time=nowHM();
-  const log=ciGetLog();
-  log.push({kunde:ciSelected||'SOS',type:'in',time,ts:Date.now(),vorfall:ereignis,rowId:null});
-  ciSaveLog(log);
-  // أضف صف في البروتوكول
-  addRow({k:ciSelected||'SOS',b:time,e:'',n:[{ev:ereignis,c:1,ft:''}]});
-  saveData();
-  ciRenderLog();updateQuickBar();
-  ciShowToast('SOS: '+ereignis.substring(0,30)+'...');
-  playBeep('danger');
-}
- 
-// إظهار/إخفاء SOS عند اختيار كند
-const _origCiSelectKunde=ciSelectKunde;
-function ciSelectKunde(k){
-  _origCiSelectKunde(k);
-  const sosBtn=document.getElementById('ciSosBtn');
-  if(sosBtn) sosBtn.style.display='flex';
-}
- 
-/* ===== QUICK NOTE ===== */
-function ciSendQuickNote(){
-  const inp=document.getElementById('ciQuickNoteInput');
-  const text=inp.value.trim();
-  if(!text) return;
-  const time=nowHM();
-  // أضف للبروتوكول كـ Freitext
-  const targetKunde=ciSelected||ciGetAllKunden()[0]||'';
-  if(targetKunde){
-    // ابحث عن آخر صف مفتوح
-    let added=false;
-    const rows=[...document.querySelectorAll('.proto-row')].reverse();
-    for(const row of rows){
-      const id=row.id.replace('row-','');
-      const ksel=document.getElementById('ksel-'+id);
-      const kcust=document.getElementById('kcust-'+id);
-      const isC=kcust&&kcust.style.display!=='none';
-      const k=isC?kcust.value:(ksel?ksel.value:'');
-      if(k===targetKunde){
-        addNotiz(parseInt(id),'Freitext...',0,text);
-        added=true;break;
-      }
-    }
-    if(!added){
-      addRow({k:targetKunde,b:time,e:'',n:[{ev:'Freitext...',c:0,ft:text}]});
-    }
-  } else {
-    addRow({k:'Notiz',b:time,e:'',n:[{ev:'Freitext...',c:0,ft:text}]});
-  }
-  inp.value='';
-  saveData();
-  // اهتزاز خفيف
-  if(navigator.vibrate) navigator.vibrate(50);
-  playBeep('success');
-  ciShowToast('Notiz gespeichert');
-}
- 
-/* ===== HAPTIC + SOUNDS ===== */
-// استبدال playBeep بنسخة محسّنة مع أصوات مختلفة
-const _origPlayBeep=playBeep;
-function playBeep(type='save'){
-  // اهتزاز حسب النوع
-  if(navigator.vibrate){
-    if(type==='danger') navigator.vibrate([150,50,150]);
-    else if(type==='success') navigator.vibrate(60);
-    else if(type==='save') navigator.vibrate(30);
-  }
-  // صوت
-  if(!soundEnabled) return;
-  const ctx=getACtx();if(!ctx) return;
-  const osc=ctx.createOscillator(),gain=ctx.createGain();
-  osc.connect(gain);gain.connect(ctx.destination);
-  const t=ctx.currentTime;
-  if(type==='save'){
-    osc.frequency.value=880;
-    gain.gain.setValueAtTime(0.06,t);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+0.15);
-    osc.start();osc.stop(t+0.15);
-  } else if(type==='success'){
-    // صوتان صاعدان
-    osc.frequency.setValueAtTime(600,t);
-    osc.frequency.setValueAtTime(900,t+0.1);
-    gain.gain.setValueAtTime(0.08,t);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+0.25);
-    osc.start();osc.stop(t+0.25);
-  } else if(type==='danger'){
-    // صوت تنبيه متكرر
-    osc.type='sawtooth';
-    osc.frequency.setValueAtTime(440,t);
-    osc.frequency.setValueAtTime(380,t+0.15);
-    osc.frequency.setValueAtTime(440,t+0.3);
-    gain.gain.setValueAtTime(0.15,t);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+0.5);
-    osc.start();osc.stop(t+0.5);
-  }
-}
- 
-// صوت Eingang (صاعد)
-function playCheckinSound(type){
-  if(!soundEnabled) return;
-  const ctx=getACtx();if(!ctx) return;
-  const osc=ctx.createOscillator(),gain=ctx.createGain();
-  osc.connect(gain);gain.connect(ctx.destination);
-  const t=ctx.currentTime;
-  if(type==='in'){
-    // صوت دخول — نغمتان صاعدتان
-    osc.frequency.setValueAtTime(500,t);
-    osc.frequency.linearRampToValueAtTime(800,t+0.2);
-    gain.gain.setValueAtTime(0.1,t);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
-    osc.start();osc.stop(t+0.3);
-  } else {
-    // صوت خروج — نغمتان هابطتان
-    osc.frequency.setValueAtTime(800,t);
-    osc.frequency.linearRampToValueAtTime(400,t+0.2);
-    gain.gain.setValueAtTime(0.1,t);
-    gain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
-    osc.start();osc.stop(t+0.3);
-  }
-  // اهتزاز
-  if(navigator.vibrate){
-    if(type==='in') navigator.vibrate([80,30,80]);
-    else navigator.vibrate([120]);
-  }
-}
- 
 document.addEventListener('keydown',e=>{
   if(document.getElementById('pinScreen').style.display!=='none'){
     if(e.key>='0'&&e.key<='9')pinPress(e.key);
     if(e.key==='Backspace')pinDel();
   }
 });
- 
+
 /* ===== CONSTANTS ===== */
 const KUNDEN=['— Standort —'];
 const KUNDE_ICONS={};
@@ -1353,28 +1153,25 @@ const CI_EREIGNISSE=[
 const DANGER_EVENTS=['Polizei eingetroffen – Obdachlose Person entfernt 🚨','Polizei eingetroffen – Personalien aufgenommen 🚨','Vandalismus gemeldet – Polizei informiert 🚨','Notruf / Notfall gemeldet 🚨','Rettungsdienst angefordert 🚑','Diebstahl gemeldet – Polizei verständigt 🚨','Streit geschlichtet','Ruhestörung – Personen verwiesen'];
 const ORANGE_EVENTS=['Sicherungsausfall ⚡','Dauersignal an Schranke ⚠️','Ruhestörung – Personen verwiesen','Streit geschlichtet','Fahrzeug unberechtigt geparkt – Abschlepper verständigt'];
 const BLUE_EVENTS=['Technischer Defekt gemeldet 🔧','Defekte Beleuchtung 💡','Schrankenstörung 🚧'];
- 
+
 let rowId=0,statusOk=true,currentProtoNr='',currentReportText='',repLang='de',shiftReport='';
 const nCounts={};
 let soundEnabled=localStorage.getItem('denis_sound')!=='0';
 let autoSaveTimer=null,chatHistory=[];
- 
+
 function p2(n){return String(n).padStart(2,'0');}
 function nowHM(){const n=new Date();return`${p2(n.getHours())}:${p2(n.getMinutes())}`;}
 function getShiftDate(){const now=new Date();if(now.getHours()<17){const d=new Date(now);d.setDate(d.getDate()-1);return d;}return now;}
 function dayLabel(d){return['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][d.getDay()];}
 function isoDate(d){return`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;}
 function deDate(d){return`${p2(d.getDate())}.${p2(d.getMonth()+1)}.${d.getFullYear()}`;}
- 
+
 function initApp(){
-  // Migration: احذف الكنده القديمة الثابتة من القائمة
+  // Migration: احذف الكنده القديمة الثابتة
   const oldFixed=['Galerie','Lüneburg Parkhaus','Fuhle','Parking Millerntorplatz','Parkhaus My Falkenried'];
-  const extra=JSON.parse(localStorage.getItem('denis_extra_kunden')||'[]');
-  const migrated=localStorage.getItem('denis_kunden_migrated_v2');
-  if(!migrated){
-    // أول مرة بعد التحديث: احذف الكنده الثابتة القديمة من القائمة
-    const cleaned=extra.filter(k=>!oldFixed.includes(k));
-    localStorage.setItem('denis_extra_kunden',JSON.stringify(cleaned));
+  if(!localStorage.getItem('denis_kunden_migrated_v2')){
+    const extra=JSON.parse(localStorage.getItem('denis_extra_kunden')||'[]');
+    localStorage.setItem('denis_extra_kunden',JSON.stringify(extra.filter(k=>!oldFixed.includes(k))));
     localStorage.setItem('denis_kunden_migrated_v2','1');
   }
   if(localStorage.getItem('denis_dark')==='1')document.body.classList.add('dark-mode');
@@ -1393,13 +1190,14 @@ function initApp(){
     document.querySelectorAll('.notiz-select').forEach(styleNotizSelect);
   }catch(e){try{if(!loadData())applyProtoNr(generateProtoNr(false));}catch(e2){}}
   updateClock();setInterval(updateClock,1000);setInterval(saveData,30000);setInterval(saveToArchive,5*60*1000);
-  const s=localStorage.getItem('denis_signature');if(s)setTimeout(()=>updateSigChip(s),600);
+  const s=localStorage.getItem('denis_signature');
+  if(s)setTimeout(()=>{updateSigChip(s);updatePrintSigArea();},600);
   document.addEventListener('input',()=>scheduleSave());
   document.addEventListener('change',()=>scheduleSave());
   startWakeLockLoop();
   // Check-in يفتح تلقائياً من unlockApp
 }
- 
+
 function generateProtoNr(increment=true){
   const d=getShiftDate();
   const dk=`${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}`;
@@ -1423,7 +1221,7 @@ function applyProtoNr(nr){
   currentProtoNr=nr;
   const el=document.getElementById('protoNrText');if(el)el.textContent=nr;
 }
- 
+
 let _audioCtx=null;
 function getACtx(){if(!_audioCtx)try{_audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _audioCtx;}
 function playBeep(type='save'){
@@ -1474,7 +1272,7 @@ function colorTime(inp){
   if(h>=6&&h<17)inp.classList.add('t-day');else if(h>=17&&h<22)inp.classList.add('t-eve');else inp.classList.add('t-night');
 }
 function setNow(id){const el=document.getElementById(id);if(el){el.value=nowHM();colorTime(el);}}
- 
+
 function addRow(data){
   const id=++rowId;nCounts[id]=[];
   const k=data?.k||'— Standort —',bv=data?.b||'',ev=data?.e||'';
@@ -1682,7 +1480,7 @@ function updateClock(){
   const fill=document.getElementById('progressFill'),pctEl=document.getElementById('progressPct');
   if(fill)fill.style.width=pct+'%';if(pctEl)pctEl.textContent=pct+'%';
   const lbl=document.querySelector('.progress-label');
-  if(lbl)lbl.textContent=ssStr+' → '+seStr;
+  if(lbl)lbl.textContent=ssStr+' -> '+seStr;
 }
 function getShiftKey(){const sd=getShiftDate();return`shift_${sd.getFullYear()}${p2(sd.getMonth()+1)}${p2(sd.getDate())}`;}
 function checkNewShift(){
@@ -1792,7 +1590,7 @@ function showPdfLoader(show){
   if(show){if(!o){o=document.createElement('div');o.id='pdfLoader';o.className='pdf-loading';o.innerHTML='<div class="pdf-spinner"></div><div class="pdf-loading-text">PDF wird erstellt…</div>';document.body.appendChild(o);}}
   else{if(o)o.remove();}
 }
- 
+
 const MODEL='claude-sonnet-4-20250514';
 async function callClaude(messages,system,maxTokens=800){
   const body={model:MODEL,max_tokens:maxTokens,messages};if(system)body.system=system;
@@ -1802,7 +1600,7 @@ async function callClaude(messages,system,maxTokens=800){
 const AI_SYSTEM=`Du bist KI-Assistent für Sicherheitsdienste. Analysiere den Text und antworte NUR als JSON ohne Backticks:
 {"ereignis":"<Ereignis>","schwere":"hoch|mittel|niedrig","zusammenfassung":"<1 Satz>","empfehlung":"<Empfehlung>"}
 Ereignis-Liste: Obdachlose nach draußen gebracht, Fahrzeuge herausgelassen, Unbefugte Person entfernt, Fahrzeugschaden festgestellt, Parkverstoß dokumentiert, Sachschaden festgestellt – Dokumentiert, Technischer Defekt gemeldet 🔧, Defekte Beleuchtung 💡, Schrankenstörung 🚧, Sicherungsausfall ⚡, Dauersignal an Schranke ⚠️, Ruhestörung – Personen verwiesen, Streit geschlichtet, Polizei eingetroffen – Obdachlose Person entfernt 🚨, Polizei eingetroffen – Personalien aufgenommen 🚨, Vandalismus gemeldet – Polizei informiert 🚨, Notruf / Notfall gemeldet 🚨, Rettungsdienst angefordert 🚑, Diebstahl gemeldet – Polizei verständigt 🚨, Rohrbruch / Wasseraustritt 💧, Defekte Tür / Fenster 🚪, Fahrzeug unberechtigt geparkt – Abschlepper verständigt, Freitext…`;
- 
+
 async function analyzeText(text,resultBoxId,btn){
   const orig=btn.innerHTML;btn.innerHTML='<span class="ai-spinner"></span>Analysiere…';btn.disabled=true;
   try{const raw=await callClaude([{role:'user',content:`Analysiere: "${text}"`}],AI_SYSTEM,300);const result=JSON.parse(raw.replace(/```json|```/g,'').trim());showAnalysisResult(resultBoxId,result.ereignis,result.schwere,result.zusammenfassung,result.empfehlung);}
@@ -1828,9 +1626,9 @@ function applyAiToRow(ereignis,freitext){
   addNotiz(parseInt(rId),match?match.label:'Freitext…',1,freitext||ereignis);
   showToast('✅ Eingetragen!','success');playBeep('success');closeAI();
 }
- 
+
 let aiCurrentTab='voice',aiTargetRowId=null,mediaRecorder=null,isRecording=false,audioChunks=[],aiPhotoB64=null;
- 
+
 function openAI(rowId){
   aiTargetRowId=rowId||null;
   const sel=document.getElementById('aiRowSelect');sel.innerHTML='<option value="">— Zeile auswählen (optional) —</option>';
@@ -1927,13 +1725,47 @@ async function generateReport(){
   catch(e){showToast('❌ Fehler beim Generieren','error');}
   btn.innerHTML=orig;btn.disabled=false;
 }
- 
+
 let sigCtx=null,sigDrawing=false,sigHasData=false;
 function openSigModal(){
   document.getElementById('sigOverlay').style.display='flex';
+  const delBtn=document.getElementById('sigDeleteBtn');
+  if(delBtn)delBtn.style.display=localStorage.getItem('denis_signature')?'block':'none';
   setTimeout(()=>{const canvas=document.getElementById('sigCanvas');sigCtx=canvas.getContext('2d');sigCtx.strokeStyle='#141518';sigCtx.lineWidth=2.5;sigCtx.lineCap='round';sigCtx.lineJoin='round';const saved=localStorage.getItem('denis_signature');if(saved){const img=new Image();img.onload=()=>sigCtx.drawImage(img,0,0);img.src=saved;sigHasData=true;}setupSigCanvas(canvas);document.getElementById('sigSavedMsg').style.display='none';},80);
 }
 function closeSigModal(){document.getElementById('sigOverlay').style.display='none';}
+function deleteSig(){
+  if(!localStorage.getItem('denis_signature')){showToast('Keine Unterschrift vorhanden','error');return;}
+  if(!confirm('Unterschrift wirklich entfernen?'))return;
+  localStorage.removeItem('denis_signature');
+  if(sigCtx)sigCtx.clearRect(0,0,440,160);
+  sigHasData=false;
+  // أخفِ chip التوقيع
+  const chip=document.getElementById('sigChip');
+  if(chip){chip.style.display='none';chip.innerHTML='';}
+  // أخفِ زر الحذف في modal
+  const delBtn=document.getElementById('sigDeleteBtn');
+  if(delBtn)delBtn.style.display='none';
+  updatePrintSigArea();
+  showToast('Unterschrift entfernt','info');
+  if(document.getElementById('sigOverlay').style.display!=='none')closeSigModal();
+  saveData();
+}
+function updatePrintSigArea(){
+  const sig=localStorage.getItem('denis_signature');
+  const imgDiv=document.getElementById('printSigImg');
+  const nameSpan=document.getElementById('printSigName');
+  if(!imgDiv)return;
+  if(sig){
+    imgDiv.innerHTML='<img src="'+sig+'" style="max-height:55px;max-width:200px;object-fit:contain;">';
+  } else {
+    imgDiv.innerHTML='<span style="font-size:11px;color:#999;">Keine Unterschrift</span>';
+  }
+  if(nameSpan){
+    const n=document.getElementById('mitarbeiterName');
+    nameSpan.textContent=n?n.value||'Mitarbeiter':'Mitarbeiter';
+  }
+}
 function setupSigCanvas(c){
   if(c._sigSetup)return;c._sigSetup=true;
   const pos=e=>{const r=c.getBoundingClientRect();const sx=c.width/r.width,sy=c.height/r.height;const src=e.touches?e.touches[0]:e;return{x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy};};
@@ -1945,12 +1777,29 @@ function setupSigCanvas(c){
 }
 function clearSig(){if(sigCtx)sigCtx.clearRect(0,0,440,160);sigHasData=false;document.getElementById('sigSavedMsg').style.display='none';}
 function saveSig(){
-  if(!sigHasData){showToast('⚠️ Bitte zuerst unterschreiben','error');return;}
-  const dataUrl=document.getElementById('sigCanvas').toDataURL('image/png');localStorage.setItem('denis_signature',dataUrl);
-  document.getElementById('sigSavedMsg').style.display='block';updateSigChip(dataUrl);showToast('✍️ Unterschrift gespeichert!','success');playBeep('success');saveData();
+  if(!sigHasData){showToast('Bitte zuerst unterschreiben','error');return;}
+  const dataUrl=document.getElementById('sigCanvas').toDataURL('image/png');
+  localStorage.setItem('denis_signature',dataUrl);
+  document.getElementById('sigSavedMsg').style.display='block';
+  updateSigChip(dataUrl);
+  updatePrintSigArea();
+  const delBtn=document.getElementById('sigDeleteBtn');
+  if(delBtn)delBtn.style.display='block';
+  showToast('Unterschrift gespeichert!','success');playBeep('success');saveData();
 }
-function updateSigChip(dataUrl){const chip=document.getElementById('sigChip');if(!chip)return;chip.style.display='flex';chip.innerHTML=`<img src="${dataUrl}" style="height:30px;border:1.5px solid var(--border);border-radius:6px;background:white;padding:2px;"><span style="font-size:9px;font-weight:700;color:var(--muted);margin-left:4px;">✍️ Unterschrieben</span>`;}
- 
+function updateSigChip(dataUrl){
+  const chip=document.getElementById('sigChip');if(!chip)return;
+  chip.style.display='flex';
+  chip.style.alignItems='center';
+  chip.style.gap='6px';
+  const mitarbeiter=document.getElementById('mitarbeiterName')?.value||'';
+  const label=mitarbeiter?mitarbeiter:'Unterschrieben';
+  chip.innerHTML='<img src="'+dataUrl+'" style="height:30px;border:1.5px solid var(--border);border-radius:6px;background:white;padding:2px;">'
+    +'<span style="font-size:9px;font-weight:700;color:var(--muted);">Unterschrift: '+label+'</span>'
+    +'<button onclick="openSigModal()" style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px;border:1px solid var(--border);background:white;cursor:pointer;color:var(--muted);">Bearb.</button>'
+    +'<button onclick="deleteSig()" style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px;border:1px solid #f5c0c4;background:#fff0f1;cursor:pointer;color:var(--red);">X Entf.</button>';
+}
+
 function openDashboard(){
   const data=collectData();const rows=data.rows.filter(r=>r.k&&r.k!=='— Standort —');
   const allEvents=rows.flatMap(r=>r.n||[]).filter(n=>n.ev&&n.ev!=='— Ereignis —'&&n.ev!=='Freitext…');
@@ -1976,7 +1825,7 @@ function openDashboard(){
   document.getElementById('dashOverlay').style.display='flex';
 }
 function closeDashboard(){document.getElementById('dashOverlay').style.display='none';}
- 
+
 let ciSelected=null,ciClockInterval=null;
 function updateQuickBar(){
   // ① كم موقع لازال داخل (دخل بدون خروج)
@@ -2040,7 +1889,7 @@ function updateQuickBar(){
     }
   }
 }
- 
+
 function showCheckin(){
   document.getElementById('checkinScreen').style.display='block';
   document.body.style.overflow='hidden';
@@ -2094,20 +1943,21 @@ function removeExtraKunde(k){
   localStorage.setItem('denis_extra_kunden',JSON.stringify(ciGetAllKunden().filter(e=>e!==k)));
   if(ciSelected===k)ciSelected=null;
   ciRenderKunden();
-  ciShowToast('🗑 '+k+' entfernt');
+  ciShowToast(k+' entfernt');
 }
 function ciAddNewKunde(){
   const input=document.getElementById('ciNewKundeInput');
   const name=input.value.trim();
-  if(!name){ciShowToast('⚠️ Bitte Namen eingeben');return;}
+  if(!name){ciShowToast('Bitte Namen eingeben');return;}
   const kunden=ciGetAllKunden();
-  if(kunden.includes(name)){ciShowToast('⚠️ Kunde existiert bereits');return;}
+  if(kunden.includes(name)){ciShowToast('Kunde existiert bereits');return;}
   kunden.push(name);
   localStorage.setItem('denis_extra_kunden',JSON.stringify(kunden));
   input.value='';
   ciRenderKunden();
+  const sosBtn=document.getElementById('ciSosBtn');
   ciSelectKunde(name);
-  ciShowToast('✅ '+name+' hinzugefügt');
+  ciShowToast(name+' hinzugefuegt');
   playBeep('success');
 }
 let ciVorfallItems=[];
@@ -2124,7 +1974,7 @@ function ciPopulateSelect(){
 function ciGetAllKunden(){
   return JSON.parse(localStorage.getItem('denis_extra_kunden')||'[]');
 }
- 
+
 // يملأ قائمة الكند في فورم الـ Vorfall
 function ciPopulateKundeSelect(){
   const sel=document.getElementById('ciVorfallKundeSelect');if(!sel)return;
@@ -2133,7 +1983,7 @@ function ciPopulateKundeSelect(){
     allK.map(k=>`<option value="${k}"${k===ciSelected?' selected':''}>${KUNDE_ICONS[k]||'📍'} ${k}</option>`).join('');
   ciUpdateVisitSelect();
 }
- 
+
 // يحدّث قائمة الزيارات لما يتغير الكند المختار
 function ciUpdateVisitSelect(){
   const kundeSel=document.getElementById('ciVorfallKundeSelect');
@@ -2161,7 +2011,7 @@ function ciUpdateVisitSelect(){
     visitSel.innerHTML=rows.map((r,i)=>`<option value="${r.id}">Besuch ${i+1}${r.time?' ('+r.time+')':''}</option>`).join('');
   }
 }
- 
+
 function ciAddVorfall(){
   const evSel=document.getElementById('ciVorfallSelect');
   const kundeSel=document.getElementById('ciVorfallKundeSelect');
@@ -2194,56 +2044,48 @@ function ciAddVorfall(){
   evSel.value='';
   ciRenderVorfallList();playBeep('success');
 }
- 
+
 function ciRenderVorfallList(){
   const list=document.getElementById('ciVorfallList');if(!list)return;
   list.innerHTML='';
   ciVorfallItems.forEach((item,i)=>{
     const div=document.createElement('div');
-    div.style.cssText='display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px;animation:rowIn 0.18s ease;';
- 
-    // صف ١: اسم الحدث + حذف
-    const row1=document.createElement('div');
-    row1.style.cssText='display:flex;align-items:center;gap:8px;';
-    row1.innerHTML=`
-      <span style="flex:1;font-size:12px;font-weight:700;color:rgba(255,255,255,0.9);line-height:1.3;">${item.ev}</span>
-      <button onclick="ciRemoveVorfall(${i})" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:16px;padding:2px;flex-shrink:0;">&#x1f5d1;</button>`;
- 
-    // صف ٢: عداد الأشخاص/الكمية
-    const row2=document.createElement('div');
-    row2.style.cssText='display:flex;align-items:center;gap:8px;';
- 
-    // label
-    const lbl=document.createElement('span');
-    lbl.style.cssText='font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);flex-shrink:0;';
-    lbl.textContent='Anzahl:';
- 
-    // عداد −/عدد/+
-    const counter=document.createElement('div');
-    counter.style.cssText='display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:4px 8px;';
-    counter.innerHTML=`
-      <button onclick="ciChVorfall(${i},-1)" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:white;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">&#x2212;</button>
-      <span id="ci-count-${i}" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:white;min-width:28px;text-align:center;">${item.c}</span>
-      <button onclick="ciChVorfall(${i},1)" style="width:24px;height:24px;border-radius:6px;border:1px solid rgba(76,186,107,0.5);background:rgba(76,186,107,0.15);color:#4cba6b;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">&#x2b;</button>`;
- 
-    // الكند المرتبط (لو موجود)
-    const kundeTag=document.createElement('div');
-    if(item.kunde){
-      kundeTag.style.cssText='flex:1;display:flex;align-items:center;gap:4px;';
-      kundeTag.innerHTML=`<span style="font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:3px 8px;color:rgba(255,255,255,0.6);font-weight:600;">&#x1f4cd; ${item.kunde.split(' ')[0]}</span>`;
-    } else {
-      kundeTag.style.flex='1';
+    div.style.cssText='display:flex;flex-direction:column;gap:4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px;animation:rowIn 0.18s ease;';
+    // صف ١: العداد + الحدث + حذف
+    const topRow=`<div style="display:flex;align-items:center;gap:6px;">
+      <div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">
+        <button onclick="ciChVorfall(${i},-1)" style="width:20px;height:20px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:white;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button>
+        <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:white;min-width:22px;text-align:center;">${item.c}</span>
+        <button onclick="ciChVorfall(${i},1)" style="width:20px;height:20px;border-radius:4px;border:1px solid rgba(76,186,107,0.4);background:rgba(76,186,107,0.15);color:#4cba6b;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+      </div>
+      <span style="flex:1;font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);line-height:1.3;">${item.ev}</span>
+      <button onclick="ciRemoveVorfall(${i})" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px;flex-shrink:0;">🗑</button>
+    </div>`;
+    // صف ٢: الكند + الزيارة (لو موجودة)
+    const kundeIcon=KUNDE_ICONS[item.kunde]||'📍';
+    // احسب رقم الزيارة
+    let visitLabel='';
+    if(item.rowId){
+      const allRowsForKunde=[];
+      document.querySelectorAll('.proto-row').forEach(row=>{
+        const id=row.id.replace('row-','');
+        const ksel=document.getElementById('ksel-'+id);
+        const kcust=document.getElementById('kcust-'+id);
+        const isC=kcust&&kcust.style.display!=='none';
+        const rowK=isC?kcust.value:(ksel?ksel.value:'');
+        if(rowK===item.kunde)allRowsForKunde.push(id);
+      });
+      const vIdx=allRowsForKunde.indexOf(item.rowId);
+      if(vIdx>=0)visitLabel=` · Besuch ${vIdx+1}`;
     }
- 
-    row2.appendChild(lbl);
-    row2.appendChild(counter);
-    row2.appendChild(kundeTag);
-    div.appendChild(row1);
-    div.appendChild(row2);
+    const bottomRow=`<div style="display:flex;align-items:center;gap:4px;padding-left:2px;">
+      <span style="font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:2px 7px;color:rgba(255,255,255,0.7);font-weight:700;">${kundeIcon} ${item.kunde||'—'}${visitLabel}</span>
+    </div>`;
+    div.innerHTML=topRow+bottomRow;
     list.appendChild(div);
   });
 }
- 
+
 function ciChVorfall(idx,d){ciVorfallItems[idx].c=Math.max(1,ciVorfallItems[idx].c+d);ciRenderVorfallList();}
 function ciRemoveVorfall(idx){ciVorfallItems.splice(idx,1);ciRenderVorfallList();}
 function ciGetVorfallText(){
@@ -2284,20 +2126,19 @@ function ciGroupByRowId(){
 function ciGetAllKunden(){
   return JSON.parse(localStorage.getItem('denis_extra_kunden')||'[]');
 }
- 
+
 /* ===== checkPin with localStorage ===== */
 function checkPin(){
   const savedPin=localStorage.getItem('denis_pin')||CORRECT_PIN;
-  if(pinEntry===savedPin){
-    unlockApp();
-  } else {
+  if(pinEntry===savedPin){unlockApp();}
+  else{
     for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.add('error');
-    showPinError('❌ PIN falsch — bitte erneut versuchen');
+    showPinError('PIN falsch');
     document.getElementById('pinScreen').style.animation='shake 0.4s ease';
     setTimeout(()=>{pinEntry='';updatePinDots();document.getElementById('pinScreen').style.animation='';},500);
   }
 }
- 
+
 /* ===== getShiftTimes ===== */
 function getShiftTimes(){
   const ssStr=localStorage.getItem('denis_shift_start')||'19:45';
@@ -2306,7 +2147,22 @@ function getShiftTimes(){
   const[seh,sem]=seStr.split(':').map(Number);
   return{ss:ssh*60+ssm,se:seh*60+sem,ssStr,seStr};
 }
- 
+
+/* ===== updateClock with settings ===== */
+function updateClock(){
+  const now=new Date();const cl=document.getElementById('liveClock');
+  if(cl)cl.textContent=`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`;
+  const{ss,se,ssStr,seStr}=getShiftTimes();
+  const total=se>ss?se-ss:(24*60-ss)+se;
+  const nm=now.getHours()*60+now.getMinutes();
+  const el=nm>=ss?nm-ss:nm<=se?(24*60-ss)+nm:0;
+  const pct=Math.min(100,Math.round((el/total)*100));
+  const fill=document.getElementById('progressFill'),pctEl=document.getElementById('progressPct');
+  if(fill)fill.style.width=pct+'%';if(pctEl)pctEl.textContent=pct+'%';
+  const lbl=document.querySelector('.progress-label');
+  if(lbl)lbl.textContent=ssStr+' -> '+seStr;
+}
+
 /* ===== SETTINGS ===== */
 let settingsPinEntry='',settingsPinStep='new',settingsPinFirst='';
 function openSettings(){
@@ -2329,7 +2185,7 @@ function saveSettings(){
   localStorage.setItem('denis_shift_start',document.getElementById('settingsShiftStart').value||'19:45');
   localStorage.setItem('denis_shift_end',document.getElementById('settingsShiftEnd').value||'07:00');
   localStorage.setItem('denis_alarm_min',document.getElementById('settingsAlarmMin').value||'120');
-  closeSettings();showToast('✅ Gespeichert','success');playBeep('success');
+  closeSettings();showToast('Gespeichert','success');playBeep('success');
 }
 function startPinChange(){
   const a=document.getElementById('pinChangeArea');
@@ -2345,15 +2201,15 @@ function settingsPinPress(d){
     if(settingsPinStep==='new'){
       settingsPinFirst=settingsPinEntry;settingsPinEntry='';
       settingsPinStep='confirm';settingsUpdateDots();
-      document.getElementById('pinChangeLabel').textContent='PIN bestätigen:';
+      document.getElementById('pinChangeLabel').textContent='PIN bestaetigen:';
     } else {
       if(settingsPinEntry===settingsPinFirst){
         localStorage.setItem('denis_pin',settingsPinEntry);
-        showToast('✅ PIN geändert!','success');playBeep('success');
+        showToast('PIN geaendert!','success');playBeep('success');
         document.getElementById('pinChangeArea').style.display='none';
         settingsPinEntry='';settingsPinStep='new';settingsPinFirst='';settingsUpdateDots();
       } else {
-        showToast('❌ PINs stimmen nicht überein','error');
+        showToast('PINs stimmen nicht ueberein','error');
         settingsPinEntry='';settingsPinStep='new';settingsPinFirst='';settingsUpdateDots();
         document.getElementById('pinChangeLabel').textContent='Neuen PIN eingeben:';
       }
@@ -2368,35 +2224,70 @@ function settingsRenderKunden(){
   const kunden=ciGetAllKunden();
   const list=document.getElementById('settingsKundenList');if(!list)return;
   if(!kunden.length){
-    list.innerHTML='<div style="padding:10px 0;font-size:12px;color:var(--muted);text-align:center;">Noch keine Kunden — unten hinzufügen</div>';
+    list.innerHTML='<div style="padding:10px 0;font-size:12px;color:var(--muted);text-align:center;">Noch keine Kunden</div>';
     return;
   }
   list.innerHTML='';
   kunden.forEach(k=>{
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);';
-    row.innerHTML=`<span style="font-size:13px;font-weight:600;color:var(--text);">📍 ${k}</span>`+
-      `<button onclick="settingsRemoveKunde('${k}')" style="background:#fff0f1;border:1px solid #f5c0c4;border-radius:6px;color:var(--red);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;">🗑 Löschen</button>`;
+    row.innerHTML='<span style="font-size:13px;font-weight:600;color:var(--text);">'+k+'</span>'+
+      '<button onclick="settingsRemoveKunde(\''+k+'\')" style="background:#fff0f1;border:1px solid #f5c0c4;border-radius:6px;color:var(--red);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;">Loeschen</button>';
     list.appendChild(row);
   });
 }
 function settingsAddKunde(){
   const inp=document.getElementById('settingsNewKunde');
   const name=inp.value.trim();
-  if(!name){showToast('⚠️ Name eingeben','error');return;}
+  if(!name){showToast('Name eingeben','error');return;}
   const kunden=ciGetAllKunden();
-  if(kunden.includes(name)){showToast('⚠️ Existiert bereits','error');return;}
+  if(kunden.includes(name)){showToast('Existiert bereits','error');return;}
   kunden.push(name);
   localStorage.setItem('denis_extra_kunden',JSON.stringify(kunden));
   inp.value='';settingsRenderKunden();
-  showToast('✅ '+name+' hinzugefügt','success');playBeep('success');
+  showToast(name+' hinzugefuegt','success');playBeep('success');
 }
 function settingsRemoveKunde(k){
   localStorage.setItem('denis_extra_kunden',JSON.stringify(ciGetAllKunden().filter(e=>e!==k)));
   settingsRenderKunden();
-  showToast('🗑 '+k+' gelöscht','info');
+  showToast(k+' geloescht','info');
 }
- 
+
+/* ===== SIGNATURE DELETE ===== */
+function deleteSig(){
+  if(!localStorage.getItem('denis_signature')){showToast('Keine Unterschrift vorhanden','error');return;}
+  if(!confirm('Unterschrift wirklich entfernen?'))return;
+  localStorage.removeItem('denis_signature');
+  if(sigCtx)sigCtx.clearRect(0,0,440,160);
+  sigHasData=false;
+  // أخفِ chip التوقيع
+  const chip=document.getElementById('sigChip');
+  if(chip){chip.style.display='none';chip.innerHTML='';}
+  // أخفِ زر الحذف في modal
+  const delBtn=document.getElementById('sigDeleteBtn');
+  if(delBtn)delBtn.style.display='none';
+  updatePrintSigArea();
+  showToast('Unterschrift entfernt','info');
+  if(document.getElementById('sigOverlay').style.display!=='none')closeSigModal();
+  saveData();
+}
+function updatePrintSigArea(){
+  const sig=localStorage.getItem('denis_signature');
+  const area=document.getElementById('printSigArea');
+  const imgDiv=document.getElementById('printSigImg');
+  const nameSpan=document.getElementById('printSigName');
+  if(!area||!imgDiv)return;
+  if(sig){
+    imgDiv.innerHTML='<img src="'+sig+'" style="max-height:55px;max-width:200px;object-fit:contain;">';
+  } else {
+    imgDiv.innerHTML='<span style="font-size:11px;color:#999;">Keine Unterschrift</span>';
+  }
+  if(nameSpan){
+    const n=document.getElementById('mitarbeiterName');
+    nameSpan.textContent=n?n.value||'Mitarbeiter':'Mitarbeiter';
+  }
+}
+
 /* ===== VERGESSEN-ALARM ===== */
 let alarmInterval=null;
 function startForgottenAlarm(){
@@ -2423,14 +2314,14 @@ function checkForgottenCheckout(){
     const text=document.getElementById('ciAlertText');
     const btn=document.getElementById('ciAlertBtn');
     if(banner&&text&&btn){
-      text.textContent=`${oldest.kunde} — seit ${h}h ${p2(m)}m noch eingecheckt!`;
+      text.textContent=oldest.kunde+' -- seit '+h+'h '+p2(m)+'m noch eingecheckt!';
       btn.onclick=()=>{ciSelectKunde(oldest.kunde);ciOut();hideForgottenAlert();};
       banner.classList.add('show');playBeep('danger');
     }
   } else hideForgottenAlert();
 }
 function hideForgottenAlert(){const b=document.getElementById('ciAlertBanner');if(b)b.classList.remove('show');}
- 
+
 /* ===== SHIFT REPORT ===== */
 function generateShiftReport(){
   const data=collectData();
@@ -2443,24 +2334,24 @@ function generateShiftReport(){
   document.querySelectorAll('.nc-num').forEach(n=>{totalVorf+=parseInt(n.textContent)||0;});
   const ss=localStorage.getItem('denis_shift_start')||'19:45';
   const se=localStorage.getItem('denis_shift_end')||'07:00';
-  let r='🛡 *Denis Protokoll — Schichtabschluss*\n';
-  r+=`📅 ${data.day||''} ${data.date||''}\n`;
-  r+=`⏱ ${ss} → ${se}\n`;
-  r+=`👤 ${data.mitarbeiter||'Mitarbeiter'}\n`;
-  r+=`📋 ${data.protokollNr||'—'}\n\n`;
-  r+=`✅ Eingang: ${inC}x\n🚪 Ausgang: ${outC}x\n⚠️ Vorfälle: ${totalVorf}\n`;
-  if(active.size)r+=`⚠️ Noch drin: ${[...active].join(', ')}\n`;
-  r+='\n🏗 Standorte:\n';
+  let r='Denis Protokoll -- Schichtabschluss\n';
+  r+=(data.day||'')+' '+(data.date||'')+'\n';
+  r+=ss+' -> '+se+'\n';
+  r+=(data.mitarbeiter||'Mitarbeiter')+'\n';
+  r+=(data.protokollNr||'--')+'\n\n';
+  r+='Eingang: '+inC+'x\nAusgang: '+outC+'x\nVorfaelle: '+totalVorf+'\n';
+  if(active.size)r+='Noch drin: '+[...active].join(', ')+'\n';
+  r+='\nStandorte:\n';
   data.rows.forEach((row,i)=>{
-    if(!row.k||row.k==='— Standort —')return;
-    r+=`${i+1}. ${row.k} (${row.b||'—'}–${row.e||'—'})`;
-    const evs=(row.n||[]).filter(n=>n.ev&&n.ev!=='— Ereignis —');
-    if(evs.length)r+=' — '+evs.map(n=>n.ev+(n.c>1?` [${n.c}x]`:'')).join(', ');
+    if(!row.k||row.k==='-- Standort --')return;
+    r+=(i+1)+'. '+row.k+' ('+(row.b||'--')+'--'+(row.e||'--')+')';
+    const evs=(row.n||[]).filter(n=>n.ev&&n.ev!=='-- Ereignis --');
+    if(evs.length)r+=' -- '+evs.map(n=>n.ev+(n.c>1?' ['+n.c+'x]':'')).join(', ');
     r+='\n';
   });
   return r;
 }
- 
+
 /* ===== ciFinish ===== */
 function ciFinish(){
   const log=ciGetLog();
@@ -2472,7 +2363,7 @@ function ciFinish(){
     const kcust=document.getElementById('kcust-'+id);
     const isC=kcust&&kcust.style.display!=='none';
     const k=isC?kcust.value:(ksel?ksel.value:'');
-    if(k&&k!=='— Standort —')kundenSet.add(k);
+    if(k&&k!='-- Standort --')kundenSet.add(k);
   });
   let totalVorf=0;
   rows.forEach(row=>{row.querySelectorAll('.nc-num').forEach(n=>{totalVorf+=parseInt(n.textContent)||0;});});
@@ -2482,23 +2373,23 @@ function ciFinish(){
   saveData();
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
-  overlay.innerHTML=`
-    <div style="background:linear-gradient(160deg,#2d3f52,#1a2535);border-radius:20px;padding:24px 20px;max-width:320px;width:100%;border:1px solid rgba(255,255,255,0.12);">
-      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:white;margin-bottom:4px;">✅ Schicht beendet</div>
-      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:18px;">${currentProtoNr||'—'}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
-        <div style="background:rgba(76,186,107,0.12);border:1px solid rgba(76,186,107,0.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#4cba6b;">${inCount}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Eingänge</div></div>
-        <div style="background:rgba(232,57,74,0.12);border:1px solid rgba(232,57,74,0.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#E8394A;">${outCount}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Ausgänge</div></div>
-        <div style="background:rgba(61,82,104,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:white;">${kundenSet.size}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Standorte</div></div>
-        <div style="background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#f5a623;">${totalVorf}</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Vorfälle</div></div>
-      </div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:12px;">💾 Protokoll gespeichert</div>
-      <button onclick="this.closest('[style*=inset]').remove();hideCheckin();" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">✓ Zum Protokoll</button>
-      <button onclick="window.open('https://wa.me/?text='+encodeURIComponent(shiftReport));" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#25D366,#1da851);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">📲 WhatsApp Bericht</button>
-    </div>`;
+  overlay.innerHTML=
+    '<div style="background:linear-gradient(160deg,#2d3f52,#1a2535);border-radius:20px;padding:24px 20px;max-width:320px;width:100%;border:1px solid rgba(255,255,255,0.12);">'
+    +'<div style="font-family:Syne,sans-serif;font-size:18px;font-weight:800;color:white;margin-bottom:4px;">Schicht beendet</div>'
+    +'<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:18px;">'+(currentProtoNr||'--')+'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">'
+    +'<div style="background:rgba(76,186,107,0.12);border:1px solid rgba(76,186,107,0.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;color:#4cba6b;">'+inCount+'</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Eingang</div></div>'
+    +'<div style="background:rgba(232,57,74,0.12);border:1px solid rgba(232,57,74,0.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;color:#E8394A;">'+outCount+'</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Ausgang</div></div>'
+    +'<div style="background:rgba(61,82,104,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;color:white;">'+kundenSet.size+'</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Standorte</div></div>'
+    +'<div style="background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-family:Syne,sans-serif;font-size:24px;font-weight:800;color:#f5a623;">'+totalVorf+'</div><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;">Vorfaelle</div></div>'
+    +'</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.35);text-align:center;margin-bottom:12px;">Protokoll gespeichert</div>'
+    +'<button onclick="this.closest(\'[style*=inset]\').remove();hideCheckin();" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;font-family:DM Sans,sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:8px;">Zum Protokoll</button>'
+    +'<button onclick="window.open(\'https://wa.me/?text=\'+encodeURIComponent(shiftReport));" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#25D366,#1da851);color:white;font-family:DM Sans,sans-serif;font-size:14px;font-weight:800;cursor:pointer;">WhatsApp Bericht</button>'
+    +'</div>';
   document.body.appendChild(overlay);
 }
- 
+
 /* ===== updateQuickBar ===== */
 function updateQuickBar(){
   const log=ciGetLog();
@@ -2506,7 +2397,7 @@ function updateQuickBar(){
   log.forEach(e=>{if(e.type==='in')active.add(e.kunde);else active.delete(e.kunde);});
   const qa=document.getElementById('qbActive');
   if(qa){
-    if(!active.size){qa.textContent='—';qa.className='ci-qb-val';}
+    if(!active.size){qa.textContent='--';qa.className='ci-qb-val';}
     else{const k=[...active][0];qa.textContent=active.size===1?k.split(' ')[0]:active.size+' aktiv';qa.className='ci-qb-val green';}
   }
   const qr=document.getElementById('qbRemain');
@@ -2514,23 +2405,23 @@ function updateQuickBar(){
     const seStr=localStorage.getItem('denis_shift_end')||'07:00';
     const[seh,sem]=seStr.split(':').map(Number);
     const now=new Date();let diff=(seh*60+sem)-(now.getHours()*60+now.getMinutes());if(diff<0)diff+=24*60;
-    if(diff>12*60){qr.textContent='— h';qr.className='ci-qb-val';}
+    if(diff>12*60){qr.textContent='-- h';qr.className='ci-qb-val';}
     else if(diff<=60){qr.textContent=diff+'min';qr.className='ci-qb-val red';}
     else{qr.textContent=Math.floor(diff/60)+'h '+p2(diff%60)+'m';qr.className='ci-qb-val orange';}
   }
   const ql=document.getElementById('qbLast');
   if(ql){
-    if(!log.length){ql.textContent='—';}
+    if(!log.length){ql.textContent='--';}
     else{
       const l=log[log.length-1];
       const[lh,lm]=l.time.split(':').map(Number);
       const now=new Date();
       let d=(now.getHours()*60+now.getMinutes())-(lh*60+lm);if(d<0)d+=24*60;
-      ql.textContent=(l.type==='in'?'✅':'🚪')+' '+l.kunde.split(' ')[0]+' ·'+(d<60?d+'min':Math.floor(d/60)+'h');
+      ql.textContent=(l.type==='in'?'IN':'OUT')+' '+l.kunde.split(' ')[0]+' '+(d<60?d+'min':Math.floor(d/60)+'h');
     }
   }
 }
- 
+
 /* ===== ciIn + ciOut ===== */
 function ciIn(){
   if(!ciSelected)return;
@@ -2548,7 +2439,7 @@ function ciIn(){
   if(updLog[ciLogIdx])updLog[ciLogIdx].rowId='row-'+rowId;
   ciSaveLog(updLog);
   ciRenderLog();updateQuickBar();
-  ciShowToast('✅ '+ciSelected+' – Eingang');
+  ciShowToast(ciSelected+' -- Eingang');
   playCheckinSound('in');saveData();ciResetVorfall();
 }
 function ciOut(){
@@ -2580,10 +2471,112 @@ function ciOut(){
     addRow({k:ciSelected,b:'',e:time,n:notizen2});saveData();
   }
   ciRenderLog();updateQuickBar();
-  ciShowToast('🚪 '+ciSelected+' – Ausgang');
+  ciShowToast(ciSelected+' -- Ausgang');
   playCheckinSound('out');ciResetVorfall();saveData();
 }
- 
+
+/* ===== SOS ===== */
+function ciSOS(){
+  if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
+  playBeep('danger');
+  const sosEvents=[
+    'Polizei eingetroffen - Personalien aufgenommen',
+    'Notruf / Notfall gemeldet',
+    'Rettungsdienst angefordert',
+    'Vandalismus gemeldet - Polizei informiert',
+    'Diebstahl gemeldet - Polizei verstaendigt',
+    'Streit geschlichtet',
+  ];
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:20px;backdrop-filter:blur(6px);';
+  let btns=sosEvents.map(ev=>
+    '<button onclick="ciSOSSelect(\''+ev.replace(/'/g,"\\'")+'\',(this.closest(\'[style*=inset]\')))" '
+    +'style="width:100%;padding:14px 16px;border-radius:12px;border:none;background:rgba(232,57,74,0.15);'
+    +'border:1.5px solid rgba(232,57,74,0.4);color:white;font-family:\'DM Sans\',sans-serif;font-size:13px;'
+    +'font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px;">'+ev+'</button>'
+  ).join('');
+  overlay.innerHTML='<div style="width:100%;max-width:480px;padding:0 16px;">'
+    +'<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:white;text-align:center;margin-bottom:16px;">SOS -- Ereignis waehlen</div>'
+    +btns
+    +'<button onclick="this.closest(\'[style*=inset]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">Abbrechen</button>'
+    +'</div>';
+  document.body.appendChild(overlay);
+}
+function ciSOSSelect(ereignis,overlay){
+  if(overlay)overlay.remove();
+  if(navigator.vibrate)navigator.vibrate(100);
+  const time=nowHM();
+  const log=ciGetLog();
+  log.push({kunde:ciSelected||'SOS',type:'in',time,ts:Date.now(),vorfall:ereignis,rowId:null});
+  ciSaveLog(log);
+  addRow({k:ciSelected||'SOS',b:time,e:'',n:[{ev:ereignis,c:1,ft:''}]});
+  saveData();ciRenderLog();updateQuickBar();
+  ciShowToast('SOS: '+ereignis.substring(0,25)+'...');
+  playBeep('danger');
+}
+
+/* ===== QUICK NOTE ===== */
+function ciSendQuickNote(){
+  const inp=document.getElementById('ciQuickNoteInput');
+  const text=inp.value.trim();
+  if(!text)return;
+  const time=nowHM();
+  const targetKunde=ciSelected||ciGetAllKunden()[0]||'';
+  if(targetKunde){
+    let added=false;
+    const rows=[...document.querySelectorAll('.proto-row')].reverse();
+    for(const row of rows){
+      const id=row.id.replace('row-','');
+      const ksel=document.getElementById('ksel-'+id);
+      const kcust=document.getElementById('kcust-'+id);
+      const isC=kcust&&kcust.style.display!=='none';
+      const k=isC?kcust.value:(ksel?ksel.value:'');
+      if(k===targetKunde){addNotiz(parseInt(id),'Freitext...',0,text);added=true;break;}
+    }
+    if(!added)addRow({k:targetKunde,b:time,e:'',n:[{ev:'Freitext...',c:0,ft:text}]});
+  } else {
+    addRow({k:'Notiz',b:time,e:'',n:[{ev:'Freitext...',c:0,ft:text}]});
+  }
+  inp.value='';saveData();
+  if(navigator.vibrate)navigator.vibrate(50);
+  playBeep('success');
+  ciShowToast('Notiz gespeichert');
+}
+
+/* ===== HAPTIC + SOUNDS ===== */
+function playCheckinSound(type){
+  if(navigator.vibrate){
+    if(type==='in')navigator.vibrate([80,30,80]);
+    else navigator.vibrate([120]);
+  }
+  if(!soundEnabled)return;
+  const ctx=getACtx();if(!ctx)return;
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.connect(gain);gain.connect(ctx.destination);
+  const t=ctx.currentTime;
+  if(type==='in'){
+    osc.frequency.setValueAtTime(500,t);
+    osc.frequency.linearRampToValueAtTime(800,t+0.2);
+    gain.gain.setValueAtTime(0.1,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+    osc.start();osc.stop(t+0.3);
+  } else {
+    osc.frequency.setValueAtTime(800,t);
+    osc.frequency.linearRampToValueAtTime(400,t+0.2);
+    gain.gain.setValueAtTime(0.1,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+    osc.start();osc.stop(t+0.3);
+  }
+}
+
+/* ===== SOS btn show on kunde select ===== */
+const _origCiSelectKunde=ciSelectKunde;
+function ciSelectKunde(k){
+  _origCiSelectKunde(k);
+  const sosBtn=document.getElementById('ciSosBtn');
+  if(sosBtn)sosBtn.style.display='flex';
+}
+
 function ciRenderLog(){
   const list=document.getElementById('ciLogList');if(!list)return;
   const log=ciGetLog();
@@ -2597,7 +2590,7 @@ function ciRenderLog(){
     item.style.flexDirection='column';
     item.style.alignItems='stretch';
     item.style.gap='6px';
- 
+
     // الصف الرئيسي
     const mainRow=document.createElement('div');
     mainRow.style.cssText='display:flex;align-items:center;gap:10px;';
@@ -2609,7 +2602,7 @@ function ciRenderLog(){
         ${entry.vorfall?`<div class="ci-log-vorfall-text">⚠️ ${entry.vorfall}</div>`:''}
       </div>
       <span style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:10px;flex-shrink:0;background:${isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)'};color:${isIn?'#4cba6b':'var(--red)'};">${isIn?'✅ Ein':'🚪 Aus'}</span>`;
- 
+
     // أزرار التعديل والحذف
     const actRow=document.createElement('div');
     actRow.style.cssText='display:flex;gap:5px;padding-left:18px;';
@@ -2624,7 +2617,7 @@ function ciRenderLog(){
       </button>
       <button onclick="ciDeleteEntry(${realIdx})"
         style="background:rgba(232,57,74,0.1);border:1px solid rgba(232,57,74,0.2);border-radius:7px;color:var(--red);font-size:12px;padding:4px 8px;cursor:pointer;">🗑</button>`;
- 
+
     // حقل تعديل الوقت (مخفي)
     const editRow=document.createElement('div');
     editRow.id='ci-edit-row-'+realIdx;
@@ -2645,14 +2638,14 @@ function ciRenderLog(){
           ⏱ Jetzt (${nowHM()})
         </button>
       </div>`;
- 
+
     item.appendChild(mainRow);
     item.appendChild(actRow);
     item.appendChild(editRow);
     list.appendChild(item);
   });
 }
- 
+
 function ciToggleEditTime(idx){
   const row=document.getElementById('ci-edit-row-'+idx);
   if(!row)return;
@@ -2661,7 +2654,7 @@ function ciToggleEditTime(idx){
   document.querySelectorAll('[id^="ci-edit-row-"]').forEach(r=>r.style.display='none');
   if(!isOpen)row.style.display='block';
 }
- 
+
 function ciSaveEditTime(idx){
   const inp=document.getElementById('ci-time-inp-'+idx);
   if(!inp||!inp.value){ciShowToast('⚠️ Bitte Zeit eingeben');return;}
@@ -2675,12 +2668,12 @@ function ciSaveEditTime(idx){
   ciShowToast('✅ Zeit gespeichert: '+inp.value);
   playBeep('success');
 }
- 
+
 function ciSetNowTime(idx){
   const inp=document.getElementById('ci-time-inp-'+idx);
   if(inp)inp.value=nowHM();
 }
- 
+
 function ciSyncTimeToProtocol(logIdx, kunde, type, newTime, oldTime){
   // ابحث عن الصف المرتبط وحدّث وقته
   document.querySelectorAll('.proto-row').forEach(row=>{
@@ -2696,7 +2689,7 @@ function ciSyncTimeToProtocol(logIdx, kunde, type, newTime, oldTime){
     if(type==='out'&&ed&&ed.value===oldTime){ed.value=newTime;colorTime(ed);saveData();}
   });
 }
- 
+
 function ciToggleType(idx){
   const log=ciGetLog();
   log[idx].type=log[idx].type==='in'?'out':'in';
@@ -2770,7 +2763,7 @@ function ciFinish(){
   document.body.appendChild(overlay);
 }
 function ciShowToast(msg){const old=document.querySelector('.ci-toast');if(old)old.remove();const t=document.createElement('div');t.className='ci-toast';t.textContent=msg;document.getElementById('checkinScreen').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},2200);}
- 
+
 document.addEventListener('keydown',e=>{
   if(document.getElementById('pinScreen').style.display!=='none')return;
   if(e.ctrlKey||e.metaKey){if(e.key==='s'){e.preventDefault();manualSave();}if(e.key==='Enter'){e.preventDefault();addRow();}}
