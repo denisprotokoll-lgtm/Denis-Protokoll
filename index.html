@@ -2099,7 +2099,17 @@ function ciResetVorfall(){
   ciVorfallItems=[];ciRenderVorfallList();
   const inp=document.getElementById('ciVorfallInput');if(inp)inp.value='';
 }
-function ciSelectKunde(k){ciSelected=k;ciRenderKunden();document.getElementById('ciBtnIn').disabled=false;document.getElementById('ciBtnOut').disabled=false;document.getElementById('ciBtnInSub').textContent=k;document.getElementById('ciBtnOutSub').textContent=k;ciPopulateKundeSelect();}
+function ciSelectKunde(k){
+  ciSelected=k;
+  ciRenderKunden();
+  document.getElementById('ciBtnIn').disabled=false;
+  document.getElementById('ciBtnOut').disabled=false;
+  document.getElementById('ciBtnInSub').textContent=k;
+  document.getElementById('ciBtnOutSub').textContent=k;
+  const sosBtn=document.getElementById('ciSosBtn');
+  if(sosBtn)sosBtn.style.display='flex';
+  if(typeof ciPopulateKundeSelect==='function')ciPopulateKundeSelect();
+}
 function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return[];}}
 function ciSaveLog(log){localStorage.setItem('denis_checkin_log',JSON.stringify(log));}
 function ciGroupByKunde(){
@@ -2569,13 +2579,7 @@ function playCheckinSound(type){
   }
 }
 
-/* ===== SOS btn show on kunde select ===== */
-const _origCiSelectKunde=ciSelectKunde;
-function ciSelectKunde(k){
-  _origCiSelectKunde(k);
-  const sosBtn=document.getElementById('ciSosBtn');
-  if(sosBtn)sosBtn.style.display='flex';
-}
+/* SOS btn handled in ciSelectKunde directly */
 
 function ciRenderLog(){
   const list=document.getElementById('ciLogList');if(!list)return;
