@@ -310,10 +310,16 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-qb-val.orange{color:#f5a623;}
 .ci-qb-val.red{color:#E8394A;}
 .ci-sos-btn{position:fixed;right:12px;top:60px;z-index:999;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#E8394A,#c8102e);border:none;color:white;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(232,57,74,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;animation:recpulse 2s infinite;letter-spacing:0.5px;}
-.ci-quicknote-bar{margin:8px 12px 0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;display:flex;align-items:center;gap:8px;padding:8px 12px;}
+
 .ci-quicknote-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:white;}
 .ci-quicknote-input::placeholder{color:rgba(255,255,255,0.25);}
-.ci-quicknote-send{background:rgba(76,186,107,0.2);border:1px solid rgba(76,186,107,0.4);border-radius:8px;color:#4cba6b;font-size:18px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+@keyframes flashGreen{0%{opacity:0;transform:scale(0.8)}30%{opacity:1;transform:scale(1.05)}70%{opacity:1}100%{opacity:0;transform:scale(1.1)}}
+@keyframes flashRed{0%{opacity:0;transform:scale(0.8)}30%{opacity:1;transform:scale(1.05)}70%{opacity:1}100%{opacity:0;transform:scale(1.1)}}
+.ci-flash-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.ci-flash-overlay.green{background:rgba(76,186,107,0.25);animation:flashGreen 0.8s ease forwards;}
+.ci-flash-overlay.red{background:rgba(232,57,74,0.25);animation:flashRed 0.8s ease forwards;}
+.ci-flash-icon{font-family:'Syne',sans-serif;font-size:80px;font-weight:800;}
 .ci-alert-banner{display:none;margin:8px 12px 0;background:rgba(245,166,35,0.15);border:1.5px solid rgba(245,166,35,0.4);border-radius:12px;padding:10px 12px;}
 .ci-alert-banner.show{display:flex;align-items:center;gap:8px;}
 .ci-alert-text{flex:1;font-size:11px;font-weight:700;color:#f5a623;line-height:1.4;}
@@ -370,14 +376,16 @@ body.dark-mode .settings-pin-btn{background:#3a3a3a;color:var(--text);}
 .ci-btn-out{background:linear-gradient(135deg,#E8394A,#c8102e);color:white;box-shadow:0 6px 20px rgba(232,57,74,0.4);}
 
 .ci-btn-sub{font-size:10px;font-weight:600;opacity:0.8;}
-.ci-vorfall-wrap{margin-bottom:14px;}
-.ci-vorfall-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:6px;display:block;}
-.ci-vorfall-input{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;outline:none;resize:none;min-height:60px;}
-.ci-vorfall-input::placeholder{color:rgba(255,255,255,0.25);}
+
+
+
+
 .ci-log-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;margin-bottom:10px;}
 .ci-log-title{padding:12px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);}
 .ci-log-empty{padding:24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);}
-.ci-log-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.06);animation:rowIn 0.2s ease;}
+.ci-log-item{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.06);animation:rowIn 0.2s ease;flex-wrap:nowrap;overflow:hidden;}
+.ci-log-item.log-in{background:rgba(76,186,107,0.07);border-left:3px solid rgba(76,186,107,0.5);}
+.ci-log-item.log-out{background:rgba(232,57,74,0.07);border-left:3px solid rgba(232,57,74,0.4);}
 .ci-log-item:last-child{border-bottom:none;}
 .ci-log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .ci-log-dot.in{background:#4cba6b;}
@@ -678,11 +686,6 @@ body::before{display:none!important;}
     <span class="ci-alert-text" id="ciAlertText">Vergessen auszuchecken?</span>
     <button class="ci-alert-btn" id="ciAlertBtn">Jetzt auschecken</button>
   </div>
-  <div class="ci-quicknote-bar">
-    <input class="ci-quicknote-input" id="ciQuickNoteInput" type="text"
-      placeholder="Schnellnotiz..." onkeydown="if(event.key==='Enter')ciSendQuickNote()">
-    <button class="ci-quicknote-send" onclick="ciSendQuickNote()">+</button>
-  </div>
   <button class="ci-sos-btn" id="ciSosBtn" onclick="ciSOS()" style="display:none;">
     <span style="font-size:20px;">!</span>
     <span>SOS</span>
@@ -695,6 +698,23 @@ body::before{display:none!important;}
     <div style="display:flex;flex-direction:column;align-items:flex-end;">
       <div class="ci-clock" id="ciClock">00:00:00</div>
       <div class="ci-date" id="ciDate">--</div>
+    </div>
+  </div>
+  <!-- عداد اليوم -->
+  <div id="ciDayCounter" style="display:flex;align-items:center;justify-content:center;gap:16px;padding:8px 16px;background:rgba(0,0,0,0.2);">
+    <div style="text-align:center;">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#4cba6b;" id="ciCountIn">0</div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);">Eingang</div>
+    </div>
+    <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);"></div>
+    <div style="text-align:center;">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#E8394A;" id="ciCountOut">0</div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);">Ausgang</div>
+    </div>
+    <div style="width:1px;height:32px;background:rgba(255,255,255,0.1);"></div>
+    <div style="text-align:center;">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#f5a623;" id="ciCountActive">0</div>
+      <div style="font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);">Noch drin</div>
     </div>
   </div>
   <div class="ci-quickbar" id="ciQuickBar">
@@ -724,28 +744,6 @@ body::before{display:none!important;}
         <span class="ci-btn-sub" id="ciBtnOutSub">Kunde wählen</span>
       </button>
     </div>
-    <div class="ci-vorfall-wrap">
-      <span class="ci-vorfall-label">⚠️ Vorfall hinzufügen</span>
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px;">① Ereignis</div>
-        <select id="ciVorfallSelect" style="width:100%;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;margin-bottom:8px;">
-          <option value="">— Ereignis wählen —</option>
-        </select>
-        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px;">② Kunde</div>
-        <select id="ciVorfallKundeSelect" onchange="ciUpdateVisitSelect()" style="width:100%;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;margin-bottom:8px;">
-          <option value="">— Kunde wählen —</option>
-        </select>
-        <div id="ciVisitSelectWrap" style="display:none;margin-bottom:8px;">
-          <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,179,0,0.7);margin-bottom:5px;">③ Welcher Besuch?</div>
-          <select id="ciVisitSelect" style="width:100%;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:white;background:rgba(255,179,0,0.12);border:1.5px solid rgba(255,179,0,0.35);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;">
-          </select>
-        </div>
-        <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:5px;">④ Freitext (optional)</div>
-        <textarea class="ci-vorfall-input" id="ciVorfallInput" placeholder="Zusätzliche Notiz…" style="min-height:36px;margin-bottom:8px;"></textarea>
-        <button onclick="ciAddVorfall()" style="width:100%;background:rgba(76,186,107,0.2);border:1.5px solid rgba(76,186,107,0.4);border-radius:10px;color:#4cba6b;font-size:13px;font-weight:800;padding:9px;cursor:pointer;">＋ Vorfall hinzufügen</button>
-      </div>
-      <div id="ciVorfallList" style="display:flex;flex-direction:column;gap:6px;"></div>
-    </div>
     <div class="ci-log-box">
       <div class="ci-log-title">📋 Protokoll Heute</div>
       <div id="ciLogList"><div class="ci-log-empty">Noch keine Einträge</div></div>
@@ -761,7 +759,6 @@ body::before{display:none!important;}
 <div class="toolbar no-print">
   <div class="toolbar-brand">Denis <span>Protokoll</span> · Sicherheitsdienst</div>
   <div class="toolbar-right">
-    <button class="btn btn-ghost" onclick="openDashboard()">📊</button>
     <button class="btn btn-ghost" onclick="openSettings()">&#x2699;</button>
     <button class="btn btn-ghost" onclick="openSigModal()">✍️</button>
     <button class="btn btn-ghost" onclick="toggleDark()">🌙</button>
@@ -778,17 +775,7 @@ body::before{display:none!important;}
     <div class="header-left">
       <div class="header-eyebrow">Tagesbericht · Vorfallprotokoll</div>
       <div class="header-title">Denis <span>Protokoll</span></div>
-      <div style="display:flex;align-items:center;gap:4px;margin-top:3px;">
-        <button class="no-print" onclick="changeProtoNr(-1)"
-          style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
-        <div style="font-size:8px;font-weight:800;color:rgba(255,255,255,0.45);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:2px 6px;letter-spacing:0.5px;display:flex;align-items:center;gap:3px;">
-          <span style="width:4px;height:4px;border-radius:50%;background:#4cba6b;display:inline-block;flex-shrink:0;"></span>
-          <span id="protoNrText">—</span>
-        </div>
-        <button class="no-print" onclick="changeProtoNr(1)"
-          style="width:16px;height:16px;border-radius:4px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
-      </div>
-      <div class="live-clock no-print" id="liveClock">00:00:00</div>
+      
       <div class="shift-day-info no-print" id="shiftDayInfo">📅 Schicht: —</div>
       <div class="progress-wrap no-print">
         <span class="progress-label">19:45 → 07:00</span>
@@ -858,7 +845,7 @@ body::before{display:none!important;}
 </div>
 
 <button class="fab fab-ai no-print" onclick="openAI()">🤖</button>
-<button class="fab fab-left no-print" onclick="openArchive()">📁</button>
+
 <!-- زر Check-in الرئيسي — كبير وواضح في المنتصف أسفل -->
 <button id="fabCheckin" onclick="showCheckin()" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:998;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;border:none;border-radius:30px;padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(76,186,107,0.5);display:flex;align-items:center;gap:10px;transition:all 0.2s;" class="no-print">
   <span style="font-size:22px;">✅</span> Check-in öffnen
@@ -868,9 +855,7 @@ body::before{display:none!important;}
   <span class="as-dot"></span>
   <span class="as-text" id="autosaveText">💾 Automatisch gespeichert</span>
   <div class="as-actions">
-    <button class="as-btn" onclick="openArchive()">📁 Archiv</button>
-    <button class="as-btn" onclick="exportJSON()">⬇ Export</button>
-    <button class="as-btn" onclick="manualSave()">💾 Speichern</button>
+    
   </div>
 </div>
 </div><!-- end appContent -->
@@ -1243,7 +1228,18 @@ function showToast(msg,type='success',duration=2500){
   const t=document.createElement('div');t.className=`toast ${type}`;t.innerHTML=msg;wrap.appendChild(t);
   setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all 0.3s';setTimeout(()=>t.remove(),300);},duration);
 }
-function toggleDark(){document.body.classList.toggle('dark-mode');localStorage.setItem('denis_dark',document.body.classList.contains('dark-mode')?'1':'0');}
+function checkAutoDarkMode(){
+  const h=new Date().getHours();
+  const shouldBeDark=h>=22||h<6;
+  const isDark=document.body.classList.contains('dark-mode');
+  // تغيير تلقائي فقط لو المستخدم ما ضبط يدوياً
+  if(localStorage.getItem('denis_dark_manual'))return;
+  if(shouldBeDark&&!isDark){document.body.classList.add('dark-mode');}
+  else if(!shouldBeDark&&isDark){document.body.classList.remove('dark-mode');}
+}
+function toggleDark(){
+  // لما يضغط يدوياً — نحفظ تفضيله
+  localStorage.setItem('denis_dark_manual','1');document.body.classList.toggle('dark-mode');localStorage.setItem('denis_dark',document.body.classList.contains('dark-mode')?'1':'0');}
 function toggleStatus(){
   statusOk=!statusOk;
   document.getElementById('statusBadge').className='status-badge'+(statusOk?'':' incident');
@@ -1827,6 +1823,22 @@ function openDashboard(){
 function closeDashboard(){document.getElementById('dashOverlay').style.display='none';}
 
 let ciSelected=null,ciClockInterval=null;
+function updateDayCounter(){
+  const log=ciGetLog();
+  const inCount=log.filter(e=>e.type==='in').length;
+  const outCount=log.filter(e=>e.type==='out').length;
+  const active=new Set();
+  log.forEach(e=>{if(e.type==='in')active.add(e.kunde);else active.delete(e.kunde);});
+  const el1=document.getElementById('ciCountIn');
+  const el2=document.getElementById('ciCountOut');
+  const el3=document.getElementById('ciCountActive');
+  if(el1)el1.textContent=inCount;
+  if(el2)el2.textContent=outCount;
+  if(el3){
+    el3.textContent=active.size;
+    el3.style.color=active.size>0?'#f5a623':'rgba(255,255,255,0.3)';
+  }
+}
 function updateQuickBar(){
   // ① كم موقع لازال داخل (دخل بدون خروج)
   const log=ciGetLog();
@@ -1906,7 +1918,8 @@ function showCheckin(){
     updateQuickBar();
   }
   tick();
-  ciClockInterval=setInterval(()=>{tick();updateQuickBar();},1000);
+  ciClockInterval=setInterval(()=>{tick();updateQuickBar();updateDayCounter();checkAutoDarkMode();},1000);
+  checkAutoDarkMode();
   updateQuickBar();
   startForgottenAlarm();
 }
@@ -2305,6 +2318,24 @@ function startForgottenAlarm(){
   alarmInterval=setInterval(checkForgottenCheckout,60000);
   checkForgottenCheckout();
 }
+function playAlarmSound(){
+  if(!soundEnabled)return;
+  const ctx=getACtx();if(!ctx)return;
+  // 3 نغمات تنبيه متكررة
+  for(let i=0;i<3;i++){
+    const osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    const t=ctx.currentTime+(i*0.4);
+    osc.type='square';
+    osc.frequency.setValueAtTime(880,t);
+    osc.frequency.setValueAtTime(660,t+0.15);
+    gain.gain.setValueAtTime(0.2,t);
+    gain.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+    osc.start(t);osc.stop(t+0.35);
+  }
+  // اهتزاز قوي
+  if(navigator.vibrate)navigator.vibrate([300,100,300,100,300]);
+}
 function checkForgottenCheckout(){
   const alarmMin=parseInt(localStorage.getItem('denis_alarm_min')||'120');
   const log=ciGetLog();if(!log.length){hideForgottenAlert();return;}
@@ -2326,7 +2357,7 @@ function checkForgottenCheckout(){
     if(banner&&text&&btn){
       text.textContent=oldest.kunde+' -- seit '+h+'h '+p2(m)+'m noch eingecheckt!';
       btn.onclick=()=>{ciSelectKunde(oldest.kunde);ciOut();hideForgottenAlert();};
-      banner.classList.add('show');playBeep('danger');
+      banner.classList.add('show');playBeep('danger');playAlarmSound();
     }
   } else hideForgottenAlert();
 }
@@ -2448,9 +2479,9 @@ function ciIn(){
   const updLog=ciGetLog();
   if(updLog[ciLogIdx])updLog[ciLogIdx].rowId='row-'+rowId;
   ciSaveLog(updLog);
-  ciRenderLog();updateQuickBar();
+  ciRenderLog();updateQuickBar();updateDayCounter();
   ciShowToast(ciSelected+' -- Eingang');
-  playCheckinSound('in');saveData();ciResetVorfall();
+  showCheckinFlash('in');playCheckinSound('in');saveData();ciResetVorfall();
 }
 function ciOut(){
   if(!ciSelected)return;
@@ -2480,9 +2511,9 @@ function ciOut(){
     const notizen2=ciVorfallItems.filter(v=>(v.kunde||ciSelected)===ciSelected).map(v=>({ev:v.ev,c:v.c,ft:v.isFree?v.ev:''}));
     addRow({k:ciSelected,b:'',e:time,n:notizen2});saveData();
   }
-  ciRenderLog();updateQuickBar();
+  ciRenderLog();updateQuickBar();updateDayCounter();
   ciShowToast(ciSelected+' -- Ausgang');
-  playCheckinSound('out');ciResetVorfall();saveData();
+  showCheckinFlash('out');playCheckinSound('out');ciResetVorfall();saveData();
 }
 
 /* ===== SOS ===== */
@@ -2520,7 +2551,7 @@ function ciSOSSelect(ereignis,overlay){
   log.push({kunde:ciSelected||'SOS',type:'in',time,ts:Date.now(),vorfall:ereignis,rowId:null});
   ciSaveLog(log);
   addRow({k:ciSelected||'SOS',b:time,e:'',n:[{ev:ereignis,c:1,ft:''}]});
-  saveData();ciRenderLog();updateQuickBar();
+  saveData();ciRenderLog();updateQuickBar();updateDayCounter();
   ciShowToast('SOS: '+ereignis.substring(0,25)+'...');
   playBeep('danger');
 }
@@ -2554,6 +2585,15 @@ function ciSendQuickNote(){
 }
 
 /* ===== HAPTIC + SOUNDS ===== */
+function showCheckinFlash(type){
+  const old=document.querySelector('.ci-flash-overlay');
+  if(old)old.remove();
+  const overlay=document.createElement('div');
+  overlay.className='ci-flash-overlay '+(type==='in'?'green':'red');
+  overlay.innerHTML='<div class="ci-flash-icon">'+(type==='in'?'OK':'OUT')+'</div>';
+  document.body.appendChild(overlay);
+  setTimeout(()=>overlay.remove(),850);
+}
 function playCheckinSound(type){
   if(navigator.vibrate){
     if(type==='in')navigator.vibrate([80,30,80]);
@@ -2584,69 +2624,39 @@ function playCheckinSound(type){
 function ciRenderLog(){
   const list=document.getElementById('ciLogList');if(!list)return;
   const log=ciGetLog();
-  if(!log.length){list.innerHTML='<div class="ci-log-empty">Noch keine Einträge heute</div>';return;}
+  if(!log.length){list.innerHTML='<div class="ci-log-empty">Noch keine Eintraege</div>';return;}
   list.innerHTML='';
   [...log].reverse().forEach((entry,i)=>{
     const realIdx=log.length-1-i;
     const isIn=entry.type==='in';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='border-bottom:1px solid rgba(255,255,255,0.05);';
+    // صف رئيسي أفقي
     const item=document.createElement('div');
-    item.className='ci-log-item';
-    item.style.flexDirection='column';
-    item.style.alignItems='stretch';
-    item.style.gap='6px';
-
-    // الصف الرئيسي
-    const mainRow=document.createElement('div');
-    mainRow.style.cssText='display:flex;align-items:center;gap:10px;';
-    mainRow.innerHTML=`
-      <div class="ci-log-dot ${entry.type}"></div>
-      <div class="ci-log-info" style="flex:1;min-width:0;">
-        <div class="ci-log-kunde">${KUNDE_ICONS[entry.kunde]||'📍'} ${entry.kunde}</div>
-        <div class="ci-log-time" id="ci-time-lbl-${realIdx}">${entry.time} Uhr</div>
-        ${entry.vorfall?`<div class="ci-log-vorfall-text">⚠️ ${entry.vorfall}</div>`:''}
-      </div>
-      <span style="font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:10px;flex-shrink:0;background:${isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)'};color:${isIn?'#4cba6b':'var(--red)'};">${isIn?'✅ Ein':'🚪 Aus'}</span>`;
-
-    // أزرار التعديل والحذف
-    const actRow=document.createElement('div');
-    actRow.style.cssText='display:flex;gap:5px;padding-left:18px;';
-    actRow.innerHTML=`
-      <button onclick="ciToggleEditTime(${realIdx})"
-        style="flex:1;background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);border-radius:7px;color:#f5a623;font-size:10px;font-weight:700;padding:4px 8px;cursor:pointer;">
-        ✏️ Zeit ändern
-      </button>
-      <button onclick="ciToggleType(${realIdx})"
-        style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;padding:4px 8px;cursor:pointer;">
-        🔄 ${isIn?'→ Ausgang':'→ Eingang'}
-      </button>
-      <button onclick="ciDeleteEntry(${realIdx})"
-        style="background:rgba(232,57,74,0.1);border:1px solid rgba(232,57,74,0.2);border-radius:7px;color:var(--red);font-size:12px;padding:4px 8px;cursor:pointer;">🗑</button>`;
-
-    // حقل تعديل الوقت (مخفي)
+    item.className='ci-log-item '+(isIn?'log-in':'log-out');
+    item.innerHTML=
+      '<div class="ci-log-dot '+entry.type+'" style="flex-shrink:0;"></div>'
+      +'<div style="flex:1;min-width:0;overflow:hidden;">'
+        +'<div style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+entry.kunde+'</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,0.4);" id="ci-time-lbl-'+realIdx+'">'+entry.time+'</div>'
+      +'</div>'
+      +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
+      +'<button onclick="ciToggleEditTime('+realIdx+')" style="background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);border-radius:7px;color:#f5a623;font-size:10px;font-weight:700;padding:3px 7px;cursor:pointer;flex-shrink:0;">Zeit</button>'
+      +'<button onclick="ciToggleType('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;padding:3px 6px;cursor:pointer;flex-shrink:0;">'+(isIn?'->Aus':'->Ein')+'</button>'
+      +'<button onclick="ciDeleteEntry('+realIdx+')" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;flex-shrink:0;padding:2px 4px;">X</button>';
+    // حقل تعديل الوقت مخفي
     const editRow=document.createElement('div');
     editRow.id='ci-edit-row-'+realIdx;
-    editRow.style.cssText='display:none;padding-left:18px;';
-    editRow.innerHTML=`
-      <div style="background:rgba(245,166,35,0.08);border:1.5px solid rgba(245,166,35,0.3);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;">
-        <div style="font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(245,166,35,0.8);text-transform:uppercase;">⏱ Uhrzeit bearbeiten</div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="time" id="ci-time-inp-${realIdx}" value="${entry.time}"
-            style="flex:1;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:800;color:white;background:rgba(255,255,255,0.1);border:1.5px solid rgba(245,166,35,0.4);border-radius:8px;padding:6px 10px;outline:none;">
-          <button onclick="ciSaveEditTime(${realIdx})"
-            style="background:#4cba6b;border:none;border-radius:8px;color:white;font-size:12px;font-weight:800;padding:8px 14px;cursor:pointer;">✅ OK</button>
-          <button onclick="ciToggleEditTime(${realIdx})"
-            style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.5);font-size:12px;padding:8px 10px;cursor:pointer;">✕</button>
-        </div>
-        <button onclick="ciSetNowTime(${realIdx})"
-          style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;padding:5px;cursor:pointer;">
-          ⏱ Jetzt (${nowHM()})
-        </button>
-      </div>`;
-
-    item.appendChild(mainRow);
-    item.appendChild(actRow);
-    item.appendChild(editRow);
-    list.appendChild(item);
+    editRow.style.cssText='display:none;padding:6px 10px;background:rgba(245,166,35,0.06);';
+    editRow.innerHTML='<div style="display:flex;gap:6px;align-items:center;">'
+      +'<input type="time" id="ci-time-inp-'+realIdx+'" value="'+entry.time+'"'
+      +' style="flex:1;font-size:14px;font-weight:700;color:white;background:rgba(255,255,255,0.1);border:1px solid rgba(245,166,35,0.4);border-radius:8px;padding:4px 8px;outline:none;">'
+      +'<button onclick="ciSaveEditTime('+realIdx+')" style="background:#4cba6b;border:none;border-radius:7px;color:white;font-size:11px;font-weight:800;padding:6px 10px;cursor:pointer;">OK</button>'
+      +'<button onclick="ciToggleEditTime('+realIdx+')" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:rgba(255,255,255,0.5);font-size:11px;padding:6px 8px;cursor:pointer;">X</button>'
+      +'</div>';
+    wrap.appendChild(item);
+    wrap.appendChild(editRow);
+    list.appendChild(wrap);
   });
 }
 
