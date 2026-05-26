@@ -1305,15 +1305,84 @@ function ciRenderLog(){
   list.innerHTML='';
   log.slice().reverse().forEach(function(entry,i){
     var realIdx=log.length-1-i;var isIn=entry.type==='in';
-    var item=document.createElement('div');item.className='ci-log-item '+(isIn?'log-in':'log-out');
-    item.innerHTML='<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
+    // wrapper div für item + edit-row
+    var wrap=document.createElement('div');
+    // Haupt-Zeile
+    var item=document.createElement('div');
+    item.className='ci-log-item '+(isIn?'log-in':'log-out');
+    item.style.cssText='border-bottom:none;';
+    item.innerHTML=
+      '<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
       +'<div style="flex:1;min-width:0;overflow:hidden;">'
       +'<div style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+entry.kunde+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,0.4);">'+entry.time+'</div></div>'
-      +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
-      +'<button onclick="ciToggleType('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;padding:3px 6px;cursor:pointer;">'+(isIn?'→Aus':'→Ein')+'</button>'
-      +'<button onclick="ciDeleteEntry('+realIdx+')" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px 4px;">✕</button>';
-    list.appendChild(item);
+      +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;cursor:pointer;" onclick="ciToggleEditTime('+realIdx+')">⏱ '+entry.time+' <span style="font-size:9px;opacity:0.6;">✏️</span></div>'
+      +'</div>'
+      +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
+      +'<button onclick="ciToggleType('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;padding:3px 6px;cursor:pointer;">'+(isIn?'→Aus':'→Ein')+'</button>'
+      +'<button onclick="ciDeleteEntry('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px 4px;">✕</button>';
+    // Edit-Zeile (versteckt)
+    var editRow=document.createElement('div');
+    editRow.id='ci-edit-row-'+realIdx;
+    editRow.style.cssText='display:none;padding:8px 10px 10px;background:rgba(245,166,35,0.06);border-top:1px solid rgba(245,166,35,0.15);animation:rowIn 0.18s ease;';
+    editRow.innerHTML=
+      '<div style="font-size:9px;font-weight:700;color:rgba(245,166,35,0.8);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">⏱ Zeit bearbeiten</div>'
+      +'<div style="display:flex;gap:8px;align-items:center;">'
+      +'<input type="time" id="ci-time-inp-'+realIdx+'" value="'+entry.time+'" style="flex:1;font-family:\'DM Sans\',sans-serif;font-size:16px;font-weight:700;color:white;background:rgba(255,255,255,0.1);border:1.5px solid rgba(245,166,35,0.5);border-radius:10px;padding:8px 10px;outline:none;text-align:center;">'
+      +'<button onclick="ciSetNowTime('+realIdx+')" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-size:10px;font-weight:700;padding:8px 10px;cursor:pointer;white-space:nowrap;flex-shrink:0;">Jetzt</button>'
+      +'<button onclick="ciSaveEditTime('+realIdx+')" style="background:linear-gradient(135deg,#4cba6b,#2e8b47);border:none;border-radius:8px;color:white;font-size:11px;font-weight:800;padding:8px 14px;cursor:pointer;flex-shrink:0;">✓ OK</button>'
+      +'<button onclick="ciToggleEditTime('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.4);font-size:11px;padding:8px 10px;cursor:pointer;flex-shrink:0;">✕</button>'
+      +'</div>';
+    wrap.appendChild(item);
+    wrap.appendChild(editRow);
+    wrap.style.cssText='border-bottom:1px solid rgba(255,255,255,0.06);';
+    list.appendChild(wrap);
+  });
+}
+function ciToggleEditTime(idx){
+  // أغلق كل الحقول المفتوحة
+  document.querySelectorAll('[id^="ci-edit-row-"]').forEach(function(r){
+    if(r.id!=='ci-edit-row-'+idx) r.style.display='none';
+  });
+  var row=document.getElementById('ci-edit-row-'+idx);
+  if(!row)return;
+  var isOpen=row.style.display!=='none';
+  row.style.display=isOpen?'none':'block';
+  // فوكس على الـ input
+  if(!isOpen){
+    setTimeout(function(){var inp=document.getElementById('ci-time-inp-'+idx);if(inp)inp.focus();},50);
+  }
+}
+function ciSetNowTime(idx){
+  var inp=document.getElementById('ci-time-inp-'+idx);if(inp)inp.value=nowHM();
+}
+function ciSaveEditTime(idx){
+  var inp=document.getElementById('ci-time-inp-'+idx);
+  if(!inp||!inp.value){ciShowToast('⚠️ Bitte Zeit eingeben');return;}
+  var log=ciGetLog();
+  var oldTime=log[idx].time;
+  var newTime=inp.value;
+  log[idx].time=newTime;
+  ciSaveLog(log);
+  // حدّث الوقت في البروتوكول (الصف المرتبط)
+  ciSyncTimeToProtocol(log[idx].kunde,log[idx].type,newTime,oldTime);
+  // أغلق حقل التعديل
+  var row=document.getElementById('ci-edit-row-'+idx);if(row)row.style.display='none';
+  ciRenderLog();updateQuickBar();updateDayCounter();
+  ciShowToast('✅ Zeit geändert: '+newTime);
+  playBeep('success');saveData();
+}
+function ciSyncTimeToProtocol(kunde,type,newTime,oldTime){
+  document.querySelectorAll('.proto-row').forEach(function(row){
+    var id=row.id.replace('row-','');
+    var ksel=document.getElementById('ksel-'+id);
+    var kcust=document.getElementById('kcust-'+id);
+    var bd=document.getElementById('bd-'+id);
+    var ed=document.getElementById('ed-'+id);
+    var isC=kcust&&kcust.style.display!=='none';
+    var k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k!==kunde)return;
+    if(type==='in'&&bd&&bd.value===oldTime){bd.value=newTime;colorTime(bd);}
+    if(type==='out'&&ed&&ed.value===oldTime){ed.value=newTime;colorTime(ed);}
   });
 }
 function ciToggleType(idx){var log=ciGetLog();log[idx].type=log[idx].type==='in'?'out':'in';ciSaveLog(log);ciRenderLog();updateQuickBar();updateDayCounter();showToast(log[idx].type==='in'?'✅ Eingang':'🚪 Ausgang','info');}
