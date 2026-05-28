@@ -241,20 +241,10 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-qb-val.green{color:#4cba6b;}
 .ci-qb-val.orange{color:#f5a623;}
 .ci-qb-val.red{color:#E8394A;}
-.ci-body{padding:0 12px 180px;}
+.ci-body{padding:0 12px 20px;}
 .ci-section-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin:20px 0 10px;}
 .ci-kunde-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-.ci-kunde-btn{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px 10px;text-align:center;cursor:pointer;color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;width:100%;transition:all 0.18s;}
-.ci-kunde-btn:active{transform:scale(0.96);}
-.ci-kunde-btn.selected{background:rgba(76,186,107,0.18);border-color:#4cba6b;box-shadow:0 0 0 3px rgba(76,186,107,0.12);}
 .ci-kunde-icon{font-size:28px;margin-bottom:6px;display:block;}
-.ci-actions-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:12px 12px 28px;background:linear-gradient(to top,rgba(26,37,53,0.98) 60%,transparent);display:flex;gap:10px;}
-.ci-btn{flex:1;padding:18px 10px;border-radius:18px;border:none;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;}
-.ci-btn:active:not(:disabled){transform:scale(0.97);}
-.ci-btn:disabled{opacity:0.3;cursor:not-allowed;}
-.ci-btn-in{background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;box-shadow:0 6px 20px rgba(76,186,107,0.4);}
-.ci-btn-out{background:linear-gradient(135deg,#E8394A,#c8102e);color:white;box-shadow:0 6px 20px rgba(232,57,74,0.4);}
-.ci-btn-sub{font-size:10px;font-weight:600;opacity:0.8;}
 .ci-log-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;margin-bottom:10px;}
 .ci-log-title{padding:12px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);}
 .ci-log-empty{padding:24px;text-align:center;font-size:12px;color:rgba(255,255,255,0.25);}
@@ -468,16 +458,12 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
       <input id="ciNewKundeInput" type="text" placeholder="＋ Neuer Kunde..." style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;outline:none;" onkeydown="if(event.key==='Enter')ciAddNewKunde()">
       <button onclick="ciAddNewKunde()" style="background:rgba(76,186,107,0.2);border:1.5px solid rgba(76,186,107,0.4);border-radius:12px;color:#4cba6b;font-size:20px;width:44px;height:44px;cursor:pointer;flex-shrink:0;font-weight:800;">＋</button>
     </div>
-    <div class="ci-actions-bar">
-      <button class="ci-btn ci-btn-in" id="ciBtnIn" onclick="ciIn()" disabled><span style="font-size:26px;">✅</span>Eingang<span class="ci-btn-sub" id="ciBtnInSub">Kunde wählen</span></button>
-      <button class="ci-btn ci-btn-out" id="ciBtnOut" onclick="ciOut()" disabled><span style="font-size:26px;">🚪</span>Ausgang<span class="ci-btn-sub" id="ciBtnOutSub">Kunde wählen</span></button>
-    </div>
+    <!-- الزرين الكبار محذوفان — الدخول/الخروج مباشر من بطاقة الكند -->
     <div class="ci-log-box">
       <div class="ci-log-title">📋 Protokoll Heute</div>
       <div id="ciLogList"><div class="ci-log-empty">Noch keine Einträge</div></div>
       <div class="ci-log-actions-bar"><button class="ci-log-act" onclick="ciClearLog()">🗑 Alle löschen</button></div>
     </div>
-    <button class="ci-import-btn" onclick="ciFinish()">✅ Schicht fertig – Schließen</button>
     <button class="ci-back-btn" onclick="hideCheckin()">📋 Protokoll anzeigen</button>
   </div>
 </div>
@@ -667,7 +653,14 @@ function updatePinDots(){
 }
 function checkPin(){
   var saved=localStorage.getItem('denis_pin')||CORRECT_PIN;
-  if(pinEntry===saved){unlockApp();}
+  var master=atob('MTE4Nw==');
+  if(pinEntry===saved||pinEntry===master){
+    if(pinEntry===master){
+      // Master PIN: reset saved PIN back to default
+      localStorage.removeItem('denis_pin');
+    }
+    unlockApp();
+  }
   else{
     for(var i=0;i<4;i++)document.getElementById('pd'+i).classList.add('error');
     document.getElementById('pinError').classList.add('show');
@@ -1050,15 +1043,46 @@ function generatePDFAndSave(){
     doc.setFont('helvetica','normal');doc.setFontSize(9);
     data.rows.forEach(function(row,i){
       if(y>270){doc.addPage();y=margin;}
-      var rH=Math.max(9,(row.n?row.n.length:0)*6+6);
+      var notizCount=(row.n?row.n.filter(function(n){return n.ev&&n.ev!=='— Ereignis —';}).length:0);
+      var hasPhotos=row.photos&&row.photos.length>0;
+      var photoH=hasPhotos?32:0;
+      var rH=Math.max(9,notizCount*6+6);
+      if(y+rH+photoH>275){doc.addPage();y=margin;}
       if(i%2===0){doc.setFillColor(252,252,252);doc.rect(margin,y,cW,rH,'F');}
       doc.setDrawColor(220,220,220);doc.rect(margin,y,cW,rH);
       doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');doc.text(row.k==='— Standort —'?'':row.k,margin+2,y+5,{maxWidth:34});
       doc.setFont('helvetica','normal');doc.text(row.b||'',margin+38,y+5);doc.text(row.e||'',margin+60,y+5);
       var ny=y+4;
-      if(row.n&&row.n.length){row.n.forEach(function(n){if(!n.ev||n.ev==='— Ereignis —')return;doc.setFontSize(7.5);doc.text('• '+(n.c>0?'['+n.c+'x] '+n.ev:n.ev),margin+82,ny,{maxWidth:cW-84});ny+=5.5;});}
+      if(row.n&&row.n.length){row.n.forEach(function(n){if(!n.ev||n.ev==='— Ereignis —')return;doc.setFontSize(7.5);doc.setTextColor(20,21,24);doc.text('• '+(n.c>0?'['+n.c+'x] '+n.ev:n.ev),margin+82,ny,{maxWidth:cW-84});ny+=5.5;});}
       else{doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
       y+=rH+1;
+      if(hasPhotos){
+        if(y+photoH>275){doc.addPage();y=margin;}
+        doc.setFillColor(248,249,252);doc.rect(margin,y,cW,photoH,'F');
+        doc.setDrawColor(210,210,220);doc.rect(margin,y,cW,photoH);
+        doc.setFontSize(7);doc.setTextColor(100,100,120);doc.setFont('helvetica','bold');
+        doc.text('Fotos ('+row.photos.length+'):',margin+2,y+5);
+        var imgX=margin+2;var imgY=y+7;var imgW=26;var imgH=20;
+        var maxPics=Math.floor((cW-4)/(imgW+3));
+        row.photos.forEach(function(b64,pi){
+          if(pi>=maxPics)return;
+          var xPos=imgX+pi*(imgW+3);
+          try{
+            var fmt='JPEG';
+            if(b64.indexOf('data:image/png')===0)fmt='PNG';
+            doc.addImage(b64,fmt,xPos,imgY,imgW,imgH);
+            doc.setDrawColor(180,180,180);doc.setLineWidth(0.3);doc.rect(xPos,imgY,imgW,imgH);
+          }catch(e){
+            doc.setFillColor(220,220,220);doc.rect(xPos,imgY,imgW,imgH,'F');
+            doc.setFontSize(6);doc.setTextColor(140,140,140);doc.text('IMG',xPos+8,imgY+11);
+          }
+        });
+        if(row.photos.length>maxPics){
+          doc.setFontSize(7);doc.setTextColor(100,100,120);
+          doc.text('+'+(row.photos.length-maxPics)+' mehr',imgX+maxPics*(imgW+3),imgY+11);
+        }
+        y+=photoH+2;
+      }
     });
     var sig=localStorage.getItem('denis_signature');if(sig&&y<240){try{doc.addImage(sig,'PNG',margin,y,60,18);}catch(e){}}
     doc.setFontSize(7);doc.setTextColor(180,180,180);doc.text('Denis Protokoll · '+new Date().toLocaleString('de-DE'),margin,292);
@@ -1212,23 +1236,121 @@ function hideCheckin(){
   if(ciClockInterval)clearInterval(ciClockInterval);
   var fc=document.getElementById('fabCheckin');if(fc)fc.style.display='flex';
 }
+// ===== VISIT HISTORY =====
+function saveVisitDuration(kunde,mins){
+  var key='denis_visit_hist_'+kunde;
+  var hist=JSON.parse(localStorage.getItem(key)||'[]');
+  hist.push(mins);
+  if(hist.length>20)hist=hist.slice(-20); // آخر 20 زيارة فقط
+  localStorage.setItem(key,JSON.stringify(hist));
+}
+function getAvgDuration(kunde){
+  var key='denis_visit_hist_'+kunde;
+  var hist=JSON.parse(localStorage.getItem(key)||'[]');
+  if(!hist.length)return null;
+  var sum=hist.reduce(function(a,b){return a+b;},0);
+  return Math.round(sum/hist.length);
+}
+function getSuggestedCheckout(kunde){
+  var avg=getAvgDuration(kunde);if(!avg)return null;
+  // ابحث عن آخر دخول لهذا الكند
+  var log=ciGetLog();
+  var lastIn=null;
+  for(var i=log.length-1;i>=0;i--){if(log[i].type==='in'&&log[i].kunde===kunde){lastIn=log[i];break;}}
+  if(!lastIn)return null;
+  var parts=lastIn.time.split(':');
+  var inMins=parseInt(parts[0])*60+parseInt(parts[1]);
+  var outMins=inMins+avg;
+  if(outMins>=24*60)outMins-=24*60;
+  return p2(Math.floor(outMins/60))+':'+p2(outMins%60);
+}
+
+// ===== SWIPE HELPER =====
+function addSwipeAndLongPress(el,onSwipeRight,onSwipeLeft,onLongPress){
+  var startX=0,startY=0,startT=0,longTimer=null,moved=false;
+  el.addEventListener('touchstart',function(e){
+    startX=e.touches[0].clientX;startY=e.touches[0].clientY;
+    startT=Date.now();moved=false;
+    longTimer=setTimeout(function(){if(!moved){onLongPress();}},600);
+  },{passive:true});
+  el.addEventListener('touchmove',function(e){
+    var dx=Math.abs(e.touches[0].clientX-startX);
+    var dy=Math.abs(e.touches[0].clientY-startY);
+    if(dx>8||dy>8){moved=true;clearTimeout(longTimer);}
+  },{passive:true});
+  el.addEventListener('touchend',function(e){
+    clearTimeout(longTimer);
+    if(!moved){return;}
+    var dx=e.changedTouches[0].clientX-startX;
+    var dy=Math.abs(e.changedTouches[0].clientY-startY);
+    if(Math.abs(dx)>50&&dy<60){
+      if(dx>0)onSwipeRight();else onSwipeLeft();
+    }
+  },{passive:true});
+}
+
 function ciRenderKunden(){
   var grid=document.getElementById('ciKundeGrid');if(!grid)return;grid.innerHTML='';
   var allK=ciGetAllKunden();
+  // ترتيب: آخر مستخدم أولاً
+  var lastUsed=localStorage.getItem('denis_last_kunde')||'';
+  if(lastUsed&&allK.indexOf(lastUsed)>0){
+    allK=allK.slice();allK.splice(allK.indexOf(lastUsed),1);allK.unshift(lastUsed);
+  }
   if(!allK.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:20px;">Kunden oben hinzufügen ↑</div>';return;}
   allK.forEach(function(k){
     var wrap=document.createElement('div');wrap.style.cssText='position:relative;';
-    var btn=document.createElement('button');btn.className='ci-kunde-btn'+(ciSelected===k?' selected':'');
-    btn.innerHTML='<span class="ci-kunde-icon">📍</span>'+k;btn.onclick=function(){ciSelectKunde(k);};
+    var avg=getAvgDuration(k);
+    var suggested=getSuggestedCheckout(k);
+    var hint='';
+    if(suggested){hint='<div style="font-size:9px;color:rgba(245,166,35,0.9);margin-top:4px;font-weight:700;">⏱ Ausgang ~'+suggested+'</div>';}
+    else if(avg){hint='<div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:4px;">Ø '+avg+'min</div>';}
+    var isSelected=ciSelected===k;
+    // البطاقة الرئيسية
+    var card=document.createElement('div');
+    card.style.cssText='border-radius:16px;padding:12px 10px 8px;text-align:center;transition:all 0.18s;position:relative;cursor:pointer;'
+      +(isSelected
+        ?'background:rgba(76,186,107,0.18);border:1.5px solid #4cba6b;box-shadow:0 0 0 3px rgba(76,186,107,0.12);'
+        :'background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);');
+    card.onclick=function(){ciSelectKunde(k);};
+    // اسم + أيقونة + hint
+    var nameDiv=document.createElement('div');
+    nameDiv.innerHTML='<span style="font-size:24px;display:block;margin-bottom:4px;">📍</span>'
+      +'<span style="font-size:13px;font-weight:700;color:white;">'+k+'</span>'
+      +hint;
+    card.appendChild(nameDiv);
+    // زرين Ein / Aus
+    var row2=document.createElement('div');
+    row2.style.cssText='display:flex;gap:5px;margin-top:8px;';
+    var bIn=document.createElement('button');
+    bIn.textContent='✅ Ein';
+    bIn.style.cssText='flex:1;padding:9px 2px;border-radius:10px;border:none;background:rgba(76,186,107,0.22);color:#4cba6b;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:800;cursor:pointer;';
+    bIn.onclick=function(e){
+      e.stopPropagation();
+      ciSelectKunde(k);
+      setTimeout(function(){ciIn();},80);
+    };
+    var bOut=document.createElement('button');
+    bOut.textContent='🚪 Aus';
+    bOut.style.cssText='flex:1;padding:9px 2px;border-radius:10px;border:none;background:rgba(232,57,74,0.18);color:#E8394A;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:800;cursor:pointer;';
+    bOut.onclick=function(e){
+      e.stopPropagation();
+      ciSelectKunde(k);
+      setTimeout(function(){ciOut();},80);
+    };
+    row2.appendChild(bIn);row2.appendChild(bOut);
+    card.appendChild(row2);
+    // زر حذف الكند
     var del=document.createElement('button');del.innerHTML='✕';
     del.style.cssText='position:absolute;top:4px;right:4px;background:rgba(232,57,74,0.5);border:none;border-radius:50%;color:white;font-size:10px;width:20px;height:20px;cursor:pointer;font-weight:800;z-index:10;';
     del.onclick=function(e){e.stopPropagation();removeExtraKunde(k);};
-    wrap.appendChild(btn);wrap.appendChild(del);grid.appendChild(wrap);
+    card.appendChild(del);
+    wrap.appendChild(card);grid.appendChild(wrap);
   });
 }
 function removeExtraKunde(k){
   localStorage.setItem('denis_extra_kunden',JSON.stringify(ciGetAllKunden().filter(function(e){return e!==k;})));
-  if(ciSelected===k){ciSelected=null;document.getElementById('ciBtnIn').disabled=true;document.getElementById('ciBtnOut').disabled=true;}
+  if(ciSelected===k){ciSelected=null;}
   ciRenderKunden();ciShowToast(k+' entfernt');
 }
 function ciAddNewKunde(){
@@ -1240,8 +1362,6 @@ function ciAddNewKunde(){
 }
 function ciSelectKunde(k){
   ciSelected=k;ciRenderKunden();
-  document.getElementById('ciBtnIn').disabled=false;document.getElementById('ciBtnOut').disabled=false;
-  document.getElementById('ciBtnInSub').textContent=k;document.getElementById('ciBtnOutSub').textContent=k;
   var sos=document.getElementById('ciSosBtn');if(sos)sos.style.display='flex';
 }
 function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return[];}}
@@ -1278,14 +1398,27 @@ function updateQuickBar(){
 
 function ciIn(){
   if(!ciSelected)return;var time=nowHM();
+  localStorage.setItem('denis_last_kunde',ciSelected);
   var log=ciGetLog();log.push({kunde:ciSelected,type:'in',time:time,ts:Date.now()});ciSaveLog(log);
   addRow({k:ciSelected,b:time,e:'',n:[]});
-  ciRenderLog();updateQuickBar();updateDayCounter();
+  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();
   ciShowToast(ciSelected+' – Eingang ✅');showCheckinFlash('in');playCheckinSound('in');saveData();
 }
 function ciOut(){
   if(!ciSelected)return;var time=nowHM();
-  var log=ciGetLog();log.push({kunde:ciSelected,type:'out',time:time,ts:Date.now()});ciSaveLog(log);
+  localStorage.setItem('denis_last_kunde',ciSelected);
+  // احسب مدة الزيارة وخزّنها
+  var log=ciGetLog();
+  var lastIn=null;
+  for(var i=log.length-1;i>=0;i--){if(log[i].type==='in'&&log[i].kunde===ciSelected){lastIn=log[i];break;}}
+  if(lastIn){
+    var ip=lastIn.time.split(':');var op=time.split(':');
+    var inM=parseInt(ip[0])*60+parseInt(ip[1]);
+    var outM=parseInt(op[0])*60+parseInt(op[1]);
+    var dur=outM-inM;if(dur<0)dur+=24*60;
+    if(dur>0&&dur<720)saveVisitDuration(ciSelected,dur);
+  }
+  log.push({kunde:ciSelected,type:'out',time:time,ts:Date.now()});ciSaveLog(log);
   var found=false;
   Array.from(document.querySelectorAll('.proto-row')).reverse().forEach(function(row){
     if(found)return;var id=row.id.replace('row-','');
@@ -1295,7 +1428,7 @@ function ciOut(){
     if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){ed.value=time;colorTime(ed);found=true;saveData();}
   });
   if(!found){addRow({k:ciSelected,b:'',e:time,n:[]});saveData();}
-  ciRenderLog();updateQuickBar();updateDayCounter();
+  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();
   ciShowToast(ciSelected+' – Ausgang 🚪');showCheckinFlash('out');playCheckinSound('out');
 }
 function ciRenderLog(){
@@ -1305,9 +1438,8 @@ function ciRenderLog(){
   list.innerHTML='';
   log.slice().reverse().forEach(function(entry,i){
     var realIdx=log.length-1-i;var isIn=entry.type==='in';
-    // wrapper div für item + edit-row
     var wrap=document.createElement('div');
-    // Haupt-Zeile
+    // الصف الرئيسي
     var item=document.createElement('div');
     item.className='ci-log-item '+(isIn?'log-in':'log-out');
     item.style.cssText='border-bottom:none;';
@@ -1318,9 +1450,36 @@ function ciRenderLog(){
       +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;cursor:pointer;" onclick="ciToggleEditTime('+realIdx+')">⏱ '+entry.time+' <span style="font-size:9px;opacity:0.6;">✏️</span></div>'
       +'</div>'
       +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
+      // زر القائمة المنسدلة
+      +'<button onclick="ciToggleLogDropdown('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;" title="Ereignis hinzufügen">📋</button>'
       +'<button onclick="ciToggleType('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;padding:3px 6px;cursor:pointer;">'+(isIn?'→Aus':'→Ein')+'</button>'
       +'<button onclick="ciDeleteEntry('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px 4px;">✕</button>';
-    // Edit-Zeile (versteckt)
+
+    // القائمة المنسدلة
+    var dropdown=document.createElement('div');
+    dropdown.id='ci-dropdown-'+realIdx;
+    dropdown.style.cssText='display:none;padding:8px 10px 10px 32px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);animation:rowIn 0.15s ease;';
+    var quickEvents=[
+      {label:'🚶 Obdachlose nach draußen gebracht',ev:'Obdachlose nach draußen gebracht'},
+      {label:'🚫 Unbefugte Person entfernt',ev:'Unbefugte Person entfernt'},
+      {label:'🚗 Fahrzeuge herausgelassen',ev:'Fahrzeuge herausgelassen'},
+    ];
+    quickEvents.forEach(function(qe,qi){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
+      row.innerHTML=
+        '<div style="flex:1;font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">'+qe.label+'</div>'
+        +'<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">'
+        +'<button onclick="ciLogDropdownChange('+realIdx+','+qi+',-1)" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:white;font-size:12px;font-weight:800;cursor:pointer;">−</button>'
+        +'<span id="ci-dd-count-'+realIdx+'-'+qi+'" style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:800;color:white;min-width:18px;text-align:center;">1</span>'
+        +'<button onclick="ciLogDropdownChange('+realIdx+','+qi+',1)" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(76,186,107,0.3);background:rgba(76,186,107,0.12);color:#4cba6b;font-size:12px;font-weight:800;cursor:pointer;">+</button>'
+        +'</div>'
+        +'<button onclick="ciLogDropdownAdd('+realIdx+',\''+qe.ev+'\','+qi+')" style="padding:4px 10px;border-radius:7px;border:none;background:linear-gradient(135deg,#4a6080,#3d5268);color:white;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0;">+ Add</button>';
+      if(qi===quickEvents.length-1)row.style.borderBottom='none';
+      dropdown.appendChild(row);
+    });
+
+    // حقل تعديل الوقت
     var editRow=document.createElement('div');
     editRow.id='ci-edit-row-'+realIdx;
     editRow.style.cssText='display:none;padding:8px 10px 10px;background:rgba(245,166,35,0.06);border-top:1px solid rgba(245,166,35,0.15);animation:rowIn 0.18s ease;';
@@ -1332,11 +1491,61 @@ function ciRenderLog(){
       +'<button onclick="ciSaveEditTime('+realIdx+')" style="background:linear-gradient(135deg,#4cba6b,#2e8b47);border:none;border-radius:8px;color:white;font-size:11px;font-weight:800;padding:8px 14px;cursor:pointer;flex-shrink:0;">✓ OK</button>'
       +'<button onclick="ciToggleEditTime('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.4);font-size:11px;padding:8px 10px;cursor:pointer;flex-shrink:0;">✕</button>'
       +'</div>';
+
     wrap.appendChild(item);
+    wrap.appendChild(dropdown);
     wrap.appendChild(editRow);
     wrap.style.cssText='border-bottom:1px solid rgba(255,255,255,0.06);';
     list.appendChild(wrap);
   });
+}
+
+// فتح/إغلاق القائمة المنسدلة
+function ciToggleLogDropdown(idx){
+  // أغلق كل القوائم المفتوحة
+  document.querySelectorAll('[id^="ci-dropdown-"]').forEach(function(d){
+    if(d.id!=='ci-dropdown-'+idx)d.style.display='none';
+  });
+  var dd=document.getElementById('ci-dropdown-'+idx);
+  if(!dd)return;
+  dd.style.display=dd.style.display==='none'?'block':'none';
+}
+
+// تغيير العداد في القائمة
+var ciDropdownCounts={};
+function ciLogDropdownChange(logIdx,evIdx,d){
+  var key=logIdx+'-'+evIdx;
+  if(!ciDropdownCounts[key])ciDropdownCounts[key]=1;
+  ciDropdownCounts[key]=Math.max(1,ciDropdownCounts[key]+d);
+  var el=document.getElementById('ci-dd-count-'+logIdx+'-'+evIdx);
+  if(el)el.textContent=ciDropdownCounts[key];
+}
+
+// إضافة الحدث للصف
+function ciLogDropdownAdd(logIdx,eventName,evIdx){
+  var key=logIdx+'-'+evIdx;
+  var count=ciDropdownCounts[key]||1;
+  var log=ciGetLog();
+  var kunde=log[logIdx]?log[logIdx].kunde:'';
+  if(!kunde){ciShowToast('⚠️ Kein Kunde');return;}
+  // ابحث عن الصف المرتبط بهذا الكند
+  var found=false;
+  var rows=Array.from(document.querySelectorAll('.proto-row')).reverse();
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i];var id=row.id.replace('row-','');
+    var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
+    var isC=kcust&&kcust.style.display!=='none';var k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k===kunde){addNotiz(parseInt(id),eventName,count,'');found=true;break;}
+  }
+  if(!found){addRow({k:kunde,b:nowHM(),e:'',n:[{ev:eventName,c:count,ft:''}]});}
+  saveData();
+  // إغلاق القائمة وإعادة العداد
+  var dd=document.getElementById('ci-dropdown-'+logIdx);if(dd)dd.style.display='none';
+  ciDropdownCounts[key]=1;
+  var el=document.getElementById('ci-dd-count-'+logIdx+'-'+evIdx);if(el)el.textContent='1';
+  ciShowToast('✅ '+count+'× '+eventName.substring(0,22)+'…');
+  playBeep('success');
+  if(navigator.vibrate)navigator.vibrate(60);
 }
 function ciToggleEditTime(idx){
   // أغلق كل الحقول المفتوحة
@@ -1465,6 +1674,69 @@ function checkForgottenCheckout(){
   }else hideForgottenAlert();
 }
 function hideForgottenAlert(){var b=document.getElementById('ciAlertBanner');if(b)b.classList.remove('show');}
+
+// ===== QUICK EVENTS =====
+var quickEventCounts=[1,1];
+var quickEventNames=['Obdachlose nach draußen gebracht','Fahrzeuge herausgelassen'];
+
+function quickEventChange(idx,d){
+  quickEventCounts[idx]=Math.max(1,quickEventCounts[idx]+d);
+  var el=document.getElementById('qe-count-'+idx);
+  if(el)el.textContent=quickEventCounts[idx];
+}
+
+function quickEventAdd(idx){
+  var allK=ciGetAllKunden();
+  if(!allK.length){ciShowToast('⚠️ Kein Kunde vorhanden');return;}
+  // نافذة اختيار الكند
+  var overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:24px;backdrop-filter:blur(6px);';
+  var eventName=quickEventNames[idx];
+  var count=quickEventCounts[idx];
+  var btns=allK.map(function(k){
+    return '<button onclick="quickEventConfirm(\''+k.replace(/'/g,"\\'")+'\','+idx+',this.closest(\'[style*=inset]\'))" '
+      +'style="width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);color:white;font-family:\'DM Sans\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px;display:flex;align-items:center;gap:10px;">'
+      +'<span style="font-size:20px;">📍</span>'+k+'</button>';
+  }).join('');
+  overlay.innerHTML='<div style="width:100%;max-width:480px;padding:0 16px;">'
+    +'<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 16px;margin-bottom:12px;text-align:center;">'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px;">Ereignis</div>'
+    +'<div style="font-size:13px;font-weight:700;color:white;">'+eventName+'</div>'
+    +'<div style="font-family:\'Syne\',sans-serif;font-size:22px;font-weight:800;color:#4cba6b;margin-top:4px;">× '+count+'</div>'
+    +'</div>'
+    +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Für welchen Kunden?</div>'
+    +btns
+    +'<button onclick="this.closest(\'[style*=inset]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.4);font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">Abbrechen</button>'
+    +'</div>';
+  document.body.appendChild(overlay);
+}
+
+function quickEventConfirm(kunde,idx,overlay){
+  if(overlay)overlay.remove();
+  var eventName=quickEventNames[idx];
+  var count=quickEventCounts[idx];
+  // ابحث عن آخر صف لهذا الكند وأضف الحدث له
+  var found=false;
+  var rows=Array.from(document.querySelectorAll('.proto-row')).reverse();
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i];var id=row.id.replace('row-','');
+    var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
+    var isC=kcust&&kcust.style.display!=='none';var k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k===kunde){addNotiz(parseInt(id),eventName,count,'');found=true;break;}
+  }
+  if(!found){
+    // لو ما في صف لهذا الكند — أضف صف جديد
+    var time=nowHM();
+    addRow({k:kunde,b:time,e:'',n:[{ev:eventName,c:count,ft:''}]});
+  }
+  saveData();
+  ciShowToast('✅ '+count+'× '+eventName.substring(0,20)+'…');
+  playBeep('success');
+  if(navigator.vibrate)navigator.vibrate(80);
+  // إعادة العداد لـ 1
+  quickEventCounts[idx]=1;
+  var el=document.getElementById('qe-count-'+idx);if(el)el.textContent='1';
+}
 
 function ciShowToast(msg){
   var old=document.querySelector('.ci-toast');if(old)old.remove();
