@@ -1450,8 +1450,8 @@ function ciRenderLog(){
       +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;cursor:pointer;" onclick="ciToggleEditTime('+realIdx+')">⏱ '+entry.time+' <span style="font-size:9px;opacity:0.6;">✏️</span></div>'
       +'</div>'
       +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
-      // زر القائمة المنسدلة
-      +'<button onclick="ciToggleLogDropdown('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;" title="Ereignis hinzufügen">📋</button>'
+      // زر القائمة المنسدلة — فقط للدخول
+      +(isIn?'<button onclick="ciToggleLogDropdown('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;" title="Ereignis hinzufügen">📋</button>':'')
       +'<button onclick="ciToggleType('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;padding:3px 6px;cursor:pointer;">'+(isIn?'→Aus':'→Ein')+'</button>'
       +'<button onclick="ciDeleteEntry('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px 4px;">✕</button>';
 
