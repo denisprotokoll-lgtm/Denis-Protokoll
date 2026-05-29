@@ -258,6 +258,11 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
 .ci-log-act{flex:1;padding:7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.12);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
 .ci-import-btn{width:100%;padding:13px;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;margin-bottom:8px;}
 .ci-back-btn{width:100%;padding:11px;background:transparent;color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.ci-kunde-btn-in{transition:all 0.12s;}
+.ci-kunde-btn-in:active{transform:scale(0.94);background:rgba(76,186,107,0.5)!important;}
+.ci-kunde-btn-out:active{transform:scale(0.94);background:rgba(232,57,74,0.45)!important;}
+.undo-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a2535;color:white;border-radius:20px;padding:10px 16px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,0.1);animation:toastIn 0.25s ease;white-space:nowrap;}
+.undo-btn{background:rgba(245,166,35,0.2);border:1.5px solid rgba(245,166,35,0.5);border-radius:10px;color:#f5a623;font-size:12px;font-weight:800;padding:5px 12px;cursor:pointer;}
 .ci-toast{position:fixed;bottom:150px;left:50%;transform:translateX(-50%);background:#141518;color:white;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:99999;animation:toastIn 0.25s ease;white-space:nowrap;}
 .ci-flash-overlay{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;pointer-events:none;}
 .ci-flash-overlay.green{background:rgba(76,186,107,0.25);animation:flashGreen 0.8s ease forwards;}
@@ -451,14 +456,19 @@ body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(
     <div class="ci-qb-item"><span class="ci-qb-label">Schichtende</span><span class="ci-qb-val orange" id="qbRemain">--</span></div>
     <div class="ci-qb-item"><span class="ci-qb-label">Letzter</span><span class="ci-qb-val" id="qbLast" style="font-size:11px;">--</span></div>
   </div>
-  <div class="ci-body">
+  <div class="ci-body" style="padding:0 12px 20px;">
     <div class="ci-section-label">📍 Kunde auswählen</div>
+    <div id="ciSearchWrap" style="display:none;margin-bottom:10px;">
+      <input id="ciKundeSearch" type="text" placeholder="🔍 Suchen..." oninput="ciFilterKunden(this.value)"
+        style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:9px 14px;outline:none;">
+    </div>
     <div class="ci-kunde-grid" id="ciKundeGrid"></div>
     <div style="margin-bottom:16px;display:flex;gap:8px;align-items:center;">
-      <input id="ciNewKundeInput" type="text" placeholder="＋ Neuer Kunde..." style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;outline:none;" onkeydown="if(event.key==='Enter')ciAddNewKunde()">
+      <input id="ciNewKundeInput" type="text" placeholder="＋ Neuer Kunde..."
+        style="flex:1;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;outline:none;"
+        onkeydown="if(event.key==='Enter')ciAddNewKunde()">
       <button onclick="ciAddNewKunde()" style="background:rgba(76,186,107,0.2);border:1.5px solid rgba(76,186,107,0.4);border-radius:12px;color:#4cba6b;font-size:20px;width:44px;height:44px;cursor:pointer;flex-shrink:0;font-weight:800;">＋</button>
     </div>
-    <!-- الزرين الكبار محذوفان — الدخول/الخروج مباشر من بطاقة الكند -->
     <div class="ci-log-box">
       <div class="ci-log-title">📋 Protokoll Heute</div>
       <div id="ciLogList"><div class="ci-log-empty">Noch keine Einträge</div></div>
@@ -1219,7 +1229,7 @@ function settingsRemoveKunde(k){localStorage.setItem('denis_extra_kunden',JSON.s
 function showCheckin(){
   document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';
   var fc=document.getElementById('fabCheckin');if(fc)fc.style.display='none';
-  ciRenderKunden();ciRenderLog();updateDayCounter();updateQuickBar();
+  ciRenderKunden();ciRenderLog();updateDayCounter();updateQuickBar();ciUpdateLayout();
   if(ciClockInterval)clearInterval(ciClockInterval);
   function tick(){
     var now=new Date();
@@ -1292,6 +1302,9 @@ function addSwipeAndLongPress(el,onSwipeRight,onSwipeLeft,onLongPress){
 function ciRenderKunden(){
   var grid=document.getElementById('ciKundeGrid');if(!grid)return;grid.innerHTML='';
   var allK=ciGetAllKunden();
+  // إظهار البحث لو أكثر من 4
+  var searchWrap=document.getElementById('ciSearchWrap');
+  if(searchWrap)searchWrap.style.display=allK.length>4?'block':'none';
   // ترتيب: آخر مستخدم أولاً
   var lastUsed=localStorage.getItem('denis_last_kunde')||'';
   if(lastUsed&&allK.indexOf(lastUsed)>0){
@@ -1324,7 +1337,9 @@ function ciRenderKunden(){
     row2.style.cssText='display:flex;gap:5px;margin-top:8px;';
     var bIn=document.createElement('button');
     bIn.textContent='✅ Ein';
-    bIn.style.cssText='flex:1;padding:9px 2px;border-radius:10px;border:none;background:rgba(76,186,107,0.22);color:#4cba6b;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:800;cursor:pointer;';
+    bIn.style.cssText='flex:1;padding:9px 2px;border-radius:10px;border:none;background:rgba(76,186,107,0.22);color:#4cba6b;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:800;cursor:pointer;transition:all 0.12s;';
+    bIn.addEventListener('touchstart',function(){this.style.transform='scale(0.93)';this.style.background='rgba(76,186,107,0.55)';},{passive:true});
+    bIn.addEventListener('touchend',function(){this.style.transform='';this.style.background='rgba(76,186,107,0.22)';},{passive:true});
     bIn.onclick=function(e){
       e.stopPropagation();
       ciSelectKunde(k);
@@ -1332,7 +1347,9 @@ function ciRenderKunden(){
     };
     var bOut=document.createElement('button');
     bOut.textContent='🚪 Aus';
-    bOut.style.cssText='flex:1;padding:9px 2px;border-radius:10px;border:none;background:rgba(232,57,74,0.18);color:#E8394A;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:800;cursor:pointer;';
+    bOut.style.cssText='flex:1;padding:9px 2px;border-radius:10px;border:none;background:rgba(232,57,74,0.18);color:#E8394A;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:800;cursor:pointer;transition:all 0.12s;';
+    bOut.addEventListener('touchstart',function(){this.style.transform='scale(0.93)';this.style.background='rgba(232,57,74,0.48)';},{passive:true});
+    bOut.addEventListener('touchend',function(){this.style.transform='';this.style.background='rgba(232,57,74,0.18)';},{passive:true});
     bOut.onclick=function(e){
       e.stopPropagation();
       ciSelectKunde(k);
@@ -1399,22 +1416,37 @@ function updateQuickBar(){
 function ciIn(){
   if(!ciSelected)return;var time=nowHM();
   localStorage.setItem('denis_last_kunde',ciSelected);
-  var log=ciGetLog();log.push({kunde:ciSelected,type:'in',time:time,ts:Date.now()});ciSaveLog(log);
+  var log=ciGetLog();
+  var snapshot=JSON.stringify(log);
+  var rowsBefore=document.getElementById('rowsWrap').innerHTML;
+  var rowIdBefore=rowId;
+  log.push({kunde:ciSelected,type:'in',time:time,ts:Date.now()});ciSaveLog(log);
   addRow({k:ciSelected,b:time,e:'',n:[]});
-  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();
+  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
   ciShowToast(ciSelected+' – Eingang ✅');showCheckinFlash('in');playCheckinSound('in');saveData();
+  // Undo
+  var savedKunde=ciSelected;
+  showUndoToast('✅ '+savedKunde+' Eingang',function(){
+    ciSaveLog(JSON.parse(snapshot));
+    document.getElementById('rowsWrap').innerHTML=rowsBefore;
+    rowId=rowIdBefore;
+    ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();
+    ciShowToast('↩ Rückgängig');saveData();
+  });
 }
 function ciOut(){
   if(!ciSelected)return;var time=nowHM();
   localStorage.setItem('denis_last_kunde',ciSelected);
-  // احسب مدة الزيارة وخزّنها
   var log=ciGetLog();
+  var snapshot=JSON.stringify(log);
+  var rowsSnapshot=document.getElementById('rowsWrap').innerHTML;
+  var rowIdSnap=rowId;
+  // احسب مدة الزيارة
   var lastIn=null;
   for(var i=log.length-1;i>=0;i--){if(log[i].type==='in'&&log[i].kunde===ciSelected){lastIn=log[i];break;}}
   if(lastIn){
     var ip=lastIn.time.split(':');var op=time.split(':');
-    var inM=parseInt(ip[0])*60+parseInt(ip[1]);
-    var outM=parseInt(op[0])*60+parseInt(op[1]);
+    var inM=parseInt(ip[0])*60+parseInt(ip[1]);var outM=parseInt(op[0])*60+parseInt(op[1]);
     var dur=outM-inM;if(dur<0)dur+=24*60;
     if(dur>0&&dur<720)saveVisitDuration(ciSelected,dur);
   }
@@ -1428,8 +1460,17 @@ function ciOut(){
     if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){ed.value=time;colorTime(ed);found=true;saveData();}
   });
   if(!found){addRow({k:ciSelected,b:'',e:time,n:[]});saveData();}
-  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();
+  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
   ciShowToast(ciSelected+' – Ausgang 🚪');showCheckinFlash('out');playCheckinSound('out');
+  // Undo
+  var savedKunde=ciSelected;
+  showUndoToast('🚪 '+savedKunde+' Ausgang',function(){
+    ciSaveLog(JSON.parse(snapshot));
+    document.getElementById('rowsWrap').innerHTML=rowsSnapshot;
+    rowId=rowIdSnap;
+    ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();
+    ciShowToast('↩ Rückgängig');saveData();
+  });
 }
 function ciRenderLog(){
   var list=document.getElementById('ciLogList');if(!list)return;
@@ -1446,7 +1487,10 @@ function ciRenderLog(){
     item.innerHTML=
       '<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
       +'<div style="flex:1;min-width:0;overflow:hidden;">'
-      +'<div style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+entry.kunde+'</div>'
+      +'<div style="display:flex;align-items:center;gap:4px;">'
+      +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+entry.kunde+'</div>'
+      +'<button onclick="ciToggleEditKunde('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:11px;padding:1px 3px;" title="Kunde bearbeiten">✏️</button>'
+      +'</div>'
       +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;cursor:pointer;" onclick="ciToggleEditTime('+realIdx+')">⏱ '+entry.time+' <span style="font-size:9px;opacity:0.6;">✏️</span></div>'
       +'</div>'
       +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
@@ -1492,7 +1536,24 @@ function ciRenderLog(){
       +'<button onclick="ciToggleEditTime('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.4);font-size:11px;padding:8px 10px;cursor:pointer;flex-shrink:0;">✕</button>'
       +'</div>';
 
+    // حقل تعديل اسم الكند — قائمة منسدلة
+    var kundeEditRow=document.createElement('div');
+    kundeEditRow.id='ci-kunde-edit-'+realIdx;
+    kundeEditRow.style.cssText='display:none;padding:8px 10px 10px;background:rgba(100,181,246,0.06);border-top:1px solid rgba(100,181,246,0.15);animation:rowIn 0.18s ease;';
+    var allK=ciGetAllKunden();
+    var kOpts=allK.map(function(k){
+      return '<option value="'+k+'"'+(k===entry.kunde?' selected':'')+'>'+k+'</option>';
+    }).join('');
+    kundeEditRow.innerHTML=
+      '<div style="font-size:9px;font-weight:700;color:rgba(100,181,246,0.8);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">✏️ Kunde ändern</div>'
+      +'<div style="display:flex;gap:8px;align-items:center;">'
+      +'<select id="ci-kunde-inp-'+realIdx+'" style="flex:1;font-family:\'DM Sans\',sans-serif;font-size:14px;font-weight:700;color:white;background:rgba(255,255,255,0.1);border:1.5px solid rgba(100,181,246,0.5);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;">'+kOpts+'</select>'
+      +'<button onclick="ciSaveEditKunde('+realIdx+')" style="background:linear-gradient(135deg,#1565c0,#0d47a1);border:none;border-radius:8px;color:white;font-size:11px;font-weight:800;padding:8px 14px;cursor:pointer;flex-shrink:0;">✓ OK</button>'
+      +'<button onclick="ciToggleEditKunde('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.4);font-size:11px;padding:8px 10px;cursor:pointer;flex-shrink:0;">✕</button>'
+      +'</div>';
+
     wrap.appendChild(item);
+    wrap.appendChild(kundeEditRow);
     wrap.appendChild(dropdown);
     wrap.appendChild(editRow);
     wrap.style.cssText='border-bottom:1px solid rgba(255,255,255,0.06);';
@@ -1547,6 +1608,62 @@ function ciLogDropdownAdd(logIdx,eventName,evIdx){
   playBeep('success');
   if(navigator.vibrate)navigator.vibrate(60);
 }
+// تعديل اسم الكند في السجل
+function ciToggleEditKunde(idx){
+  // أغلق كل حقول التعديل المفتوحة
+  document.querySelectorAll('[id^="ci-kunde-edit-"]').forEach(function(r){
+    if(r.id!=='ci-kunde-edit-'+idx)r.style.display='none';
+  });
+  var row=document.getElementById('ci-kunde-edit-'+idx);
+  if(!row)return;
+  var isOpen=row.style.display!=='none';
+  row.style.display=isOpen?'none':'block';
+  if(!isOpen){
+    setTimeout(function(){
+      var inp=document.getElementById('ci-kunde-inp-'+idx);
+      if(inp){inp.focus();inp.select();}
+    },50);
+  }
+}
+
+function ciSaveEditKunde(idx){
+  var inp=document.getElementById('ci-kunde-inp-'+idx);
+  if(!inp||!inp.value.trim()){ciShowToast('⚠️ Name eingeben');return;}
+  var newName=inp.value.trim();
+  var log=ciGetLog();
+  var oldName=log[idx]?log[idx].kunde:'';
+  if(!oldName)return;
+  log[idx].kunde=newName;
+  ciSaveLog(log);
+  // حدّث الاسم في البروتوكول أيضاً
+  document.querySelectorAll('.proto-row').forEach(function(row){
+    var id=row.id.replace('row-','');
+    var ksel=document.getElementById('ksel-'+id);
+    var kcust=document.getElementById('kcust-'+id);
+    var klabel=document.getElementById('klabel-'+id);
+    var isC=kcust&&kcust.style.display!=='none';
+    var k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k===oldName){
+      if(isC&&kcust){kcust.value=newName;}
+      else if(ksel){
+        // أضف الاسم الجديد كـ custom
+        ksel.style.display='none';
+        if(kcust){kcust.value=newName;kcust.style.display='block';}
+        var back=document.getElementById('kback-'+id);if(back)back.style.display='inline';
+      }
+      if(klabel)klabel.textContent=newName;
+    }
+  });
+  // أغلق حقل التعديل وحدّث العرض
+  var row=document.getElementById('ci-kunde-edit-'+idx);if(row)row.style.display='none';
+  var lbl=document.getElementById('ci-kunde-lbl-'+idx);if(lbl)lbl.textContent=newName;
+  // حدّث الكند المحدد لو نفسه
+  if(ciSelected===oldName)ciSelected=newName;
+  ciRenderKunden();ciUpdateLayout();
+  ciShowToast('✅ '+oldName+' → '+newName);
+  playBeep('success');saveData();
+}
+
 function ciToggleEditTime(idx){
   // أغلق كل الحقول المفتوحة
   document.querySelectorAll('[id^="ci-edit-row-"]').forEach(function(r){
@@ -1736,6 +1853,103 @@ function quickEventConfirm(kunde,idx,overlay){
   // إعادة العداد لـ 1
   quickEventCounts[idx]=1;
   var el=document.getElementById('qe-count-'+idx);if(el)el.textContent='1';
+}
+
+// ===== ٢. بحث الكنده =====
+function ciFilterKunden(query){
+  var grid=document.getElementById('ciKundeGrid');if(!grid)return;
+  var q=query.toLowerCase().trim();
+  Array.from(grid.children).forEach(function(wrap){
+    var nameEl=wrap.querySelector('div[style*="font-size:13px"]');
+    if(!nameEl){wrap.style.display='';return;}
+    var name=nameEl.textContent.toLowerCase();
+    wrap.style.display=(!q||name.indexOf(q)>=0)?'':'none';
+  });
+}
+
+// ===== ٤. Undo =====
+var undoStack=[];
+var undoTimer=null;
+
+function showUndoToast(msg,undoFn){
+  var old=document.querySelector('.undo-toast');if(old)old.remove();
+  if(undoTimer)clearTimeout(undoTimer);
+  var t=document.createElement('div');t.className='undo-toast';
+  t.innerHTML=msg+'<button class="undo-btn" onclick="doUndo()">↩ Undo</button>';
+  var ci=document.getElementById('checkinScreen');(ci||document.body).appendChild(t);
+  undoStack.push(undoFn);
+  undoTimer=setTimeout(function(){t.remove();undoStack=[];},5000);
+}
+
+function doUndo(){
+  var old=document.querySelector('.undo-toast');if(old)old.remove();
+  if(undoTimer)clearTimeout(undoTimer);
+  if(undoStack.length){var fn=undoStack.pop();fn();}
+  undoStack=[];
+}
+
+function ciDeleteEntry(idx){
+  // ٣. تأكيد بصري قبل الحذف — toast بدل confirm
+  var log=ciGetLog();
+  if(!log[idx])return;
+  var entry=log[idx];
+  var snapshot=JSON.stringify(log);
+  log.splice(idx,1);ciSaveLog(log);ciRenderLog();updateDayCounter();updateQuickBar();
+  showUndoToast('🗑 '+entry.kunde+' gelöscht',function(){
+    ciSaveLog(JSON.parse(snapshot));ciRenderLog();updateDayCounter();updateQuickBar();
+    ciShowToast('↩ Wiederhergestellt');
+  });
+}
+
+// ===== تكيّف المواقع تلقائياً =====
+var CI_COMPACT_THRESHOLD = 3; // عدد السجلات قبل التصغير
+
+function ciUpdateLayout(){
+  var log=ciGetLog();
+  var bigView=document.getElementById('ciKundeViewBig');
+  var smallView=document.getElementById('ciKundeViewSmall');
+  if(!bigView||!smallView)return;
+  if(log.length>=CI_COMPACT_THRESHOLD){
+    bigView.style.display='none';
+    smallView.style.display='block';
+    ciRenderStrip();
+  } else {
+    bigView.style.display='block';
+    smallView.style.display='none';
+  }
+}
+
+function ciRenderStrip(){
+  var strip=document.getElementById('ciKundeStrip');if(!strip)return;
+  strip.innerHTML='';
+  var allK=ciGetAllKunden();
+  var lastUsed=localStorage.getItem('denis_last_kunde')||'';
+  if(lastUsed&&allK.indexOf(lastUsed)>0){
+    allK=allK.slice();allK.splice(allK.indexOf(lastUsed),1);allK.unshift(lastUsed);
+  }
+  allK.forEach(function(k){
+    var isSelected=ciSelected===k;
+    var chip=document.createElement('div');
+    chip.style.cssText='flex-shrink:0;border-radius:14px;padding:8px 12px;border:1.5px solid '+(isSelected?'#4cba6b':'rgba(255,255,255,0.15)')+';background:'+(isSelected?'rgba(76,186,107,0.2)':'rgba(255,255,255,0.07)')+';display:flex;flex-direction:column;align-items:center;gap:6px;min-width:100px;';
+    chip.innerHTML=
+      '<div style="font-size:12px;font-weight:700;color:white;text-align:center;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis;">📍 '+k+'</div>'
+      +'<div style="display:flex;gap:5px;">'
+      +'<button onclick="ciSelectKunde(\''+k.replace(/'/g,"\\'")+'\');setTimeout(ciIn,60);" style="padding:7px 12px;border-radius:9px;border:none;background:rgba(76,186,107,0.3);color:#4cba6b;font-size:13px;font-weight:800;cursor:pointer;">✅ Ein</button>'
+      +'<button onclick="ciSelectKunde(\''+k.replace(/'/g,"\\'")+'\');setTimeout(ciOut,60);" style="padding:7px 12px;border-radius:9px;border:none;background:rgba(232,57,74,0.25);color:#E8394A;font-size:13px;font-weight:800;cursor:pointer;">🚪 Aus</button>'
+      +'</div>';
+    strip.appendChild(chip);
+  });
+  // زر إضافة كند
+  var addBtn=document.createElement('button');
+  addBtn.textContent='＋';
+  addBtn.style.cssText='flex-shrink:0;width:44px;height:72px;border-radius:14px;border:1.5px dashed rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.4);font-size:22px;cursor:pointer;';
+  addBtn.onclick=function(){
+    var big=document.getElementById('ciKundeViewBig');
+    var small=document.getElementById('ciKundeViewSmall');
+    if(big&&small){big.style.display='block';small.style.display='none';}
+    setTimeout(function(){var inp=document.getElementById('ciNewKundeInput');if(inp)inp.focus();},100);
+  };
+  strip.appendChild(addBtn);
 }
 
 function ciShowToast(msg){
