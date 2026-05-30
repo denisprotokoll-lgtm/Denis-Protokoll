@@ -1081,6 +1081,10 @@ function showPdfLoader(show){
   if(show){if(!o){o=document.createElement('div');o.id='pdfLoader';o.className='pdf-loading';o.innerHTML='<div class="pdf-spinner"></div><div class="pdf-loading-text">PDF wird erstellt…</div>';document.body.appendChild(o);}}
   else{if(o)o.remove();}
 }
+function stripEmoji(str){
+  if(!str)return str;
+  return str.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]|\uFE0F/g,'').replace(/\s{2,}/g,' ').trim();
+}
 function generatePDFAndSave(){
   showPdfLoader(true);
   try{
@@ -1104,10 +1108,18 @@ function generatePDFAndSave(){
       if(y+rH>275){doc.addPage();y=margin;}
       if(i%2===0){doc.setFillColor(252,252,252);doc.rect(margin,y,cW,rH,'F');}
       doc.setDrawColor(220,220,220);doc.rect(margin,y,cW,rH);
-      doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');doc.text(row.k==='— Standort —'?'':row.k,margin+2,y+5,{maxWidth:34});
-      doc.setFont('helvetica','normal');doc.text(row.b||'',margin+38,y+5);doc.text(row.e||'',margin+60,y+5);
+      doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');doc.text(stripEmoji(row.k==='— Standort —'?'':row.k),margin+2,y+5,{maxWidth:34});
+      doc.setFont('helvetica','normal');doc.text(stripEmoji(row.b||''),margin+38,y+5);doc.text(stripEmoji(row.e||''),margin+60,y+5);
       var ny=y+4;
-      if(notizen.length){notizen.forEach(function(n){doc.setFontSize(7.5);doc.setTextColor(20,21,24);doc.text('• '+(n.c>0?'['+n.c+'x] '+n.ev:n.ev),margin+82,ny,{maxWidth:cW-84});ny+=5.5;});}
+      if(notizen.length){notizen.forEach(function(n){
+        doc.setFontSize(7.5);
+        var isDanger=DANGER_EVENTS.indexOf(n.ev)>=0;
+        doc.setTextColor(isDanger?180:20,isDanger?30:21,isDanger?30:24);
+        doc.setFont('helvetica',isDanger?'bold':'normal');
+        doc.text('• '+(n.c>0?'['+n.c+'x] '+stripEmoji(n.ev):stripEmoji(n.ev)),margin+82,ny,{maxWidth:cW-84});
+        ny+=5.5;
+        doc.setFont('helvetica','normal');
+      });}
       else{doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
       if(hasPhotos){
         var imgW=10;var imgH=8;var gap=2;
