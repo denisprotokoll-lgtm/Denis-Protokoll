@@ -1790,11 +1790,27 @@ function ciFinish(){
 // ===== SOS =====
 function ciSOS(){
   if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);playBeep('danger');
-  var sosEvents=['Polizei eingetroffen – Personalien aufgenommen 🚨','Notruf / Notfall gemeldet 🚨','Rettungsdienst angefordert 🚑','Vandalismus gemeldet – Polizei informiert 🚨','Streit geschlichtet'];
   var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:20px;backdrop-filter:blur(6px);';
-  var btns=sosEvents.map(function(ev){return'<button onclick="ciSOSSelect(\''+ev.replace(/'/g,"\\'")+'\',this.closest(\'[style*=inset]\'))" style="width:100%;padding:14px;border-radius:12px;border:1.5px solid rgba(232,57,74,0.4);background:rgba(232,57,74,0.15);color:white;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px;">'+ev+'</button>';}).join('');
-  overlay.innerHTML='<div style="width:100%;max-width:480px;padding:0 16px;"><div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:white;text-align:center;margin-bottom:16px;">🚨 SOS – Ereignis wählen</div>'+btns+'<button onclick="this.closest(\'[style*=inset]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">Abbrechen</button></div>';
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:20px;backdrop-filter:blur(6px);';
+  var sosGroups=[];var currentGroup={title:'',items:[]};
+  EREIGNISSE.forEach(function(e){
+    if(e.g){if(currentGroup.items.length)sosGroups.push(currentGroup);currentGroup={title:e.label.replace(/──/g,'').replace(/[\u{1F000}-\u{1FFFF}\u2600-\u27BF]/gu,'').trim(),items:[]};}
+    else if(e.label&&e.label!=='Freitext\u2026')currentGroup.items.push(e.label);
+  });
+  if(currentGroup.items.length)sosGroups.push(currentGroup);
+  var btns=sosGroups.map(function(g){
+    var header='<div style="font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:2px;text-transform:uppercase;padding:10px 4px 4px;font-weight:700;">'+g.title+'</div>';
+    var items=g.items.map(function(ev){
+      var isDanger=DANGER_EVENTS.indexOf(ev)>=0;
+      var border=isDanger?'rgba(232,57,74,0.5)':'rgba(255,255,255,0.1)';
+      var bg=isDanger?'rgba(232,57,74,0.12)':'rgba(255,255,255,0.04)';
+      var color=isDanger?'#ff8090':'rgba(255,255,255,0.8)';
+      var fw=isDanger?700:500;
+      return '<button onclick="ciSOSSelect(\'' + ev.replace(/'/g,"\\'") + '\',this.closest(\'[style*=inset]\'))" style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid '+border+';background:'+bg+';color:'+color+';font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:'+fw+';cursor:pointer;text-align:left;margin-bottom:4px;">'+ev+'</button>';
+    }).join('');
+    return header+items;
+  }).join('');
+  overlay.innerHTML='<div style="width:100%;max-width:480px;padding:0 16px;max-height:80vh;overflow-y:auto;"><div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:white;text-align:center;margin-bottom:12px;padding-top:8px;">🚨 SOS – Ereignis wählen</div>'+btns+'<button onclick="this.closest(\'[style*=inset]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">Abbrechen</button></div>';
   document.body.appendChild(overlay);
 }
 function ciSOSSelect(ereignis,overlay){
