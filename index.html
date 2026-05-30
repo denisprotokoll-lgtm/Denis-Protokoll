@@ -1113,8 +1113,7 @@ function generatePDFAndSave(){
         var imgW=10;var imgH=8;var gap=2;
         var imgY=y+rH-photoRowH+2;
         var imgX=margin+82;
-        doc.setFontSize(6);doc.setTextColor(120,120,140);doc.text('📎',margin+82,imgY+5);
-        imgX=margin+88;
+        imgX=margin+82;
         var maxPics=Math.floor((cW-90)/(imgW+gap));
         row.photos.forEach(function(b64,pi){
           if(pi>=maxPics)return;
