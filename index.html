@@ -410,6 +410,7 @@ body.app-ready::before{opacity:0.5;}
         <div class="settings-row"><div><div class="settings-row-label">Schichtbeginn</div></div><input type="time" class="settings-input" id="settingsShiftStart" value="19:45"></div>
         <div class="settings-row"><div><div class="settings-row-label">Schichtende</div></div><input type="time" class="settings-input" id="settingsShiftEnd" value="07:00"></div>
         <div class="settings-row"><div><div class="settings-row-label">Vergessen-Alarm</div><div class="settings-row-sub">Minuten ohne Ausgang</div></div><input type="number" class="settings-input" id="settingsAlarmMin" value="120" min="30" max="480" style="width:70px;"></div>
+        <div class="settings-row"><div><div class="settings-row-label">Wochenbeginn</div><div class="settings-row-sub">Erster Tag der Woche</div></div><select class="settings-input" id="settingsWeekStart" style="width:120px;"><option value="1">Montag</option><option value="0">Sonntag</option><option value="6">Samstag</option></select></div>
       </div>
       <div class="settings-section">
         <div class="settings-section-title">Kunden verwalten</div>
@@ -428,6 +429,9 @@ body.app-ready::before{opacity:0.5;}
 <div class="archive-overlay-bg" id="archiveBg" onclick="closeArchive()"></div>
 <div class="archive-panel" id="archivePanel">
   <div class="archive-hdr"><div class="archive-hdr-title">📁 Protokoll-Archiv</div><button class="archive-close" onclick="closeArchive()">✕</button></div>
+  <div style="padding:8px 10px;border-bottom:1px solid rgba(0,0,0,0.07);">
+    <button onclick="generateWeeklyPDF()" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">📊 Wochenbericht PDF</button>
+  </div>
   <div class="archive-list" id="archiveList"></div>
 </div>
 
@@ -1029,16 +1033,134 @@ function sortRowsByTime(){
 }
 
 // ===== ARCHIVE =====
+function generateWeeklyPDF(){
+  var lib=window.jspdf;if(!lib){showToast('jsPDF lädt noch…','error');return;}
+  // تحديد أيام الأسبوع الحالي
+  var weekStart=parseInt(localStorage.getItem('denis_week_start')||'1');
+  var today=new Date();today.setHours(0,0,0,0);
+  var dow=today.getDay();
+  var diff=(dow-weekStart+7)%7;
+  var monday=new Date(today);monday.setDate(today.getDate()-diff);
+  var sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
+  // جمع التقارير من الأرشيف
+  var days=[];
+  for(var i=0;i<7;i++){
+    var d=new Date(monday);d.setDate(monday.getDate()+i);
+    var key='denis_'+d.getFullYear()+'_'+String(d.getMonth()+1).padStart(2,'0')+'_'+String(d.getDate()).padStart(2,'0');
+    var raw=localStorage.getItem(key);
+    days.push({date:d,key:key,data:raw?JSON.parse(raw):null});
+  }
+  var hasData=days.some(function(d){return d.data;});
+  if(!hasData){showToast('Keine Daten für diese Woche','error');return;}
+  showPdfLoader(true);
+  try{
+    var doc=new lib.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    var pageW=210,margin=10,cW=pageW-2*margin;var y=margin;
+    var DE_DAYS=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    var kw=getKW(monday);
+    // Header
+    doc.setFillColor(26,37,53);doc.rect(0,0,pageW,30,'F');
+    doc.setFillColor(232,57,74);doc.rect(0,28,pageW,2,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(20);doc.setFont('helvetica','bold');
+    doc.text('Denis Protokoll',margin,13);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');
+    doc.text('Wochenbericht  KW '+kw,margin,20);
+    var ws=fmtDate(monday),we=fmtDate(sunday);
+    doc.text(ws+' – '+we,margin,26);
+    doc.setTextColor(180,180,180);doc.setFontSize(8);
+    doc.text(localStorage.getItem('denis_mitarbeiter')||'Denis',170,20);
+    y=36;
+    // إحصاءات
+    var totalShifts=0,totalEvents=0,totalDanger=0,locations=new Set();
+    days.forEach(function(d){
+      if(!d.data)return;
+      totalShifts++;
+      (d.data.rows||[]).forEach(function(row){
+        if(row.k&&row.k!=='— Standort —')locations.add(row.k);
+        (row.n||[]).forEach(function(n){
+          if(n.ev&&n.ev!=='— Ereignis —'){
+            totalEvents+=(n.c||1);
+            if(DANGER_EVENTS.indexOf(n.ev)>=0)totalDanger+=(n.c||1);
+          }
+        });
+      });
+    });
+    // Summary box
+    doc.setFillColor(245,246,250);doc.roundedRect(margin,y,cW,18,2,2,'F');
+    doc.setDrawColor(220,220,230);doc.roundedRect(margin,y,cW,18,2,2);
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(60,60,80);
+    doc.text('Schichten: '+totalShifts,margin+4,y+7);
+    doc.text('Vorfälle: '+totalEvents,margin+40,y+7);
+    doc.setTextColor(180,30,30);doc.text('Kritisch: '+totalDanger,margin+80,y+7);
+    doc.setTextColor(60,60,80);doc.text('Standorte: '+Array.from(locations).join(', '),margin+4,y+14,{maxWidth:cW-8});
+    y+=22;
+    // Tage
+    days.forEach(function(d){
+      var dayName=DE_DAYS[d.date.getDay()];
+      var dateStr=fmtDate(d.date);
+      if(y>260){doc.addPage();y=margin;}
+      // Tag Header
+      doc.setFillColor(61,82,104);doc.rect(margin,y,cW,8,'F');
+      doc.setTextColor(255,255,255);doc.setFontSize(9);doc.setFont('helvetica','bold');
+      doc.text(dayName+', '+dateStr,margin+3,y+5.5);
+      if(!d.data){
+        doc.setFillColor(250,250,252);doc.rect(margin,y+8,cW,7,'F');
+        doc.setDrawColor(230,230,235);doc.rect(margin,y+8,cW,7);
+        doc.setTextColor(180,180,190);doc.setFont('helvetica','normal');doc.setFontSize(8);
+        doc.text('Kein Eintrag',margin+3,y+13);
+        y+=17;return;
+      }
+      y+=8;
+      (d.data.rows||[]).forEach(function(row,ri){
+        if(y>268){doc.addPage();y=margin;}
+        var k=row.k==='— Standort —'?'':row.k;
+        var notizen=(row.n||[]).filter(function(n){return n.ev&&n.ev!=='— Ereignis —';});
+        var rH=Math.max(8,notizen.length*5.5+5);
+        if(ri%2===0){doc.setFillColor(252,252,255);doc.rect(margin,y,cW,rH,'F');}
+        doc.setDrawColor(225,225,235);doc.rect(margin,y,cW,rH);
+        doc.setTextColor(30,30,50);doc.setFont('helvetica','bold');doc.setFontSize(8);
+        doc.text(stripEmoji(k),margin+2,y+4.5,{maxWidth:35});
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(100,100,120);
+        doc.text((row.b||'—')+'–'+(row.e||'—'),margin+40,y+4.5);
+        var ny=y+4;
+        if(notizen.length){notizen.forEach(function(n){
+          var isDanger=DANGER_EVENTS.indexOf(n.ev)>=0;
+          doc.setFontSize(7);
+          doc.setTextColor(isDanger?170:60,isDanger?30:60,isDanger?30:80);
+          doc.setFont('helvetica',isDanger?'bold':'normal');
+          doc.text('• '+(n.c>1?'['+n.c+'x] ':'')+stripEmoji(n.ev),margin+62,ny,{maxWidth:cW-64});
+          ny+=5;
+        });}else{doc.setFontSize(7);doc.setTextColor(190,190,200);doc.text('—',margin+62,y+4.5);}
+        y+=rH+1;
+      });
+      y+=3;
+    });
+    // Footer
+    doc.setFontSize(6);doc.setTextColor(160,160,170);
+    doc.text('Denis Protokoll · Wochenbericht KW '+kw+' · Erstellt: '+new Date().toLocaleString('de-DE'),margin,292);
+    var fname='Wochenbericht_KW'+kw+'_'+monday.getFullYear()+'.pdf';
+    doc.save(fname);
+    showToast('📊 '+fname+' gespeichert','success');
+  }catch(e){showToast('Fehler: '+e.message,'error');}
+  showPdfLoader(false);
+}
+function fmtDate(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function getKW(d){var jan4=new Date(d.getFullYear(),0,4);var startOfWeek=new Date(jan4);startOfWeek.setDate(jan4.getDate()-(jan4.getDay()||7)+1);return Math.round((d-startOfWeek)/604800000)+1;}
 function openArchive(){
   var list=document.getElementById('archiveList');list.innerHTML='';
-  var keys=Object.keys(localStorage).filter(function(k){return k.startsWith('denis_archive_');}).sort().reverse();
   var bg=document.getElementById('archiveBg');if(bg)bg.style.display='block';
+  // جمع المفاتيح القديمة والجديدة
+  var keys=Object.keys(localStorage).filter(function(k){
+    return k.match(/^denis_\d{4}_\d{2}_\d{2}$/)||k.startsWith('denis_archive_');
+  }).sort().reverse();
   if(!keys.length){list.innerHTML='<div class="archive-empty">📭 Kein Archiv</div>';}
   keys.forEach(function(key){
     try{
       var d=JSON.parse(localStorage.getItem(key));var item=document.createElement('div');item.className='archive-item';
-      var saved=d.savedAt?new Date(d.savedAt).toLocaleString('de-DE'):'—';
-      item.innerHTML='<div class="archive-item-date">📋 '+(d.protokollNr||'—')+'</div><div class="archive-item-sub">'+( d.day||'')+' '+(d.date||'')+' · '+(d.mitarbeiter||'?')+'<br>'+saved+' · '+(d.rows?d.rows.length:0)+' Zeilen</div>';
+      var isNew=key.match(/^denis_\d{4}_\d{2}_\d{2}$/);
+      var label=isNew?'📅 '+(d.day||'')+' '+(d.date||''):'📋 '+(d.protokollNr||'—');
+      var sub=(d.mitarbeiter||'?')+' · '+(d.rows?d.rows.length:0)+' Standorte';
+      item.innerHTML='<div class="archive-item-date">'+label+'</div><div class="archive-item-sub">'+sub+'</div>';
       item.onclick=function(){if(confirm('Protokoll laden?')){localStorage.setItem('denis_protokoll',JSON.stringify(d));location.reload();}};
       var del=document.createElement('button');del.textContent='🗑';del.style.cssText='float:right;background:none;border:none;cursor:pointer;color:#e44;';
       del.onclick=function(e){e.stopPropagation();if(confirm('Löschen?')){localStorage.removeItem(key);openArchive();}};
@@ -1236,6 +1358,7 @@ function closeDashboard(){document.getElementById('dashOverlay').classList.remov
 function openSettings(){
   document.getElementById('settingsShiftStart').value=localStorage.getItem('denis_shift_start')||'19:45';
   document.getElementById('settingsShiftEnd').value=localStorage.getItem('denis_shift_end')||'07:00';
+  document.getElementById('settingsWeekStart').value=localStorage.getItem('denis_week_start')||'1';
   document.getElementById('settingsAlarmMin').value=localStorage.getItem('denis_alarm_min')||'120';
   settingsRenderKunden();document.getElementById('settingsOverlay').classList.add('open');
 }
@@ -1243,6 +1366,7 @@ function closeSettings(){document.getElementById('settingsOverlay').classList.re
 function saveSettings(){
   localStorage.setItem('denis_shift_start',document.getElementById('settingsShiftStart').value||'19:45');
   localStorage.setItem('denis_shift_end',document.getElementById('settingsShiftEnd').value||'07:00');
+  localStorage.setItem('denis_week_start',document.getElementById('settingsWeekStart').value||'1');
   localStorage.setItem('denis_alarm_min',document.getElementById('settingsAlarmMin').value||'120');
   closeSettings();showToast('Gespeichert','success');playBeep('success');
 }
@@ -1771,6 +1895,19 @@ function ciFinish(){
   var tv=0;rows.forEach(function(row){row.querySelectorAll('.nc-num').forEach(function(n){tv+=parseInt(n.textContent)||0;});});
   var inC=log.filter(function(e){return e.type==='in';}).length;var outC=log.filter(function(e){return e.type==='out';}).length;
   saveData();
+  // حفظ تلقائي في الأرشيف بمفتاح التاريخ
+  try{
+    var data=collectData();
+    var now=new Date();
+    // إذا الشيفت بتأخر بعد منتصف الليل، استخدم تاريخ أمس
+    var shiftStart=localStorage.getItem('denis_shift_start')||'19:45';
+    var startH=parseInt(shiftStart.split(':')[0]);
+    var refDate=new Date(now);
+    if(now.getHours()<startH&&now.getHours()<12)refDate.setDate(refDate.getDate()-1);
+    var dk=refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
+    localStorage.setItem('denis_'+dk,JSON.stringify(data));
+    showToast('💾 Archiv gespeichert','success');
+  }catch(e){}
   var overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
   overlay.innerHTML='<div style="background:linear-gradient(160deg,#2d3f52,#1a2535);border-radius:20px;padding:24px 20px;max-width:320px;width:100%;border:1px solid rgba(255,255,255,0.12);">'
