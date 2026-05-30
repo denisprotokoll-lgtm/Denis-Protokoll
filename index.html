@@ -1096,46 +1096,43 @@ function generatePDFAndSave(){
     doc.setFont('helvetica','normal');doc.setFontSize(9);
     data.rows.forEach(function(row,i){
       if(y>270){doc.addPage();y=margin;}
-      var notizCount=(row.n?row.n.filter(function(n){return n.ev&&n.ev!=='— Ereignis —';}).length:0);
+      var notizen=(row.n?row.n.filter(function(n){return n.ev&&n.ev!=='— Ereignis —';}):[]); 
       var hasPhotos=row.photos&&row.photos.length>0;
-      var photoH=hasPhotos?32:0;
-      var rH=Math.max(9,notizCount*6+6);
-      if(y+rH+photoH>275){doc.addPage();y=margin;}
+      var notizLines=notizen.length||1;
+      var photoRowH=hasPhotos?12:0;
+      var rH=Math.max(9,notizLines*6+6)+photoRowH;
+      if(y+rH>275){doc.addPage();y=margin;}
       if(i%2===0){doc.setFillColor(252,252,252);doc.rect(margin,y,cW,rH,'F');}
       doc.setDrawColor(220,220,220);doc.rect(margin,y,cW,rH);
       doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');doc.text(row.k==='— Standort —'?'':row.k,margin+2,y+5,{maxWidth:34});
       doc.setFont('helvetica','normal');doc.text(row.b||'',margin+38,y+5);doc.text(row.e||'',margin+60,y+5);
       var ny=y+4;
-      if(row.n&&row.n.length){row.n.forEach(function(n){if(!n.ev||n.ev==='— Ereignis —')return;doc.setFontSize(7.5);doc.setTextColor(20,21,24);doc.text('• '+(n.c>0?'['+n.c+'x] '+n.ev:n.ev),margin+82,ny,{maxWidth:cW-84});ny+=5.5;});}
+      if(notizen.length){notizen.forEach(function(n){doc.setFontSize(7.5);doc.setTextColor(20,21,24);doc.text('• '+(n.c>0?'['+n.c+'x] '+n.ev:n.ev),margin+82,ny,{maxWidth:cW-84});ny+=5.5;});}
       else{doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
-      y+=rH+1;
       if(hasPhotos){
-        if(y+photoH>275){doc.addPage();y=margin;}
-        doc.setFillColor(248,249,252);doc.rect(margin,y,cW,photoH,'F');
-        doc.setDrawColor(210,210,220);doc.rect(margin,y,cW,photoH);
-        doc.setFontSize(7);doc.setTextColor(100,100,120);doc.setFont('helvetica','bold');
-        doc.text('Fotos ('+row.photos.length+'):',margin+2,y+5);
-        var imgX=margin+2;var imgY=y+7;var imgW=18;var imgH=14;
-        var maxPics=Math.floor((cW-4)/(imgW+3));
+        var imgW=10;var imgH=8;var gap=2;
+        var imgY=y+rH-photoRowH+2;
+        var imgX=margin+82;
+        doc.setFontSize(6);doc.setTextColor(120,120,140);doc.text('📎',margin+82,imgY+5);
+        imgX=margin+88;
+        var maxPics=Math.floor((cW-90)/(imgW+gap));
         row.photos.forEach(function(b64,pi){
           if(pi>=maxPics)return;
-          var xPos=imgX+pi*(imgW+3);
+          var xPos=imgX+pi*(imgW+gap);
           try{
-            var fmt='JPEG';
-            if(b64.indexOf('data:image/png')===0)fmt='PNG';
+            var fmt=b64.indexOf('data:image/png')===0?'PNG':'JPEG';
             doc.addImage(b64,fmt,xPos,imgY,imgW,imgH);
-            doc.setDrawColor(180,180,180);doc.setLineWidth(0.3);doc.rect(xPos,imgY,imgW,imgH);
+            doc.setDrawColor(180,180,180);doc.setLineWidth(0.2);doc.rect(xPos,imgY,imgW,imgH);
           }catch(e){
             doc.setFillColor(220,220,220);doc.rect(xPos,imgY,imgW,imgH,'F');
-            doc.setFontSize(6);doc.setTextColor(140,140,140);doc.text('IMG',xPos+8,imgY+11);
           }
         });
         if(row.photos.length>maxPics){
-          doc.setFontSize(7);doc.setTextColor(100,100,120);
-          doc.text('+'+(row.photos.length-maxPics)+' mehr',imgX+maxPics*(imgW+3),imgY+11);
+          doc.setFontSize(6);doc.setTextColor(100,100,120);
+          doc.text('+'+(row.photos.length-maxPics),imgX+maxPics*(imgW+gap)+1,imgY+5);
         }
-        y+=photoH+2;
       }
+      y+=rH+1;
     });
     var sig=localStorage.getItem('denis_signature');if(sig&&y<240){try{doc.addImage(sig,'PNG',margin,y,60,18);}catch(e){}}
     doc.setFontSize(7);doc.setTextColor(180,180,180);doc.text('Denis Protokoll · '+new Date().toLocaleString('de-DE'),margin,292);
