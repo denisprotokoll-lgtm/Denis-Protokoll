@@ -314,7 +314,7 @@ body.app-ready::before{opacity:0.5;}
   body::before{display:none!important;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
   .progress-wrap,.autosave-bar,.archive-panel,.archive-overlay-bg,
-  .toast-wrap,.pdf-loading,.report-overlay,.overlay-base,#pinScreen,#homeScreen,#checkinScreen,#fabCheckin{display:none!important;}
+  .toast-wrap,.pdf-loading,.report-overlay,.overlay-base,#pinScreen,#homeScreen,#checkinScreen,#fabCheckin,#archivePreviewOverlay{display:none!important;}
   .card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;}
   .proto-row{page-break-inside:avoid!important;}
   .print-sig-area{display:block!important;}
@@ -1302,13 +1302,18 @@ function showArchivePreview(d){
 function printArchiveEntry(d){
   if(!d)return;
   var orig=localStorage.getItem('denis_protokoll');
+  // أخفِ شاشة المعاينة مؤقتاً أثناء الطباعة
+  var previewEl=document.getElementById('archivePreviewOverlay');
+  if(previewEl)previewEl.style.display='none';
   localStorage.setItem('denis_protokoll',JSON.stringify(d));
   document.getElementById('rowsWrap').innerHTML='';rowId=0;
   Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
   loadData();updateSummary();
   setTimeout(function(){
     window.print();
+    // بعد الطباعة أعد كل شيء
     setTimeout(function(){
+      if(previewEl)previewEl.style.display='flex';
       if(orig)localStorage.setItem('denis_protokoll',orig);
       document.getElementById('rowsWrap').innerHTML='';rowId=0;
       Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
