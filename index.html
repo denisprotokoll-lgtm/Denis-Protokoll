@@ -1271,6 +1271,7 @@ function showArchivePreview(d){
     +'</div>'
     +'<div style="display:flex;gap:8px;">'
     +'<button onclick="document.getElementById(\'archivePreviewOverlay\').remove();generatePDFFromData(window._previewData);" style="padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(135deg,#3d6a9e,#2a4f7c);color:white;font-size:11px;font-weight:700;cursor:pointer;">📄 PDF</button>'
+    +'<button onclick="printArchiveEntry(window._previewData);" style="padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-size:11px;font-weight:700;cursor:pointer;">🖨 Drucken</button>'
     +'<button onclick="document.getElementById(\'archivePreviewOverlay\').remove();" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;cursor:pointer;">✕ Schließen</button>'
     +'</div>'
     +'</div>';
@@ -1297,6 +1298,23 @@ function showArchivePreview(d){
   overlay.innerHTML=hdr+rows;
   window._previewData=d;
   document.body.appendChild(overlay);
+}
+function printArchiveEntry(d){
+  if(!d)return;
+  var orig=localStorage.getItem('denis_protokoll');
+  localStorage.setItem('denis_protokoll',JSON.stringify(d));
+  document.getElementById('rowsWrap').innerHTML='';rowId=0;
+  Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+  loadData();updateSummary();
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){
+      if(orig)localStorage.setItem('denis_protokoll',orig);
+      document.getElementById('rowsWrap').innerHTML='';rowId=0;
+      Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+      loadData();updateSummary();
+    },1000);
+  },300);
 }
 function generatePDFFromData(d){
   if(!d)return;
