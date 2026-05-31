@@ -1999,15 +1999,17 @@ function ciFinish(){
   try{
     var data=collectData();
     var now=new Date();
-    // إذا الشيفت بتأخر بعد منتصف الليل، استخدم تاريخ أمس
     var shiftStart=localStorage.getItem('denis_shift_start')||'19:45';
     var startH=parseInt(shiftStart.split(':')[0]);
     var refDate=new Date(now);
     if(now.getHours()<startH&&now.getHours()<12)refDate.setDate(refDate.getDate()-1);
     var dk=refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
+    data.savedAt=now.toISOString();data.archiveKey=dk;
     localStorage.setItem('denis_'+dk,JSON.stringify(data));
-    showToast('💾 Archiv gespeichert','success');
-  }catch(e){}
+    var check=localStorage.getItem('denis_'+dk);
+    if(check){showToast('💾 Archiv: '+dk.replace(/_/g,'.'),'success');}
+    else{showToast('⚠️ Archiv-Fehler!','error');}
+  }catch(e){showToast('⚠️ '+e.message,'error');}
   var overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
   overlay.innerHTML='<div style="background:linear-gradient(160deg,#2d3f52,#1a2535);border-radius:20px;padding:24px 20px;max-width:320px;width:100%;border:1px solid rgba(255,255,255,0.12);">'
