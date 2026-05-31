@@ -1173,7 +1173,14 @@ function openArchive(){
       var label=isNew?'📅 '+(d.day||'')+' '+(d.date||''):'📋 '+(d.protokollNr||'—');
       var sub=(d.mitarbeiter||'?')+' · '+(d.rows?d.rows.length:0)+' Standorte';
       item.innerHTML='<div class="archive-item-date">'+label+'</div><div class="archive-item-sub">'+sub+'</div>';
-      item.onclick=function(){showConfirmDialog('📋 Protokoll laden?',function(){localStorage.setItem('denis_protokoll',JSON.stringify(d));location.reload();},'Laden','linear-gradient(135deg,#3d6a9e,#2a4f7c)');};
+      item.onclick=function(){showConfirmDialog('📋 Protokoll laden?',function(){
+        localStorage.setItem('denis_protokoll',JSON.stringify(d));
+        // أعد تحميل البيانات بدون reload
+        document.getElementById('rowsWrap').innerHTML='';rowId=0;
+        Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+        loadData();updateSummary();closeArchive();
+        showToast('📋 Protokoll geladen','success');
+      },'Laden','linear-gradient(135deg,#3d6a9e,#2a4f7c)');};
       var del=document.createElement('button');del.textContent='🗑';del.style.cssText='float:right;background:none;border:none;cursor:pointer;color:#e44;';
       del.onclick=function(e){e.stopPropagation();showConfirmDialog('🗑 Eintrag löschen?',function(){localStorage.removeItem(key);openArchive();});};
       item.appendChild(del);list.appendChild(item);
