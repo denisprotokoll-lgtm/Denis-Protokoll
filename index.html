@@ -1173,7 +1173,7 @@ function openArchive(){
       var label=isNew?'📅 '+(d.day||'')+' '+(d.date||''):'📋 '+(d.protokollNr||'—');
       var sub=(d.mitarbeiter||'?')+' · '+(d.rows?d.rows.length:0)+' Standorte';
       item.innerHTML='<div class="archive-item-date">'+label+'</div><div class="archive-item-sub">'+sub+'</div>';
-      item.onclick=function(){showConfirmDialog('📋 Protokoll laden?',function(){localStorage.setItem('denis_protokoll',JSON.stringify(d));location.reload();});};
+      item.onclick=function(){showConfirmDialog('📋 Protokoll laden?',function(){localStorage.setItem('denis_protokoll',JSON.stringify(d));location.reload();},'Laden','linear-gradient(135deg,#3d6a9e,#2a4f7c)');};
       var del=document.createElement('button');del.textContent='🗑';del.style.cssText='float:right;background:none;border:none;cursor:pointer;color:#e44;';
       del.onclick=function(e){e.stopPropagation();showConfirmDialog('🗑 Eintrag löschen?',function(){localStorage.removeItem(key);openArchive();});};
       item.appendChild(del);list.appendChild(item);
@@ -1656,14 +1656,16 @@ function ciCopyLocation(loc,overlay){
 }
 
 // ===== ELEGANT DELETE CONFIRM =====
-function showConfirmDialog(msg,onConfirm){
+function showConfirmDialog(msg,onConfirm,confirmLabel,confirmColor){
+  var label=confirmLabel||'Löschen';
+  var color=confirmColor||'linear-gradient(135deg,#E8394A,#c8102e)';
   var overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
   overlay.innerHTML='<div style="background:linear-gradient(160deg,#1e2d3d,#152030);border-radius:16px;padding:22px 20px;max-width:300px;width:100%;border:1px solid rgba(255,255,255,0.1);">'
     +'<div style="font-size:14px;font-weight:700;color:white;margin-bottom:16px;text-align:center;">'+msg+'</div>'
     +'<div style="display:flex;gap:8px;">'
     +'<button onclick="this.closest(\'[style*=inset]\').remove()" style="flex:1;padding:11px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:13px;font-weight:600;cursor:pointer;">Abbrechen</button>'
-    +'<button id="confirmYes" style="flex:1;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-size:13px;font-weight:700;cursor:pointer;">Löschen</button>'
+    +'<button id="confirmYes" style="flex:1;padding:11px;border-radius:10px;border:none;background:'+color+';color:white;font-size:13px;font-weight:700;cursor:pointer;">'+label+'</button>'
     +'</div></div>';
   overlay.querySelector('#confirmYes').onclick=function(){overlay.remove();onConfirm();};
   overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
