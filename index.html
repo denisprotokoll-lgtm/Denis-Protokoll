@@ -1258,6 +1258,63 @@ function generateWeeklyPDF(){
 }
 function fmtDate(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
 function getKW(d){var jan4=new Date(d.getFullYear(),0,4);var startOfWeek=new Date(jan4);startOfWeek.setDate(jan4.getDate()-(jan4.getDay()||7)+1);return Math.round((d-startOfWeek)/604800000)+1;}
+function showArchivePreview(d){
+  var old=document.getElementById('archivePreviewOverlay');if(old)old.remove();
+  var overlay=document.createElement('div');
+  overlay.id='archivePreviewOverlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:99990;background:#0f1923;display:flex;flex-direction:column;font-family:\'DM Sans\',sans-serif;overflow-y:auto;';
+  // Header
+  var hdr='<div style="background:linear-gradient(135deg,#1e2d3d,#152030);padding:52px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;">'
+    +'<div>'
+    +'<div style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:3px;text-transform:uppercase;">Archiv · Nur Ansicht</div>'
+    +'<div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:white;margin-top:4px;">'+(d.day||'')+' '+(d.date||'')+'</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px;">'
+    +'<button onclick="document.getElementById(\'archivePreviewOverlay\').remove();generatePDFFromData(window._previewData);" style="padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(135deg,#3d6a9e,#2a4f7c);color:white;font-size:11px;font-weight:700;cursor:pointer;">📄 PDF</button>'
+    +'<button onclick="document.getElementById(\'archivePreviewOverlay\').remove();" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.6);font-size:11px;font-weight:700;cursor:pointer;">✕ Schließen</button>'
+    +'</div>'
+    +'</div>';
+  // Rows
+  var rows='<div style="padding:16px;display:flex;flex-direction:column;gap:8px;">';
+  (d.rows||[]).forEach(function(row){
+    if(!row.k||row.k==='— Standort —')return;
+    var notizen=(row.n||[]).filter(function(n){return n.ev&&n.ev!=='— Ereignis —';});
+    rows+='<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;">';
+    rows+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+    rows+='<div style="font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:white;">'+row.k+'</div>';
+    rows+='<div style="font-size:11px;color:rgba(255,255,255,0.4);">'+(row.b||'—')+' – '+(row.e||'—')+'</div>';
+    rows+='</div>';
+    if(notizen.length){
+      notizen.forEach(function(n){
+        var isDanger=DANGER_EVENTS.indexOf(n.ev)>=0;
+        rows+='<div style="font-size:11px;padding:4px 0;color:'+(isDanger?'#ff8090':'rgba(255,255,255,0.6)')+';">'
+          +'• '+(n.c>1?'['+n.c+'x] ':'')+n.ev+'</div>';
+      });
+    }else{rows+='<div style="font-size:11px;color:rgba(255,255,255,0.2);">— Keine Vorfälle</div>';}
+    rows+='</div>';
+  });
+  rows+='</div>';
+  overlay.innerHTML=hdr+rows;
+  window._previewData=d;
+  document.body.appendChild(overlay);
+}
+function generatePDFFromData(d){
+  if(!d)return;
+  var orig=localStorage.getItem('denis_protokoll');
+  localStorage.setItem('denis_protokoll',JSON.stringify(d));
+  document.getElementById('rowsWrap').innerHTML='';rowId=0;
+  Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+  loadData();updateSummary();
+  setTimeout(function(){
+    generatePDFAndSave();
+    setTimeout(function(){
+      if(orig)localStorage.setItem('denis_protokoll',orig);
+      document.getElementById('rowsWrap').innerHTML='';rowId=0;
+      Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+      loadData();updateSummary();
+    },1000);
+  },300);
+}
 function openArchive(){
   var list=document.getElementById('archiveList');list.innerHTML='';
   var bg=document.getElementById('archiveBg');if(bg)bg.style.display='block';
@@ -1273,14 +1330,7 @@ function openArchive(){
       var label=isNew?'📅 '+(d.day||'')+' '+(d.date||''):'📋 '+(d.protokollNr||'—');
       var sub=(d.mitarbeiter||'?')+' · '+(d.rows?d.rows.length:0)+' Standorte';
       item.innerHTML='<div class="archive-item-date">'+label+'</div><div class="archive-item-sub">'+sub+'</div>';
-      item.onclick=function(){showConfirmDialog('📋 Protokoll laden?',function(){
-        localStorage.setItem('denis_protokoll',JSON.stringify(d));
-        // أعد تحميل البيانات بدون reload
-        document.getElementById('rowsWrap').innerHTML='';rowId=0;
-        Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
-        loadData();updateSummary();closeArchive();
-        showToast('📋 Protokoll geladen','success');
-      },'Laden','linear-gradient(135deg,#3d6a9e,#2a4f7c)');};
+      item.onclick=function(){closeArchive();showArchivePreview(d);};
       var del=document.createElement('button');del.textContent='🗑';del.style.cssText='float:right;background:none;border:none;cursor:pointer;color:#e44;';
       del.onclick=function(e){e.stopPropagation();showConfirmDialog('🗑 Eintrag löschen?',function(){localStorage.removeItem(key);openArchive();});};
       item.appendChild(del);list.appendChild(item);
