@@ -472,7 +472,13 @@ body.app-ready::before{opacity:0.5;}
 <!-- ARCHIVE -->
 <div class="archive-overlay-bg" id="archiveBg" onclick="closeArchive()"></div>
 <div class="archive-panel" id="archivePanel">
-  <div class="archive-hdr"><div class="archive-hdr-title">📁 Protokoll-Archiv</div><button class="archive-close" onclick="closeArchive()">✕</button></div>
+  <div class="archive-hdr">
+    <div class="archive-hdr-title">📁 Protokoll-Archiv</div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button onclick="closeArchive();showCheckin();" style="background:rgba(76,186,107,0.2);border:1px solid rgba(76,186,107,0.4);color:#4cba6b;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">↩ Heute</button>
+      <button class="archive-close" onclick="closeArchive()">✕</button>
+    </div>
+  </div>
   <div style="padding:8px 10px;border-bottom:1px solid rgba(0,0,0,0.07);">
     <button onclick="generateWeeklyPDF()" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">📊 Wochenbericht PDF</button>
   </div>
