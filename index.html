@@ -2114,7 +2114,14 @@ function ciFinish(){
     var shiftStart=localStorage.getItem('denis_shift_start')||'19:45';
     var startH=parseInt(shiftStart.split(':')[0]);
     var refDate=new Date(now);
-    if(now.getHours()<startH&&now.getHours()<12)refDate.setDate(refDate.getDate()-1);
+    // استخدم تاريخ البروتوكول مباشرة إذا كان موجوداً
+    var protoDate=document.getElementById('dateInput')?document.getElementById('dateInput').value:'';
+    if(protoDate){
+      var parts=protoDate.split('.');
+      if(parts.length===3)refDate=new Date(parts[2],parts[1]-1,parts[0]);
+    } else if(now.getHours()<startH&&now.getHours()<12){
+      refDate.setDate(refDate.getDate()-1);
+    }
     var dk=refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
     data.savedAt=now.toISOString();data.archiveKey=dk;
     localStorage.setItem('denis_'+dk,JSON.stringify(data));
