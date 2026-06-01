@@ -310,15 +310,18 @@ body.app-ready::before{opacity:0.5;}
 .print-sig-area{display:none;margin-top:20px;border-top:1px solid #ddd;padding-top:16px;}
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  body{background:white!important;padding:0!important;}
+  html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;}
   body::before{display:none!important;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
   .progress-wrap,.autosave-bar,.archive-panel,.archive-overlay-bg,
   .toast-wrap,.pdf-loading,.report-overlay,.overlay-base,#pinScreen,#homeScreen,#checkinScreen,#fabCheckin,#archivePreviewOverlay{display:none!important;}
-  .card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;}
+  .card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;width:100%!important;margin:0!important;padding:4px!important;}
+  .proto-table{width:100%!important;font-size:9pt!important;}
   .proto-row{page-break-inside:avoid!important;}
+  .proto-cell{padding:4px 6px!important;}
   .print-sig-area{display:block!important;}
-  @page{size:A4 portrait;margin:8mm;}
+  #appContent{padding:0!important;margin:0!important;}
+  @page{size:A4 portrait;margin:6mm;}
 }
 </style>
 </head>
@@ -1439,11 +1442,21 @@ function openArchive(){
       bPdf.style.cssText='flex:1;padding:8px;border:none;background:transparent;color:rgba(61,105,180,0.9);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);';
       bPdf.innerHTML='📄 PDF';
       bPdf.onclick=function(){generatePDFFromData(d);};
+      var bLaden=document.createElement('button');
+      bLaden.style.cssText='flex:1;padding:8px;border:none;background:transparent;color:rgba(76,186,107,0.9);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);';
+      bLaden.innerHTML='↩ Laden';
+      bLaden.onclick=function(){showConfirmDialog('↩ Protokoll laden?',function(){
+        localStorage.setItem('denis_protokoll',JSON.stringify(d));
+        document.getElementById('rowsWrap').innerHTML='';rowId=0;
+        Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+        loadData();updateSummary();closeArchive();
+        showToast('↩ Protokoll geladen','success');
+      },'Laden','linear-gradient(135deg,#4cba6b,#2e9e50)');};
       var bDel=document.createElement('button');
       bDel.style.cssText='padding:8px 14px;border:none;background:transparent;color:rgba(232,57,74,0.5);font-size:12px;cursor:pointer;';
       bDel.innerHTML='🗑';
       bDel.onclick=function(){showConfirmDialog('🗑 Eintrag löschen?',function(){localStorage.removeItem(key);openArchive();},'Löschen');};
-      btns.appendChild(bPrint);btns.appendChild(bPdf);btns.appendChild(bDel);
+      btns.appendChild(bPrint);btns.appendChild(bPdf);btns.appendChild(bLaden);btns.appendChild(bDel);
       card.appendChild(hdr);card.appendChild(btns);
       list.appendChild(card);
     }catch(e){}
