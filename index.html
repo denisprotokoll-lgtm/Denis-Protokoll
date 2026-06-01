@@ -507,10 +507,7 @@ body.app-ready::before{opacity:0.5;}
     <div id="quickAddBtns" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
   </div>
   <div class="ci-body" style="padding:0 12px 20px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div class="ci-section-label" style="margin-bottom:0;">📍 Kunde auswählen</div>
-      <button onclick="showCopyFromArchive()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">📋 Kopieren</button>
-    </div>
+    <div class="ci-section-label" style="margin-bottom:8px;">📍 Kunde auswählen</div>
     <div id="ciSearchWrap" style="display:none;margin-bottom:10px;">
       <input id="ciKundeSearch" type="text" placeholder="🔍 Suchen..." oninput="ciFilterKunden(this.value)"
         style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:9px 14px;outline:none;">
@@ -528,7 +525,6 @@ body.app-ready::before{opacity:0.5;}
       <div class="ci-log-actions-bar"><button class="ci-log-act" onclick="ciClearLog()">🗑 Alle löschen</button></div>
     </div>
     <!-- زر نهاية الشيفت -->
-    <button onclick="ciFinish()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#4cba6b,#2e9e50);color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-top:6px;letter-spacing:1px;box-shadow:0 4px 20px rgba(76,186,107,0.3);">✅ Schicht beenden &amp; Archivieren</button>
     <button class="ci-back-btn" onclick="hideCheckin()">📋 Protokoll anzeigen</button>
   </div>
 </div>
@@ -737,11 +733,8 @@ function checkPin(){
   var saved=localStorage.getItem('denis_pin')||CORRECT_PIN;
   var master=atob('MTE4Nw==');
   if(pinEntry===saved||pinEntry===master){
-    if(pinEntry===master){
-      // Master PIN: reset saved PIN back to default
-      localStorage.removeItem('denis_pin');
-    }
-    unlockApp();
+    if(pinEntry===master){localStorage.removeItem('denis_pin');}
+    showPinGreeting();
   }
   else{
     for(var i=0;i<4;i++)document.getElementById('pd'+i).classList.add('error');
@@ -749,6 +742,28 @@ function checkPin(){
     document.getElementById('pinScreen').style.animation='shake 0.4s ease';
     setTimeout(function(){pinEntry='';updatePinDots();document.getElementById('pinScreen').style.animation='';},500);
   }
+}
+function showPinGreeting(){
+  var now=new Date();
+  var h=now.getHours();
+  var greet=h<12?'Guten Morgen':h<18?'Guten Tag':'Guten Abend';
+  var name=localStorage.getItem('denis_mitarbeiter')||'Denis';
+  var DE_DAYS=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  var DE_MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  var dateStr=DE_DAYS[now.getDay()]+', '+now.getDate()+'. '+DE_MONTHS[now.getMonth()];
+  // عرض التحية على شاشة PIN
+  var ps=document.getElementById('pinScreen');
+  ps.innerHTML='<div style="text-align:center;padding:20px;">'
+    +'<div style="font-size:52px;margin-bottom:16px;">👋</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;">'+dateStr+'</div>'
+    +'<div style="font-family:\'Syne\',sans-serif;font-size:28px;font-weight:800;color:white;margin-bottom:6px;">'+greet+'</div>'
+    +'<div style="font-family:\'Syne\',sans-serif;font-size:28px;font-weight:800;color:#E8394A;">'+name+' !</div>'
+    +'</div>';
+  ps.style.background='#0f1923';
+  setTimeout(function(){
+    ps.style.opacity='0';ps.style.transition='opacity 0.4s';
+    setTimeout(function(){ps.style.display='none';ps.style.opacity='';ps.style.transition='';unlockApp();},400);
+  },1500);
 }
 function unlockApp(){
   document.body.classList.add('app-ready');
@@ -1016,13 +1031,27 @@ function collectData(){
   });
   return data;
 }
+var autoArchiveTimer=null;
 function saveData(){
   try{
-    localStorage.setItem('denis_protokoll',JSON.stringify(collectData()));
+    var data=collectData();
+    localStorage.setItem('denis_protokoll',JSON.stringify(data));
     var bar=document.getElementById('autosaveBar'),txt=document.getElementById('autosaveText'),chip=document.getElementById('chipSave');
     var now=new Date(),ts=p2(now.getHours())+':'+p2(now.getMinutes())+':'+p2(now.getSeconds());
     if(bar)bar.className='autosave-bar no-print';if(txt)txt.textContent='💾 Gespeichert um '+ts;if(chip)chip.textContent='💾 '+ts;
     playBeep('save');
+    // حفظ تلقائي في الأرشيف بعد ثانيتين من آخر تغيير
+    clearTimeout(autoArchiveTimer);
+    autoArchiveTimer=setTimeout(function(){
+      try{
+        var protoDate=document.getElementById('dateInput')?document.getElementById('dateInput').value:'';
+        var refDate=new Date();
+        if(protoDate){var parts=protoDate.split('.');if(parts.length===3)refDate=new Date(parts[2],parts[1]-1,parts[0]);}
+        var dk=refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
+        data.savedAt=new Date().toISOString();data.archiveKey=dk;
+        localStorage.setItem('denis_'+dk,JSON.stringify(data));
+      }catch(e){}
+    },2000);
   }catch(e){var bar2=document.getElementById('autosaveBar');if(bar2)bar2.className='autosave-bar error no-print';}
 }
 function manualSave(){saveData();showToast('💾 Gespeichert!','success');}
@@ -1361,42 +1390,66 @@ function clearAllArchive(){
 function openArchive(){
   var list=document.getElementById('archiveList');list.innerHTML='';
   var bg=document.getElementById('archiveBg');if(bg)bg.style.display='block';
-  // جمع المفاتيح القديمة والجديدة
   var keys=Object.keys(localStorage).filter(function(k){
     return k.match(/^denis_\d{4}_\d{2}_\d{2}$/)||k.startsWith('denis_archive_');
   }).sort().reverse();
-  if(!keys.length){list.innerHTML='<div class="archive-empty">📭 Kein Archiv</div>';return;}
-  // شريط الطباعة الجماعية — أضفه داخل الـ panel قبل القائمة
+
+  // شريط التحديد الجماعي
   var oldBar=document.getElementById('archiveMultiBar');if(oldBar)oldBar.remove();
   var multiBar=document.createElement('div');
   multiBar.id='archiveMultiBar';
-  multiBar.style.cssText='display:none;padding:8px 10px;background:rgba(61,82,104,0.5);border-bottom:1px solid rgba(255,255,255,0.1);gap:6px;flex-wrap:wrap;align-items:center;';
+  multiBar.style.cssText='display:none;padding:8px 10px;background:rgba(61,82,104,0.6);border-bottom:1px solid rgba(255,255,255,0.1);gap:6px;flex-wrap:wrap;align-items:center;';
   multiBar.innerHTML='<span style="font-size:11px;color:rgba(255,255,255,0.5);flex:1;" id="archiveSelCount">0 ausgewählt</span>'
-    +'<button onclick="printSelectedArchive(\'red\')" style="padding:6px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-size:11px;font-weight:700;cursor:pointer;">🖨 Drucken</button>'
-    +'<button onclick="printSelectedArchive(\'blue\')" style="padding:6px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#3d6a9e,#2a4f7c);color:white;font-size:11px;font-weight:700;cursor:pointer;">📄 PDF</button>'
-    +'<button onclick="clearArchiveSelection()" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;">✕</button>';
-  list.parentNode.insertBefore(multiBar, list);
+    +'<button onclick="printSelectedArchive(\'red\')" style="padding:5px 10px;border-radius:8px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-size:11px;font-weight:700;cursor:pointer;">🖨</button>'
+    +'<button onclick="printSelectedArchive(\'blue\')" style="padding:5px 10px;border-radius:8px;border:none;background:linear-gradient(135deg,#3d6a9e,#2a4f7c);color:white;font-size:11px;font-weight:700;cursor:pointer;">📄</button>'
+    +'<button onclick="clearArchiveSelection()" style="padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;">✕</button>';
+  list.parentNode.insertBefore(multiBar,list);
   window._archiveSelected={};
+
+  if(!keys.length){list.innerHTML='<div class="archive-empty">📭 Kein Archiv</div>';
+    document.getElementById('archivePanel').classList.add('open');return;}
+
   keys.forEach(function(key){
     try{
-      var d=JSON.parse(localStorage.getItem(key));var item=document.createElement('div');item.className='archive-item';
+      var d=JSON.parse(localStorage.getItem(key));
+      if(!d)return;
+      var card=document.createElement('div');
+      card.style.cssText='background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;margin:8px 10px 0;overflow:hidden;';
       var isNew=key.match(/^denis_\d{4}_\d{2}_\d{2}$/);
-      var label=isNew?'📅 '+(d.day||'')+' '+(d.date||''):'📋 '+(d.protokollNr||'—');
-      var sub=(d.mitarbeiter||'?')+' · '+(d.rows?d.rows.length:0)+' Standorte';
-      item.innerHTML='<div style="display:flex;align-items:center;gap:10px;">'
-        +'<input type="checkbox" data-key="'+key+'" onchange="toggleArchiveSelect(this,\''+key+'\')" style="width:16px;height:16px;cursor:pointer;accent-color:#E8394A;" onclick="event.stopPropagation();">'
-        +'<div style="flex:1;">'
-        +'<div class="archive-item-date">'+label+'</div>'
-        +'<div class="archive-item-sub">'+sub+'</div>'
-        +'</div></div>';
-      item.onclick=function(){closeArchive();showArchivePreview(d);};
-      var del=document.createElement('button');del.textContent='🗑';del.style.cssText='float:right;background:none;border:none;cursor:pointer;color:#e44;';
-      del.onclick=function(e){e.stopPropagation();showConfirmDialog('🗑 Eintrag löschen?',function(){localStorage.removeItem(key);openArchive();});};
-      item.appendChild(del);list.appendChild(item);
+      var label=isNew?(d.day||'')+' '+(d.date||''):(d.protokollNr||'—');
+      var locs=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';}).map(function(r){return r.k;}).slice(0,2).join(', ')||'—';
+      var evCount=(d.rows||[]).reduce(function(s,r){return s+( r.n||[]).filter(function(n){return n.ev&&n.ev!=='— Ereignis —';}).length;},0);
+      // Header البطاقة
+      var hdr=document.createElement('div');
+      hdr.style.cssText='display:flex;align-items:center;padding:10px 12px;gap:8px;cursor:pointer;';
+      hdr.innerHTML='<input type="checkbox" onchange="toggleArchiveSelect(this,\''+key+'\')" style="width:15px;height:15px;cursor:pointer;accent-color:#E8394A;flex-shrink:0;" onclick="event.stopPropagation();">'
+        +'<div style="flex:1;min-width:0;">'
+        +'<div style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:800;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+label+'</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:1px;">'+locs+(evCount?' · '+evCount+' Vorfälle':'')+'</div>'
+        +'</div>';
+      hdr.onclick=function(e){if(e.target.type==='checkbox')return;showArchivePreview(d);};
+      // أزرار الطباعة
+      var btns=document.createElement('div');
+      btns.style.cssText='display:flex;border-top:1px solid rgba(255,255,255,0.06);';
+      var bPrint=document.createElement('button');
+      bPrint.style.cssText='flex:1;padding:8px;border:none;background:transparent;color:rgba(232,57,74,0.8);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);';
+      bPrint.innerHTML='🖨 Drucken';
+      bPrint.onclick=function(){printArchiveEntry(d);};
+      var bPdf=document.createElement('button');
+      bPdf.style.cssText='flex:1;padding:8px;border:none;background:transparent;color:rgba(61,105,180,0.9);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);';
+      bPdf.innerHTML='📄 PDF';
+      bPdf.onclick=function(){generatePDFFromData(d);};
+      var bDel=document.createElement('button');
+      bDel.style.cssText='padding:8px 14px;border:none;background:transparent;color:rgba(232,57,74,0.5);font-size:12px;cursor:pointer;';
+      bDel.innerHTML='🗑';
+      bDel.onclick=function(){showConfirmDialog('🗑 Eintrag löschen?',function(){localStorage.removeItem(key);openArchive();},'Löschen');};
+      btns.appendChild(bPrint);btns.appendChild(bPdf);btns.appendChild(bDel);
+      card.appendChild(hdr);card.appendChild(btns);
+      list.appendChild(card);
     }catch(e){}
   });
   document.getElementById('archivePanel').classList.add('open');
-  var bg=document.getElementById('archiveBg');if(bg)bg.style.display='block';
+  var bg2=document.getElementById('archiveBg');if(bg2)bg2.style.display='block';
 }
 function closeArchive(){document.getElementById('archivePanel').classList.remove('open');var bg=document.getElementById('archiveBg');if(bg)bg.style.display='none';}
 
