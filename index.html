@@ -310,18 +310,24 @@ body.app-ready::before{opacity:0.5;}
 .print-sig-area{display:none;margin-top:20px;border-top:1px solid #ddd;padding-top:16px;}
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;}
+  html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;font-size:8pt!important;}
   body::before{display:none!important;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
   .progress-wrap,.autosave-bar,.archive-panel,.archive-overlay-bg,
   .toast-wrap,.pdf-loading,.report-overlay,.overlay-base,#pinScreen,#homeScreen,#checkinScreen,#fabCheckin,#archivePreviewOverlay{display:none!important;}
-  .card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;width:100%!important;margin:0!important;padding:4px!important;}
-  .proto-table{width:100%!important;font-size:9pt!important;}
+  .card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;width:100%!important;margin:0!important;padding:2px!important;}
+  .proto-table{width:100%!important;font-size:7.5pt!important;border-collapse:collapse!important;}
   .proto-row{page-break-inside:avoid!important;}
-  .proto-cell{padding:4px 6px!important;}
-  .print-sig-area{display:block!important;}
-  #appContent{padding:0!important;margin:0!important;}
-  @page{size:A4 portrait;margin:6mm;}
+  .proto-cell{padding:2px 4px!important;line-height:1.2!important;}
+  .proto-hdr{padding:2px 4px!important;font-size:7pt!important;}
+  .print-header{padding:4px 6px!important;margin-bottom:2px!important;}
+  .print-header h1,.print-header-title{font-size:13pt!important;}
+  .print-sig-area{display:block!important;margin-top:4px!important;}
+  .notiz-list{font-size:7pt!important;margin:0!important;padding:0 0 0 8px!important;}
+  .nc-wrap,.nc-num{font-size:7pt!important;}
+  textarea,.freitext-area{font-size:7pt!important;padding:1px!important;min-height:16px!important;}
+  .rows-wrap{margin:0!important;}
+  @page{size:A4 portrait;margin:5mm;}
 }
 </style>
 </head>
@@ -1093,6 +1099,23 @@ function sortRowsByTime(){
 }
 
 // ===== ARCHIVE =====
+function printWeekAll(mode){
+  var weekStart=parseInt(localStorage.getItem('denis_week_start')||'1');
+  var today=new Date();today.setHours(0,0,0,0);
+  var dow=today.getDay();var diff=(dow-weekStart+7)%7;
+  var monday=new Date(today);monday.setDate(today.getDate()-diff);
+  var entries=[];
+  for(var i=0;i<7;i++){
+    var d=new Date(monday);d.setDate(monday.getDate()+i);
+    var dk='denis_'+d.getFullYear()+'_'+String(d.getMonth()+1).padStart(2,'0')+'_'+String(d.getDate()).padStart(2,'0');
+    var raw=localStorage.getItem(dk);
+    if(raw){try{entries.push(JSON.parse(raw));}catch(e){}}
+  }
+  if(!entries.length){showToast('Keine Daten für diese Woche','error');return;}
+  closeArchive();
+  if(mode==='blue'){printMultiEntriesPDF(entries);}
+  else{printMultiEntriesPrint(entries,0);}
+}
 function generateWeeklyPDF(){
   var lib=window.jspdf;if(!lib){showToast('jsPDF lädt noch…','error');return;}
   // تحديد أيام الأسبوع الحالي
@@ -2572,6 +2595,10 @@ function ciShowToast(msg){
   </div>
   <div style="padding:8px 10px;border-bottom:1px solid rgba(0,0,0,0.07);">
     <button onclick="generateWeeklyPDF()" style="width:100%;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">📊 Wochenbericht PDF</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;">
+      <button onclick="printWeekAll('red')" style="padding:9px;border-radius:10px;border:1px solid rgba(232,57,74,0.4);background:transparent;color:rgba(232,57,74,0.8);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">🖨 Woche drucken</button>
+      <button onclick="printWeekAll('blue')" style="padding:9px;border-radius:10px;border:1px solid rgba(61,105,180,0.4);background:transparent;color:rgba(61,105,180,0.9);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">📄 Woche PDF</button>
+    </div>
     <button onclick="clearAllArchive()" style="width:100%;padding:9px;border-radius:10px;border:1px solid rgba(232,57,74,0.3);background:transparent;color:rgba(232,57,74,0.7);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:6px;">🗑 Gesamtes Archiv löschen</button>
   </div>
   <div class="archive-list" id="archiveList"></div>
