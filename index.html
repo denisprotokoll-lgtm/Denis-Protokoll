@@ -302,39 +302,7 @@ body.app-ready::before{opacity:0.5;}
 .print-sig-area{display:none;margin-top:20px;border-top:1px solid #ddd;padding-top:16px;}
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  /* إخفاء كل الـ overlays والـ panels عند الطباعة */
-  body > *:not(#printContent){display:none!important;}
-  #archivePanel,#archiveBg,#arcPrev,#settingsOverlay,#sigOverlay,
-  #dashOverlay,#offlineBanner,.modal-overlay,.rep-overlay,
-  #pinScreen,#splashScreen,#checkinScreen,
-  .bottom-nav,.top-bar,.quick-bar,.kunden-strip{display:none!important;}
-  /* إظهار فقط محتوى الطباعة */
-  #printContent{
-    display:block!important;
-    position:static!important;
-    width:100%!important;
-    max-width:100%!important;
-    margin:0!important;
-    padding:0!important;
-    left:0!important;
-    top:0!important;
-    transform:none!important;
-    box-sizing:border-box!important;
-  }
-  #printContent *{
-    max-width:100%!important;
-    box-sizing:border-box!important;
-  }
-  #printContent table{
-    width:100%!important;
-    table-layout:fixed!important;
-  }
-  #printContent td,#printContent th{
-    word-wrap:break-word!important;
-    overflow-wrap:break-word!important;
-  }
-  body{background:white!important;}
-  html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;min-width:0!important;font-size:9pt!important;transform:none!important;}
+  html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;font-size:8pt!important;}
   body::before{display:none!important;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
   .progress-wrap,.autosave-bar,
@@ -1199,24 +1167,6 @@ function renderArchiveList(query){
     statsEl.textContent=keys.length+' Schichten · '+totalRows+' Einträge gesamt';
   }
 
-  // شريط الطباعة الجماعية
-  var selBar=document.getElementById('archiveSelBar');
-  if(!selBar){
-    selBar=document.createElement('div');
-    selBar.id='archiveSelBar';
-    selBar.style.cssText='padding:8px 12px;background:rgba(61,82,104,0.3);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:6px;flex-shrink:0;';
-    selBar.innerHTML=
-      '<input type="checkbox" id="archiveSelAll" onchange="archiveToggleAll(this.checked)" style="width:15px;height:15px;accent-color:#4cba6b;cursor:pointer;">'+
-      '<label for="archiveSelAll" style="font-size:11px;color:rgba(255,255,255,0.6);cursor:pointer;flex:1;">Alle auswählen</label>'+
-      '<button onclick="archivePrintSelected()" style="background:linear-gradient(135deg,#E8394A,#c8102e);color:white;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;" title="Ausgewählte drucken">🖨 Auswahl</button>'+
-      '<button onclick="archivePrintAll()" style="background:linear-gradient(135deg,#3d5268,#4a6080);color:white;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;" title="Alle drucken">🖨 Alle</button>';
-    var archList=document.getElementById('archiveList');
-    archList.parentNode.insertBefore(selBar,archList);
-  }
-  // reset checkboxes
-  var selAll=document.getElementById('archiveSelAll');
-  if(selAll)selAll.checked=false;
-
   if(!keys.length){
     list.innerHTML='<div style="text-align:center;padding:40px 16px;"><div style="font-size:32px;margin-bottom:8px;">📭</div><div style="color:rgba(255,255,255,0.3);font-size:12px;">Kein Archiv vorhanden</div></div>';
     return;
@@ -1260,42 +1210,24 @@ function renderArchiveList(query){
 
       var locStr=uniqueLocs.slice(0,3).join(', ')+(uniqueLocs.length>3?' +'+( uniqueLocs.length-3):'');
 
-      card.dataset.key=key;
       card.innerHTML=
-        '<div style="display:flex;align-items:stretch;">'+
-          '<label style="padding:14px 4px 14px 12px;cursor:pointer;display:flex;align-items:center;" onclick="event.stopPropagation()">'+
-            '<input type="checkbox" class="archiveSel" data-key="'+key+'" onchange="archiveUpdateSelBar()" style="width:16px;height:16px;accent-color:#4cba6b;cursor:pointer;">'+
-          '</label>'+
-          '<div class="arc-card-body" style="flex:1;padding:11px 8px 11px 6px;cursor:pointer;">'+
-            '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;">'+
-              '<div style="font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:white;">'+(d.day||'')+' '+(d.date||'')+'</div>'+
-              '<span style="background:'+accent+'22;color:'+accent+';border:1px solid '+accent+'44;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;">'+rowCount+' x</span>'+
-            '</div>'+
-            (locStr?'<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:4px;">📍 '+locStr+'</div>':'')+
-            '<div style="display:flex;gap:10px;font-size:10px;color:rgba(255,255,255,0.25);">'+
-              (worker?'<span>👤 '+worker+'</span>':'')+
-              (savedAt?'<span>💾 '+savedAt+'</span>':'')+
-            '</div>'+
+        '<div onclick="showArchivePreview(JSON.parse(localStorage.getItem(\''+key+'\')))" style="padding:11px 12px;cursor:pointer;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;">'+
+            '<div style="font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:white;">'+(d.day||'')+' '+(d.date||'')+'</div>'+
+            '<span style="background:'+accent+'22;color:'+accent+';border:1px solid '+accent+'44;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;">'+rowCount+' ×</span>'+
+          '</div>'+
+          (locStr?'<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:4px;">📍 '+locStr+'</div>':'')+
+          '<div style="display:flex;gap:10px;font-size:10px;color:rgba(255,255,255,0.25);">'+
+            (worker?'<span>👤 '+worker+'</span>':'')+
+            (savedAt?'<span>💾 '+savedAt+'</span>':'')+
           '</div>'+
         '</div>'+
         '<div style="display:flex;border-top:1px solid rgba(255,255,255,0.06);">'+
-          '<button class="arc-btn-print" style="flex:1;padding:8px;border:none;background:transparent;color:rgba(232,57,74,0.85);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);">🖨 Drucken</button>'+
-          '<button class="arc-btn-pdf" style="flex:1;padding:8px;border:none;background:transparent;color:rgba(100,160,230,0.85);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);">📄 PDF</button>'+
-          '<button class="arc-btn-del" style="padding:8px 14px;border:none;background:transparent;color:rgba(232,57,74,0.4);font-size:13px;cursor:pointer;">🗑</button>'+
+          '<button onclick="archivePrint(JSON.parse(localStorage.getItem(\''+key+'\')))" style="flex:1;padding:8px;border:none;background:transparent;color:rgba(232,57,74,0.85);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);">🖨 Drucken</button>'+
+          '<button onclick="archivePDF(JSON.parse(localStorage.getItem(\''+key+'\')))" style="flex:1;padding:8px;border:none;background:transparent;color:rgba(100,160,230,0.85);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);">📄 PDF</button>'+
+          '<button onclick="archiveDeleteOne(\''+key+'\')" style="padding:8px 14px;border:none;background:transparent;color:rgba(232,57,74,0.4);font-size:13px;cursor:pointer;">🗑</button>'+
         '</div>';
-      // event listeners بدلاً من inline onclick
-      card.querySelector('.arc-card-body').addEventListener('click',function(){
-        try{showArchivePreview(JSON.parse(localStorage.getItem(key)));}catch(e){}
-      });
-      card.querySelector('.arc-btn-print').addEventListener('click',function(){
-        try{archivePrint(JSON.parse(localStorage.getItem(key)));}catch(e){}
-      });
-      card.querySelector('.arc-btn-pdf').addEventListener('click',function(){
-        try{archivePDF(JSON.parse(localStorage.getItem(key)));}catch(e){}
-      });
-      card.querySelector('.arc-btn-del').addEventListener('click',function(){
-        archiveDeleteOne(key);
-      })
+
       list.appendChild(card);
     }catch(e){}
   });
@@ -1399,66 +1331,16 @@ function showArchivePreview(d){
 }
 function archivePrint(d){
   var ov=document.getElementById('arcPrev');if(ov)ov.style.display='none';
-  buildPrintContent([d]);
-  setTimeout(function(){
-    window.print();
-    setTimeout(function(){
-      clearPrintContent();
-      if(ov)ov.style.display='flex';
-    },800);
-  },200);
+  var orig=localStorage.getItem('denis_protokoll');
+  localStorage.setItem('denis_protokoll',JSON.stringify(d));
+  document.getElementById('rowsWrap').innerHTML='';rowId=0;Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+  loadData();updateSummary();
+  setTimeout(function(){window.print();setTimeout(function(){
+    if(ov)ov.style.display='flex';
+    if(orig)localStorage.setItem('denis_protokoll',orig);
+    document.getElementById('rowsWrap').innerHTML='';rowId=0;Object.keys(nCounts).forEach(function(k){delete nCounts[k];});loadData();updateSummary();
+  },1000);},300);
 }
-
-function buildPrintContent(dataArr){
-  var el=document.getElementById('printContent');
-  if(!el){el=document.createElement('div');el.id='printContent';el.style.cssText='display:none;';document.body.appendChild(el);}
-  var html='';
-  dataArr.forEach(function(d,di){
-    if(di>0)html+='<div style="page-break-before:always;"></div>';
-    var rows=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';});
-    html+='<div style="width:100%;box-sizing:border-box;">';
-    html+='<div style="text-align:center;border-bottom:2px solid #1a2535;padding-bottom:12px;margin-bottom:16px;">';
-    html+='<div style="font-size:20px;font-weight:800;color:#1a2535;">SICHERHEITSDIENST PROTOKOLL</div>';
-    html+='<div style="font-size:13px;color:#555;margin-top:4px;">'+(d.day||'')+' '+( d.date||'')+(d.mitarbeiter?' · 👤 '+d.mitarbeiter:'')+'</div>';
-    html+='</div>';
-    if(!rows.length){html+='<p style="color:#999;text-align:center;">Keine Einträge</p>';}
-    else{
-      html+='<table style="width:100%;border-collapse:collapse;font-size:11px;">';
-      html+='<thead><tr style="background:#1a2535;color:white;">';
-      html+='<th style="padding:7px 8px;text-align:left;">#</th>';
-      html+='<th style="padding:7px 8px;text-align:left;">Standort</th>';
-      html+='<th style="padding:7px 8px;text-align:left;">Von</th>';
-      html+='<th style="padding:7px 8px;text-align:left;">Bis</th>';
-      html+='<th style="padding:7px 8px;text-align:left;">Ereignisse</th>';
-      html+='</tr></thead><tbody>';
-      rows.forEach(function(r,ri){
-        var evts=(r.n||[]).filter(function(n){return n.ev&&n.ev!=='— Ereignis —';}).map(function(n){return(n.c>1?'['+n.c+'×] ':'')+n.ev;}).join(', ')||'—';
-        html+='<tr style="background:'+(ri%2?'#f8f9fc':'white')+';border-bottom:1px solid #eee;">';
-        html+='<td style="padding:6px 8px;color:#999;">'+(ri+1)+'</td>';
-        html+='<td style="padding:6px 8px;font-weight:600;">'+r.k+'</td>';
-        html+='<td style="padding:6px 8px;">'+(r.b||'—')+'</td>';
-        html+='<td style="padding:6px 8px;">'+(r.e||'—')+'</td>';
-        html+='<td style="padding:6px 8px;color:#555;">'+evts+'</td>';
-        html+='</tr>';
-      });
-      html+='</tbody></table>';
-      html+='<div style="margin-top:10px;font-size:10px;color:#888;text-align:right;">'+rows.length+' Einträge</div>';
-    }
-    html+='</div>';
-  });
-  if(dataArr.length>1){
-    html='<div style="text-align:center;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #1a2535;"><div style="font-size:16px;font-weight:800;color:#1a2535;">SAMMELAUSDRUCK — '+dataArr.length+' SCHICHTEN</div></div>'+html;
-  }
-  el.innerHTML=html;
-  el.style.display='block';
-}
-
-function clearPrintContent(){
-  var el=document.getElementById('printContent');
-  if(el){el.style.display='none';el.innerHTML='';}
-}
-
-
 function archivePDF(d){
   var orig=localStorage.getItem('denis_protokoll');
   localStorage.setItem('denis_protokoll',JSON.stringify(d));
@@ -2641,50 +2523,6 @@ function renderDashboardChart(rows){
     if(!keys.length){cachePageResources&&cachePageResources();setTimeout(function(){showToast&&showToast('📥 Offline gespeichert ✅');},3000);}
   }).catch(function(){});
 })();
-
-
-// ===== ARCHIVE BULK PRINT =====
-function archiveUpdateSelBar(){
-  var all=document.querySelectorAll('.archiveSel');
-  var checked=document.querySelectorAll('.archiveSel:checked');
-  var selAll=document.getElementById('archiveSelAll');
-  if(selAll)selAll.checked=checked.length===all.length&&all.length>0;
-  // تحديث نص زر الاختيار
-  var selBtn=document.querySelector('#archiveSelBar button');
-  if(selBtn)selBtn.textContent=checked.length>0?'🖨 ('+checked.length+') drucken':'🖨 Auswahl';
-}
-
-function archiveToggleAll(checked){
-  document.querySelectorAll('.archiveSel').forEach(function(cb){cb.checked=checked;});
-  archiveUpdateSelBar();
-}
-
-function archivePrintSelected(){
-  var checked=Array.from(document.querySelectorAll('.archiveSel:checked'));
-  if(!checked.length){showToast('Keine Schichten ausgewählt','error');return;}
-  var dataArr=checked.map(function(cb){
-    try{return JSON.parse(localStorage.getItem(cb.dataset.key));}catch(e){return null;}
-  }).filter(Boolean);
-  if(!dataArr.length)return;
-  if(dataArr.length===1){
-    archivePrint(dataArr[0]);
-  } else {
-    showConfirmDialog(dataArr.length+' Schichten als Sammelausdruck drucken?',function(){
-      buildPrintContent(dataArr);
-      setTimeout(function(){window.print();setTimeout(clearPrintContent,800);},200);
-    });
-  }
-}
-
-function archivePrintAll(){
-  var keys=Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');}).sort();
-  if(!keys.length){showToast('Kein Archiv vorhanden','error');return;}
-  var dataArr=keys.map(function(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}).filter(Boolean);
-  showConfirmDialog('Alle '+dataArr.length+' Schichten drucken?',function(){
-    buildPrintContent(dataArr);
-    setTimeout(function(){window.print();setTimeout(clearPrintContent,800);},200);
-  });
-}
 
 </script>
 <!-- ARCHIVE -->
