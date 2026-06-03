@@ -303,14 +303,38 @@ body.app-ready::before{opacity:0.5;}
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
   /* إخفاء كل الـ overlays والـ panels عند الطباعة */
+  body > *:not(#printContent){display:none!important;}
   #archivePanel,#archiveBg,#arcPrev,#settingsOverlay,#sigOverlay,
   #dashOverlay,#offlineBanner,.modal-overlay,.rep-overlay,
   #pinScreen,#splashScreen,#checkinScreen,
   .bottom-nav,.top-bar,.quick-bar,.kunden-strip{display:none!important;}
   /* إظهار فقط محتوى الطباعة */
-  #printContent{display:block!important;}
+  #printContent{
+    display:block!important;
+    position:static!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    left:0!important;
+    top:0!important;
+    transform:none!important;
+    box-sizing:border-box!important;
+  }
+  #printContent *{
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #printContent table{
+    width:100%!important;
+    table-layout:fixed!important;
+  }
+  #printContent td,#printContent th{
+    word-wrap:break-word!important;
+    overflow-wrap:break-word!important;
+  }
   body{background:white!important;}
-  html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;font-size:8pt!important;}
+  html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;min-width:0!important;font-size:9pt!important;transform:none!important;}
   body::before{display:none!important;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
   .progress-wrap,.autosave-bar,
@@ -1387,12 +1411,12 @@ function archivePrint(d){
 
 function buildPrintContent(dataArr){
   var el=document.getElementById('printContent');
-  if(!el){el=document.createElement('div');el.id='printContent';el.style.cssText='display:none;position:fixed;inset:0;z-index:9999999;background:white;overflow:auto;padding:20px;font-family:DM Sans,sans-serif;';document.body.appendChild(el);}
+  if(!el){el=document.createElement('div');el.id='printContent';el.style.cssText='display:none;';document.body.appendChild(el);}
   var html='';
   dataArr.forEach(function(d,di){
     if(di>0)html+='<div style="page-break-before:always;"></div>';
     var rows=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';});
-    html+='<div style="max-width:700px;margin:0 auto;">';
+    html+='<div style="width:100%;box-sizing:border-box;">';
     html+='<div style="text-align:center;border-bottom:2px solid #1a2535;padding-bottom:12px;margin-bottom:16px;">';
     html+='<div style="font-size:20px;font-weight:800;color:#1a2535;">SICHERHEITSDIENST PROTOKOLL</div>';
     html+='<div style="font-size:13px;color:#555;margin-top:4px;">'+(d.day||'')+' '+( d.date||'')+(d.mitarbeiter?' · 👤 '+d.mitarbeiter:'')+'</div>';
