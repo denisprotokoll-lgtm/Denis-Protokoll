@@ -302,6 +302,7 @@ body.app-ready::before{opacity:0.5;}
 .print-sig-area{display:none;margin-top:20px;border-top:1px solid #ddd;padding-top:16px;}
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  #archivePanel,#archiveBg,#arcPrev{display:none!important;}
   html,body{background:white!important;padding:0!important;margin:0!important;width:100%!important;font-size:8pt!important;}
   body::before{display:none!important;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
@@ -1147,36 +1148,89 @@ function saveData(){
 }
 
 // ===== ARCHIVE =====
+var _arcFilter='all';
 function openArchive(){
+  _arcFilter='all';
   renderArchiveList('');
   document.getElementById('archiveSearch').value='';
   document.getElementById('archivePanel').style.transform='translateX(0)';
   document.getElementById('archiveBg').style.display='block';
+  arcSetFilter('all');
+  updateArcQuickStats();
 }
 
+function arcSetFilter(f){
+  _arcFilter=f;
+  ['all','week','month','danger'].forEach(function(t){
+    var btn=document.getElementById('arcTab_'+t);
+    if(!btn)return;
+    if(t===f){btn.style.background='rgba(232,57,74,0.2)';btn.style.borderColor='rgba(232,57,74,0.4)';btn.style.color='#E8394A';}
+    else{btn.style.background='rgba(255,255,255,0.05)';btn.style.borderColor='rgba(255,255,255,0.1)';btn.style.color='rgba(255,255,255,0.4)';}
+  });
+  renderArchiveList(document.getElementById('archiveSearch').value||'');
+}
+function updateArcQuickStats(){
+  var el=document.getElementById('arcQuickStats');if(!el)return;
+  var keys=Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');});
+  var totalRows=0,dangerTotal=0;
+  keys.forEach(function(k){
+    try{
+      var d=JSON.parse(localStorage.getItem(k));
+      var rows=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';});
+      totalRows+=rows.length;
+      dangerTotal+=rows.filter(function(r){return(r.n||[]).some(function(n){return(typeof DANGER_EVENTS!=='undefined')&&DANGER_EVENTS.indexOf(n.ev)>=0;});}).length;
+    }catch(e){}
+  });
+  el.innerHTML=
+    '<div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:6px;text-align:center;">'+
+      '<div style="font-family:\'Syne\',sans-serif;font-size:15px;font-weight:800;color:white;">'+keys.length+'</div>'+
+      '<div style="font-size:8px;color:rgba(255,255,255,0.3);">SCHICHTEN</div>'+
+    '</div>'+
+    '<div style="background:rgba(76,186,107,0.1);border-radius:8px;padding:6px;text-align:center;">'+
+      '<div style="font-family:\'Syne\',sans-serif;font-size:15px;font-weight:800;color:#4cba6b;">'+totalRows+'</div>'+
+      '<div style="font-size:8px;color:rgba(255,255,255,0.3);">EINTRÄGE</div>'+
+    '</div>'+
+    '<div style="background:rgba(232,57,74,0.1);border-radius:8px;padding:6px;text-align:center;">'+
+      '<div style="font-family:\'Syne\',sans-serif;font-size:15px;font-weight:800;color:#E8394A;">'+dangerTotal+'</div>'+
+      '<div style="font-size:8px;color:rgba(255,255,255,0.3);">VORFÄLLE</div>'+
+    '</div>';
+}
+function archiveExportAll(){
+  var keys=Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');});
+  if(!keys.length){showToast('Kein Archiv vorhanden','error');return;}
+  var data={exportDate:new Date().toISOString(),count:keys.length,entries:{}};
+  keys.forEach(function(k){try{data.entries[k]=JSON.parse(localStorage.getItem(k));}catch(e){}});
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='Denis_Archiv_'+new Date().toISOString().split('T')[0]+'.json';a.click();
+  URL.revokeObjectURL(url);showToast('📤 Archiv exportiert!','success');
+}
 function renderArchiveList(query){
   var list=document.getElementById('archiveList');
   list.innerHTML='';
   var keys=Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');}).sort().reverse();
   
-  // إحصاء سريع
   var statsEl=document.getElementById('archiveStats');
   if(statsEl){
     var totalRows=0;
     keys.forEach(function(k){try{var d=JSON.parse(localStorage.getItem(k));totalRows+=(d.rows||[]).length;}catch(e){}});
-    statsEl.textContent=keys.length+' Schichten · '+totalRows+' Einträge gesamt';
+    statsEl.textContent=keys.length+' Schichten · '+totalRows+' Einträge';
   }
 
   if(!keys.length){
-    list.innerHTML='<div style="text-align:center;padding:40px 16px;"><div style="font-size:32px;margin-bottom:8px;">📭</div><div style="color:rgba(255,255,255,0.3);font-size:12px;">Kein Archiv vorhanden</div></div>';
+    list.innerHTML='<div style="text-align:center;padding:40px 16px;"><div style="font-size:32px;margin-bottom:8px;">📭</div><div style="color:rgba(255,255,255,0.3);font-size:12px;">Noch keine archivierten Schichten</div></div>';
     return;
   }
 
   var q=(query||'').toLowerCase().trim();
+  var now=Date.now();
   var filtered=keys.filter(function(key){
-    if(!q)return true;
     try{
       var d=JSON.parse(localStorage.getItem(key));
+      if(_arcFilter==='week'){var ts=d.savedAt?new Date(d.savedAt).getTime():0;if(now-ts>7*24*3600000)return false;}
+      if(_arcFilter==='month'){var ts=d.savedAt?new Date(d.savedAt).getTime():0;if(now-ts>30*24*3600000)return false;}
+      if(_arcFilter==='danger'){var hd=(d.rows||[]).some(function(r){return(r.n||[]).some(function(n){return(typeof DANGER_EVENTS!=='undefined')&&DANGER_EVENTS.indexOf(n.ev)>=0;});});if(!hd)return false;}
+      if(!q)return true;
       var locs=(d.rows||[]).map(function(r){return r.k||'';}).join(' ').toLowerCase();
       var dayDate=((d.day||'')+' '+(d.date||'')).toLowerCase();
       var worker=(d.mitarbeiter||'').toLowerCase();
@@ -1185,52 +1239,148 @@ function renderArchiveList(query){
   });
 
   if(!filtered.length){
-    list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;font-size:12px;">Keine Ergebnisse für "'+query+'"</div>';
+    list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.3);padding:30px;font-size:12px;">'+(q?'Keine Ergebnisse für "'+q+'"':'Keine Schichten in diesem Zeitraum')+'</div>';
     return;
   }
 
   filtered.forEach(function(key){
     try{
       var d=JSON.parse(localStorage.getItem(key));if(!d)return;
-      
-      // بيانات مُحسَّنة
-      var locs=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';}).map(function(r){return r.k;});
-      var uniqueLocs=[...new Set(locs)];
-      var rowCount=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';}).length;
+      var rows=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';});
+      var uniqueLocs=[...new Set(rows.map(function(r){return r.k;}))];
+      var rowCount=rows.length;
       var worker=d.mitarbeiter||'';
-      var shiftStart=d.shiftStart||'';
-      var shiftEnd=d.shiftEnd||'';
-      var savedAt=d.savedAt?new Date(d.savedAt).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'';
-      
-      // تلوين بحسب حجم الوردية
-      var accent=rowCount>10?'#E8394A':rowCount>5?'#f5a623':'#4cba6b';
+      var protoNr=d.protokollNr||'';
+      var dangerRows=rows.filter(function(r){return(r.n||[]).some(function(n){return(typeof DANGER_EVENTS!=='undefined')&&DANGER_EVENTS.indexOf(n.ev)>=0;});}).length;
+      var totalEvents=rows.reduce(function(s,r){return s+(r.n||[]).filter(function(n){return n.ev&&n.ev!=='— Ereignis —'&&n.ev!=='Freitext…';}).reduce(function(a,n){return a+(n.c||1);},0);},0);
+      var accent=dangerRows>0?'#E8394A':rowCount>10?'#f5a623':'#4cba6b';
+      var locStr=uniqueLocs.slice(0,2).join(', ')+(uniqueLocs.length>2?' +'+(uniqueLocs.length-2):'');
 
       var card=document.createElement('div');
-      card.style.cssText='background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;overflow:hidden;transition:border-color 0.2s;margin-bottom:2px;';
+      card.id='arcCard_'+key;
+      var isSelected=_arcSelected.indexOf(key)>=0;
+      card.style.cssText='background:'+(isSelected?'rgba(232,57,74,0.12)':'rgba(255,255,255,0.04)')+';border:1px solid '+(isSelected?'rgba(232,57,74,0.5)':'rgba(255,255,255,0.07)')+';border-left:3px solid '+accent+';border-radius:11px;overflow:hidden;transition:background 0.2s,border-color 0.2s;';
+      if(!_arcSelectMode){
+        card.onmouseover=function(){if(_arcSelected.indexOf(key)<0)this.style.background='rgba(255,255,255,0.07)';};
+        card.onmouseout=function(){if(_arcSelected.indexOf(key)<0)this.style.background='rgba(255,255,255,0.04)';};
+      }
+      if(_arcSelectMode){card.onclick=function(e){e.stopPropagation();arcToggleItem(key);};}
 
-      var locStr=uniqueLocs.slice(0,3).join(', ')+(uniqueLocs.length>3?' +'+( uniqueLocs.length-3):'');
-
+      var checkMark=_arcSelectMode?
+        '<div style="position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;border:2px solid '+(isSelected?'#E8394A':'rgba(255,255,255,0.3)')+';background:'+(isSelected?'#E8394A':'transparent')+';display:flex;align-items:center;justify-content:center;font-size:11px;">'+(isSelected?'✓':'')+'</div>':
+        '';
+      card.style.position='relative';
       card.innerHTML=
-        '<div onclick="showArchivePreview(JSON.parse(localStorage.getItem(\''+key+'\')))" style="padding:11px 12px;cursor:pointer;">'+
-          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;">'+
-            '<div style="font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:white;">'+(d.day||'')+' '+(d.date||'')+'</div>'+
-            '<span style="background:'+accent+'22;color:'+accent+';border:1px solid '+accent+'44;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;">'+rowCount+' ×</span>'+
+        '<div style="padding:10px 12px;cursor:pointer;'+(isSelected?'opacity:1':'')+'">'+
+          checkMark+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'+
+            '<div style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:800;color:white;">'+(d.day||'')+' '+(d.date||'')+'</div>'+
+            '<div style="display:flex;gap:4px;">'+
+              (dangerRows>0?'<span style="background:rgba(232,57,74,0.2);color:#E8394A;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;">⚠️ '+dangerRows+'</span>':'')+
+              '<span style="background:'+accent+'18;color:'+accent+';font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px;">'+rowCount+'×</span>'+
+            '</div>'+
           '</div>'+
-          (locStr?'<div style="font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:4px;">📍 '+locStr+'</div>':'')+
-          '<div style="display:flex;gap:10px;font-size:10px;color:rgba(255,255,255,0.25);">'+
+          (locStr?'<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:3px;">📍 '+locStr+'</div>':'')+
+          '<div style="display:flex;gap:8px;font-size:9px;color:rgba(255,255,255,0.2);">'+
+            (protoNr?'<span>📋 '+protoNr+'</span>':'')+
             (worker?'<span>👤 '+worker+'</span>':'')+
-            (savedAt?'<span>💾 '+savedAt+'</span>':'')+
+            (totalEvents?'<span>📝 '+totalEvents+'</span>':'')+
           '</div>'+
         '</div>'+
-        '<div style="display:flex;border-top:1px solid rgba(255,255,255,0.06);">'+
-          '<button onclick="archivePrint(JSON.parse(localStorage.getItem(\''+key+'\')))" style="flex:1;padding:8px;border:none;background:transparent;color:rgba(232,57,74,0.85);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);">🖨 Drucken</button>'+
-          '<button onclick="archivePDF(JSON.parse(localStorage.getItem(\''+key+'\')))" style="flex:1;padding:8px;border:none;background:transparent;color:rgba(100,160,230,0.85);font-size:11px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.06);">📄 PDF</button>'+
-          '<button onclick="archiveDeleteOne(\''+key+'\')" style="padding:8px 14px;border:none;background:transparent;color:rgba(232,57,74,0.4);font-size:13px;cursor:pointer;">🗑</button>'+
-        '</div>';
-
+        (_arcSelectMode?'':
+          '<div style="display:flex;border-top:1px solid rgba(255,255,255,0.05);">'+
+            '<button onclick="showArchivePreview(JSON.parse(localStorage.getItem(\''+key+'\')))" style="flex:1;padding:7px;border:none;background:transparent;color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.05);">👁</button>'+
+            '<button onclick="archivePrint(JSON.parse(localStorage.getItem(\''+key+'\')))" style="flex:1;padding:7px;border:none;background:transparent;color:rgba(232,57,74,0.85);font-size:10px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.05);">🖨</button>'+
+            '<button onclick="archivePDF(JSON.parse(localStorage.getItem(\''+key+'\')))" style="flex:1;padding:7px;border:none;background:transparent;color:rgba(100,160,230,0.85);font-size:10px;font-weight:700;cursor:pointer;border-right:1px solid rgba(255,255,255,0.05);">📄</button>'+
+            '<button onclick="archiveDeleteOne(\''+key+'\')" style="padding:7px 11px;border:none;background:transparent;color:rgba(232,57,74,0.4);font-size:12px;cursor:pointer;">🗑</button>'+
+          '</div>'
+        );
       list.appendChild(card);
     }catch(e){}
   });
+}
+var _arcSelectMode=false;
+var _arcSelected=[];
+
+function arcToggleSelectMode(){
+  _arcSelectMode=!_arcSelectMode;
+  _arcSelected=[];
+  var btn=document.getElementById('arcSelectBtn');
+  var bar=document.getElementById('arcSelectBar');
+  if(_arcSelectMode){
+    btn.style.background='rgba(232,57,74,0.2)';
+    btn.style.borderColor='rgba(232,57,74,0.4)';
+    btn.style.color='#E8394A';
+    bar.style.display='block';
+  } else {
+    btn.style.background='rgba(255,255,255,0.07)';
+    btn.style.borderColor='rgba(255,255,255,0.15)';
+    btn.style.color='rgba(255,255,255,0.5)';
+    bar.style.display='none';
+  }
+  renderArchiveList(document.getElementById('archiveSearch').value||'');
+  arcUpdateSelectCount();
+}
+
+function arcCancelSelect(){
+  _arcSelectMode=false;
+  _arcSelected=[];
+  var btn=document.getElementById('arcSelectBtn');
+  var bar=document.getElementById('arcSelectBar');
+  btn.style.background='rgba(255,255,255,0.07)';
+  btn.style.borderColor='rgba(255,255,255,0.15)';
+  btn.style.color='rgba(255,255,255,0.5)';
+  bar.style.display='none';
+  renderArchiveList(document.getElementById('archiveSearch').value||'');
+}
+
+function arcToggleItem(key){
+  var idx=_arcSelected.indexOf(key);
+  if(idx>=0){_arcSelected.splice(idx,1);}
+  else{_arcSelected.push(key);}
+  arcUpdateSelectCount();
+  // Update card visuals
+  var card=document.getElementById('arcCard_'+key);
+  if(card){
+    if(_arcSelected.indexOf(key)>=0){
+      card.style.background='rgba(232,57,74,0.12)';
+      card.style.borderColor='rgba(232,57,74,0.5)';
+    } else {
+      card.style.background='rgba(255,255,255,0.04)';
+      card.style.borderColor='rgba(255,255,255,0.07)';
+    }
+  }
+}
+
+function arcUpdateSelectCount(){
+  var el=document.getElementById('arcSelectCount');
+  if(!el)return;
+  var n=_arcSelected.length;
+  el.textContent=n>0?(n+' Schicht'+(n>1?'en':'')+' ausgewählt'):'Schichten antippen zum Auswählen';
+  var printBtn=document.querySelector('#arcSelectBar button');
+  if(printBtn)printBtn.style.opacity=n>0?'1':'0.4';
+}
+
+function arcPrintSelected(){
+  if(!_arcSelected.length){showToast('Keine Schichten ausgewählt','error');return;}
+  var keys=[].concat(_arcSelected);
+  var idx=0;
+  function printNext(){
+    if(idx>=keys.length){
+      arcCancelSelect();
+      return;
+    }
+    var key=keys[idx++];
+    var raw=localStorage.getItem(key);
+    if(!raw){printNext();return;}
+    try{
+      var d=JSON.parse(raw);
+      archivePrint(d);
+      // wait for print dialog to close then continue
+      setTimeout(printNext, 2500);
+    }catch(e){printNext();}
+  }
+  printNext();
 }
 
 function filterArchive(q){renderArchiveList(q);}
@@ -2527,20 +2677,47 @@ function renderDashboardChart(rows){
 </script>
 <!-- ARCHIVE -->
 <div id="archiveBg" onclick="closeArchive()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999989;"></div>
-<div id="archivePanel" style="position:fixed;left:0;top:0;bottom:0;width:290px;max-width:92vw;background:#1a2535;z-index:9999990;transform:translateX(-100%);transition:transform 0.3s ease;display:flex;flex-direction:column;overflow:hidden;">
-  <div style="background:#243447;padding:14px 16px 10px;flex-shrink:0;">
+<div id="archivePanel" style="position:fixed;left:0;top:0;bottom:0;width:310px;max-width:94vw;background:#1a2535;z-index:9999990;transform:translateX(-100%);transition:transform 0.3s ease;display:flex;flex-direction:column;overflow:hidden;">
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#1e2d3d,#243447);padding:44px 14px 10px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.07);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;">📁 Archiv</div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button onclick="archiveDeleteAll()" title="Alle löschen" style="background:rgba(232,57,74,0.15);border:1px solid rgba(232,57,74,0.3);color:rgba(232,57,74,0.8);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">🗑 Alle</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">📁</span>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;">Archiv</div>
+          <div id="archiveStats" style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-top:1px;"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:5px;align-items:center;">
+        <button onclick="arcToggleSelectMode()" id="arcSelectBtn" title="Mehrfachauswahl" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">☑</button>
+        <button onclick="archiveExportAll()" title="Exportieren" style="background:rgba(21,101,192,0.2);border:1px solid rgba(21,101,192,0.4);color:rgba(100,180,255,0.9);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">📤</button>
+        <button onclick="archiveDeleteAll()" title="Alle löschen" style="background:rgba(232,57,74,0.15);border:1px solid rgba(232,57,74,0.3);color:rgba(232,57,74,0.8);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">🗑</button>
         <button onclick="closeArchive()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;">✕</button>
       </div>
     </div>
-    <input id="archiveSearch" type="text" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="🔍 Suchen…" oninput="filterArchive(this.value)"
-      style="width:100%;padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.07);color:white;font-size:12px;outline:none;box-sizing:border-box;margin-bottom:8px;">
-    <div id="archiveStats" style="font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;text-align:right;padding-bottom:2px;"></div>
+    <!-- Search -->
+    <input id="archiveSearch" type="text" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="🔍 Datum, Standort, Mitarbeiter…" oninput="filterArchive(this.value)"
+      style="width:100%;padding:8px 11px;border-radius:9px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.07);color:white;font-size:12px;outline:none;box-sizing:border-box;margin-bottom:8px;">
+    <!-- Quick Stats -->
+    <div id="arcQuickStats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:2px;"></div>
   </div>
-  <div id="archiveList" style="flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px;"></div>
+  <!-- Filter Tabs -->
+  <div style="display:flex;gap:3px;padding:8px 10px 4px;flex-shrink:0;background:#1a2535;">
+    <button onclick="arcSetFilter('all')" id="arcTab_all" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,0.1);background:rgba(232,57,74,0.2);border-color:rgba(232,57,74,0.4);color:#E8394A;font-size:9px;font-weight:700;cursor:pointer;">Alle</button>
+    <button onclick="arcSetFilter('week')" id="arcTab_week" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;cursor:pointer;">7 Tage</button>
+    <button onclick="arcSetFilter('month')" id="arcTab_month" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;cursor:pointer;">30 Tage</button>
+    <button onclick="arcSetFilter('danger')" id="arcTab_danger" style="flex:1;padding:5px;border-radius:7px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;cursor:pointer;">⚠️</button>
+  </div>
+  <!-- List -->
+  <!-- Multi-select bar -->
+  <div id="arcSelectBar" style="display:none;padding:8px;border-top:1px solid rgba(255,255,255,0.08);background:#1a2535;flex-shrink:0;">
+    <div style="display:flex;gap:6px;align-items:center;">
+      <div id="arcSelectCount" style="flex:1;font-size:10px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.5px;"></div>
+      <button onclick="arcPrintSelected()" style="padding:7px 12px;border:none;border-radius:8px;background:rgba(232,57,74,0.2);border:1px solid rgba(232,57,74,0.4);color:#E8394A;font-size:11px;font-weight:700;cursor:pointer;">🖨 Drucken</button>
+      <button onclick="arcCancelSelect()" style="padding:7px 10px;border:none;border-radius:8px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;">✕</button>
+    </div>
+  </div>
+  <div id="archiveList" style="flex:1;overflow-y:auto;padding:6px 8px 8px;display:flex;flex-direction:column;gap:5px;"></div>
 </div>
 </body>
 </html>
