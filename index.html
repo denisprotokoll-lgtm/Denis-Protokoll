@@ -328,23 +328,26 @@ body.app-ready::before{opacity:0.5;}
 // ===== OFFLINE SUPPORT =====
 (function() {
 
-  // 1. Web App Manifest
+
+
+  // 2. Web App Manifest
   function setupManifest() {
     var iconHref = '';
     var appIcon = document.getElementById('appIcon');
     if (appIcon) iconHref = appIcon.href;
     var manifest = {
       name: "Denis Protokoll",
-      short_name: "Check-in",
-      description: "Sicherheitsdienst Protokoll App",
+      short_name: "Denis",
+      description: "Sicherheitsdienst Tagesbericht & Vorfallprotokoll",
       start_url: "./",
       display: "standalone",
       background_color: "#1a2535",
-      theme_color: "#3d5268",
+      theme_color: "#E8394A",
       orientation: "portrait",
       icons: [
-        { src: iconHref, sizes: "180x180", type: "image/png" },
-        { src: iconHref, sizes: "192x192", type: "image/png" }
+        { src: iconHref, sizes: "180x180", type: "image/png", purpose: "any maskable" },
+        { src: iconHref, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+        { src: iconHref, sizes: "512x512", type: "image/png", purpose: "any maskable" }
       ]
     };
     var blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
@@ -354,21 +357,7 @@ body.app-ready::before{opacity:0.5;}
     document.head.appendChild(link);
   }
 
-  // 2. Cache الصفحة الكاملة باستخدام Cache API مباشرة
-  function cachePageResources() {
-    if (!('caches' in window)) return;
-    var CACHE = 'denis-v1';
-    caches.open(CACHE).then(function(cache) {
-      // كيش الصفحة الحالية
-      cache.add(window.location.href).catch(function(){});
-      // كيش الخطوط
-      cache.add('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap').catch(function(){});
-      // كيش jsPDF
-      cache.add('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js').catch(function(){});
-    });
-  }
-
-  // 3. إشعار الأوفلاين
+  // 3. Offline banner
   function updateOnlineStatus() {
     var banner = document.getElementById('offlineBanner');
     if (!banner) return;
@@ -386,9 +375,10 @@ body.app-ready::before{opacity:0.5;}
 
   document.addEventListener('DOMContentLoaded', function() {
     setupManifest();
-    cachePageResources();
     updateOnlineStatus();
   });
+
+
 
 })();
 </script>
@@ -838,9 +828,11 @@ function checkPin(){
   var master=atob('MTE4Nw==');
   if(pinEntry===saved||pinEntry===master){
     if(pinEntry===master){localStorage.removeItem('denis_pin');}
+    auditLog('LOGIN','Anmeldung erfolgreich');
     showPinGreeting();
   }
   else{
+    auditLog('LOGIN_FAIL','Falscher PIN eingegeben');
     for(var i=0;i<4;i++)document.getElementById('pd'+i).classList.add('error');
     document.getElementById('pinError').classList.add('show');
     document.getElementById('pinScreen').style.animation='shake 0.4s ease';
@@ -1018,6 +1010,14 @@ function colorTime(inp){
   var v=inp.value;if(!v)return;var h=parseInt(v.split(':')[0]);
   inp.classList.remove('t-night','t-day','t-eve');
   if(h>=6&&h<17)inp.classList.add('t-day');else if(h>=17&&h<22)inp.classList.add('t-eve');else inp.classList.add('t-night');
+  // Audit: detect manual time edit
+  var isBeginn=inp.id&&inp.id.startsWith('bd-');
+  var type=isBeginn?'Beginn':'Ende';
+  var rowId=inp.id?inp.id.replace('bd-','').replace('ed-',''):'';
+  var kundeEl=document.getElementById('klabel-'+rowId);
+  var kunde=kundeEl?kundeEl.textContent:'';
+  auditLog('TIME_EDIT','Zeitänderung '+type+': '+kunde+' → '+v);
+  saveData();
 }
 function setNow(id){var el=document.getElementById(id);if(el){el.value=nowHM();colorTime(el);}}
 
@@ -1040,7 +1040,7 @@ function addRow(data){
     +'<span class="row-num">#'+String(id).padStart(2,'0')+'</span>'
     +'<select id="ksel-'+id+'" onchange="onKundeChange(this,'+id+')" style="display:'+(isCustom?'none':'block')+'">'+kOpts+'</select>'
     +'<div class="kunde-label" id="klabel-'+id+'" style="display:'+(isCustom?'none':'block')+'">'+(k==='— Standort —'?'— Standort —':k)+'</div>'
-    +'<input class="kunde-custom" id="kcust-'+id+'" type="text" value="'+(isCustom?k:'')+'" style="display:'+(isCustom?'block':'none')+'" oninput="updateSummary();document.getElementById(\'klabel-'+id+'\').textContent=this.value||\'— Standort —\'">'
+    +'<input class="kunde-custom" id="kcust-'+id+'" type="text" value="'+(isCustom?k:'')+'" style="display:'+(isCustom?'block':'none')+'" oninput="auditKundeEdit();updateSummary();document.getElementById(\'klabel-'+id+'\').textContent=this.value||\'— Standort —\'">'
     +'<span class="kunde-back no-print" id="kback-'+id+'" style="display:'+(isCustom?'inline':'none')+'" onclick="resetKunde('+id+')">↩</span>'
     +'</div>'
     +'<div class="cell cell-time">'
@@ -2183,6 +2183,7 @@ function ciIn(){
 }
 function ciOut(){
   if(!ciSelected)return;var time=nowHM();
+  auditLog('CHECKOUT','Ausgang: '+ciSelected+' um '+time);
   localStorage.setItem('denis_last_kunde',ciSelected);
   var log=ciGetLog();
   var snapshot=JSON.stringify(log);
@@ -2837,6 +2838,34 @@ function renderDashboardChart(rows){
 })();
 
 
+// ===== AUDIT LOG =====
+var AUDIT_KEY='denis_audit_log';
+var AUDIT_MAX_DAYS=7;
+
+function auditLog(action, detail){
+  var logs=auditGetAll();
+  logs.push({ts:Date.now(), action:action, detail:detail||''});
+  // Keep only last 7 days
+  var cutoff=Date.now()-(AUDIT_MAX_DAYS*24*3600*1000);
+  logs=logs.filter(function(l){return l.ts>cutoff;});
+  try{localStorage.setItem(AUDIT_KEY,JSON.stringify(logs));}catch(e){}
+}
+
+function auditGetAll(){
+  try{return JSON.parse(localStorage.getItem(AUDIT_KEY)||'[]');}catch(e){return[];}
+}
+
+// Track app open
+window.addEventListener('load',function(){
+  setTimeout(function(){auditLog('APP_OPEN','Anwendung geöffnet');},1500);
+});
+
+// Track app close/hide
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden'){auditLog('APP_CLOSE','Anwendung geschlossen');}
+});
+
+function auditKundeEdit(){auditLog('KUNDE_EDIT','Standort geändert');}
 // ===== MANAGER TAP TRIGGER =====
 var _mgrTapCount=0;
 var _mgrTapTimer=null;
@@ -2973,27 +3002,37 @@ function mgrLoadStats(){
 }
 function mgrLoadActivity(){
   var el=document.getElementById('mgrActivityLog');if(!el)return;
-  var log=ciGetLog();
-  if(!log||!log.length){
+  var logs=auditGetAll().slice().reverse().slice(0,50);
+  if(!logs.length){
     el.innerHTML='<div style="padding:16px;text-align:center;color:rgba(255,255,255,0.3);font-size:12px;">Keine Aktivität aufgezeichnet</div>';
     return;
   }
-  // Show last 30 entries newest first
-  var entries=log.slice().reverse().slice(0,30);
-  el.innerHTML=entries.map(function(e,i){
-    var isIn=e.type==='in';
-    var color=isIn?'#4cba6b':'#E8394A';
-    var icon=isIn?'→':'←';
+  var iconMap={
+    'APP_OPEN':  {icon:'📱',color:'#64b4ff',label:'App geöffnet'},
+    'APP_CLOSE': {icon:'🌙',color:'rgba(255,255,255,0.3)',label:'App geschlossen'},
+    'LOGIN':     {icon:'🔓',color:'#4cba6b',label:'Anmeldung'},
+    'LOGIN_FAIL':{icon:'🔒',color:'#E8394A',label:'Falscher PIN'},
+    'CHECKIN':   {icon:'→',color:'#4cba6b',label:'Eingang'},
+    'CHECKOUT':  {icon:'←',color:'#f5a623',label:'Ausgang'},
+    'TIME_EDIT': {icon:'✏️',color:'#a78bfa',label:'Zeitänderung'},
+    'KUNDE_EDIT':{icon:'📍',color:'#64b4ff',label:'Standort'},
+  };
+  el.innerHTML='';
+  logs.forEach(function(e,i){
+    var m=iconMap[e.action]||{icon:'•',color:'rgba(255,255,255,0.3)',label:e.action};
     var ts=e.ts?new Date(e.ts).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
-    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);'+(i===0?'border-radius:12px 12px 0 0;':'')+'">'+
-      '<span style="color:'+color+';font-size:16px;width:20px;text-align:center;">'+icon+'</span>'+
-      '<div style="flex:1;">'+
-        '<div style="font-size:12px;font-weight:700;color:white;">'+(e.kunde||'?')+'</div>'+
-        '<div style="font-size:9px;color:rgba(255,255,255,0.3);">'+ts+'</div>'+
+    var row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);';
+    if(i===0)row.style.borderRadius='12px 12px 0 0';
+    row.innerHTML=
+      '<span style="color:'+m.color+';font-size:15px;width:22px;text-align:center;">'+m.icon+'</span>'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:11px;font-weight:700;color:white;">'+m.label+'</div>'+
+        (e.detail?'<div style="font-size:9px;color:rgba(255,255,255,0.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e.detail+'</div>':'')+
       '</div>'+
-      '<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;background:'+color+'18;color:'+color+';">'+(isIn?'EIN':'AUS')+'</span>'+
-    '</div>';
-  }).join('');
+      '<span style="font-size:9px;color:rgba(255,255,255,0.25);white-space:nowrap;">'+ts+'</span>';
+    el.appendChild(row);
+  });
 }
 
 function mgrLoadShiftSettings(){
