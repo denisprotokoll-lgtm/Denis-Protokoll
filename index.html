@@ -651,7 +651,7 @@ body.app-ready::before{opacity:0.5;}
   <div class="card-header">
     <div class="header-left">
       <div class="header-eyebrow">Tagesbericht · Vorfallprotokoll</div>
-      <div class="header-title">Denis <span>Protokoll</span></div>
+      <div class="header-title" id="headerTitle">Denis <span>Protokoll</span></div>
       <div class="shift-day-info no-print" id="shiftDayInfo">📅 Schicht: —</div>
       <div class="progress-wrap no-print">
         <span class="progress-label">19:45 → 07:00</span>
@@ -1566,7 +1566,7 @@ function showArchivePreview(d){
     '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">'+
       '<div>'+
         '<div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:3px;">ARCHIV</div>'+
-        '<div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:white;margin-top:4px;">'+(d.day||'')+' '+(d.date||'')+'</div>'+
+        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:white;margin-top:4px;">'+(d.day||'')+' '+(d.date||'')+'</div>'+
         (d.mitarbeiter?'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;">👤 '+d.mitarbeiter+'</div>':'')+
       '</div>'+
       '<div style="display:flex;gap:6px;">'+
@@ -1578,19 +1578,19 @@ function showArchivePreview(d){
     // شريط الإحصاءات
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">'+
       '<div style="background:rgba(61,82,104,0.4);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:white;">'+validRows.length+'</div>'+
+        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:white;">'+validRows.length+'</div>'+
         '<div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;">BESUCHE</div>'+
       '</div>'+
       '<div style="background:rgba(76,186,107,0.15);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:#4cba6b;">'+allEvents.reduce(function(s,n){return s+(n.c||1);},0)+'</div>'+
+        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#4cba6b;">'+allEvents.reduce(function(s,n){return s+(n.c||1);},0)+'</div>'+
         '<div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;">EREIGNISSE</div>'+
       '</div>'+
       '<div style="background:rgba(232,57,74,0.15);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:#E8394A;">'+dangerCount+'</div>'+
+        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#E8394A;">'+dangerCount+'</div>'+
         '<div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;">VORFÄLLE</div>'+
       '</div>'+
       '<div style="background:rgba(245,166,35,0.15);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:#f5a623;">'+avgMin+'m</div>'+
+        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#f5a623;">'+avgMin+'m</div>'+
         '<div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;">Ø DAUER</div>'+
       '</div>'+
     '</div>'+
@@ -2528,7 +2528,7 @@ function ciSOS(){
     }).join('');
     return header+items;
   }).join('');
-  overlay.innerHTML='<div style="width:100%;max-width:480px;padding:0 16px;max-height:80vh;overflow-y:auto;"><div style="font-family:\'Syne\',sans-serif;font-size:16px;font-weight:800;color:white;text-align:center;margin-bottom:12px;padding-top:8px;">🚨 SOS – Ereignis wählen</div>'+btns+'<button onclick="this.closest(\'[style*=inset]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">Abbrechen</button></div>';
+  overlay.innerHTML='<div style="width:100%;max-width:480px;padding:0 16px;max-height:80vh;overflow-y:auto;"><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:white;text-align:center;margin-bottom:12px;padding-top:8px;">🚨 SOS – Ereignis wählen</div>'+btns+'<button onclick="this.closest(\'[style*=inset]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">Abbrechen</button></div>';
   document.body.appendChild(overlay);
 }
 function ciSOSSelect(ereignis,overlay){
@@ -2836,6 +2836,212 @@ function renderDashboardChart(rows){
   }).catch(function(){});
 })();
 
+
+// ===== MANAGER TAP TRIGGER =====
+var _mgrTapCount=0;
+var _mgrTapTimer=null;
+function mgrTitleTap(){
+  _mgrTapCount++;
+  if(_mgrTapTimer)clearTimeout(_mgrTapTimer);
+  if(_mgrTapCount>=3){
+    _mgrTapCount=0;
+    openManagerLogin();
+    return;
+  }
+  _mgrTapTimer=setTimeout(function(){_mgrTapCount=0;},800);
+}
+// Attach to header title after DOM ready
+window.addEventListener('load',function(){
+  var el=document.getElementById('headerTitle');
+  if(!el)return;
+  el.addEventListener('click',mgrTitleTap);
+  el.addEventListener('touchend',function(e){e.preventDefault();mgrTitleTap();});
+  el.style.cursor='default';
+  el.style.userSelect='none';
+  // Also attach to child span
+  var sp=el.querySelector('span');
+  if(sp){
+    sp.addEventListener('click',function(e){e.stopPropagation();mgrTitleTap();});
+    sp.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();mgrTitleTap();});
+  }
+});
+
+// ===== MANAGER =====
+var _mgrPinInput='';
+var MANAGER_PIN_KEY='denis_manager_pin';
+
+function getManagerPin(){
+  return localStorage.getItem(MANAGER_PIN_KEY)||'3721';
+}
+
+function openManagerLogin(){
+  _mgrPinInput='';
+  updateMgrDots();
+  document.getElementById('managerPinError').textContent='';
+  document.getElementById('managerLoginOverlay').style.display='flex';
+}
+
+function closeManagerLogin(){
+  _mgrPinInput='';
+  document.getElementById('managerLoginOverlay').style.display='none';
+}
+
+function mgrPin(d){
+  if(_mgrPinInput.length>=4)return;
+  _mgrPinInput+=d;
+  updateMgrDots();
+  if(_mgrPinInput.length===4){
+    setTimeout(function(){
+      if(_mgrPinInput===getManagerPin()){
+        closeManagerLogin();
+        openManagerPanel();
+      } else {
+        document.getElementById('managerPinError').textContent='Falscher PIN';
+        _mgrPinInput='';
+        updateMgrDots();
+      }
+    },150);
+  }
+}
+
+function mgrPinClear(){
+  _mgrPinInput=_mgrPinInput.slice(0,-1);
+  updateMgrDots();
+  document.getElementById('managerPinError').textContent='';
+}
+
+function updateMgrDots(){
+  for(var i=0;i<4;i++){
+    var dot=document.getElementById('mgrdot'+i);
+    if(!dot)continue;
+    dot.style.background=i<_mgrPinInput.length?'#E8394A':'rgba(255,255,255,0.15)';
+    dot.style.transform=i<_mgrPinInput.length?'scale(1.2)':'scale(1)';
+  }
+}
+
+function openManagerPanel(){
+  document.getElementById('managerPanel').style.display='block';
+  mgrLoadStats();
+  mgrLoadActivity();
+  mgrLoadShiftSettings();
+}
+
+function closeManagerPanel(){
+  document.getElementById('managerPanel').style.display='none';
+}
+
+function mgrLoadStats(){
+  var el=document.getElementById('mgrStats');if(!el)return;
+  var arcKeys=Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');});
+  var totalRows=0,dangerTotal=0,totalEvents=0;
+  arcKeys.forEach(function(k){
+    try{
+      var d=JSON.parse(localStorage.getItem(k));
+      var rows=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';});
+      totalRows+=rows.length;
+      rows.forEach(function(r){
+        (r.n||[]).forEach(function(n){
+          if(n.ev&&n.ev!=='— Ereignis —'&&n.ev!=='Freitext…'){
+            totalEvents+=(n.c||1);
+            if(DANGER_EVENTS.indexOf(n.ev)>=0)dangerTotal+=(n.c||1);
+          }
+        });
+      });
+    }catch(e){}
+  });
+  var lastBackup=localStorage.getItem('denis_last_backup');
+  var backupStr=lastBackup?new Date(parseInt(lastBackup)).toLocaleDateString('de-DE'):'Nie';
+  var worker=localStorage.getItem('denis_mitarbeiter')||'—';
+  var stats=[
+    {icon:'📋',val:arcKeys.length,lbl:'Schichten',color:'#4cba6b'},
+    {icon:'👣',val:totalRows,lbl:'Einträge',color:'#64b4ff'},
+    {icon:'⚠️',val:dangerTotal,lbl:'Vorfälle',color:'#E8394A'},
+    {icon:'📝',val:totalEvents,lbl:'Ereignisse',color:'#f5a623'},
+    {icon:'👤',val:worker,lbl:'Mitarbeiter',color:'#a78bfa'},
+    {icon:'💾',val:backupStr,lbl:'Letztes Backup',color:'#4cba6b'},
+  ];
+  el.innerHTML='';
+  stats.forEach(function(s){
+    var card=document.createElement('div');
+    card.style.cssText='background:#1a2535;border-radius:12px;padding:12px;border-left:3px solid '+s.color+';';
+    var iconEl=document.createElement('div');iconEl.style.cssText='font-size:10px;margin-bottom:4px;';iconEl.textContent=s.icon;
+    var valEl=document.createElement('div');valEl.style.cssText='font-size:16px;font-weight:800;color:white;';valEl.textContent=s.val;
+    var lblEl=document.createElement('div');lblEl.style.cssText='font-size:9px;color:rgba(255,255,255,0.3);margin-top:2px;';lblEl.textContent=s.lbl;
+    card.appendChild(iconEl);card.appendChild(valEl);card.appendChild(lblEl);
+    el.appendChild(card);
+  });
+}
+function mgrLoadActivity(){
+  var el=document.getElementById('mgrActivityLog');if(!el)return;
+  var log=ciGetLog();
+  if(!log||!log.length){
+    el.innerHTML='<div style="padding:16px;text-align:center;color:rgba(255,255,255,0.3);font-size:12px;">Keine Aktivität aufgezeichnet</div>';
+    return;
+  }
+  // Show last 30 entries newest first
+  var entries=log.slice().reverse().slice(0,30);
+  el.innerHTML=entries.map(function(e,i){
+    var isIn=e.type==='in';
+    var color=isIn?'#4cba6b':'#E8394A';
+    var icon=isIn?'→':'←';
+    var ts=e.ts?new Date(e.ts).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);'+(i===0?'border-radius:12px 12px 0 0;':'')+'">'+
+      '<span style="color:'+color+';font-size:16px;width:20px;text-align:center;">'+icon+'</span>'+
+      '<div style="flex:1;">'+
+        '<div style="font-size:12px;font-weight:700;color:white;">'+(e.kunde||'?')+'</div>'+
+        '<div style="font-size:9px;color:rgba(255,255,255,0.3);">'+ts+'</div>'+
+      '</div>'+
+      '<span style="font-size:9px;font-weight:800;padding:2px 8px;border-radius:20px;background:'+color+'18;color:'+color+';">'+(isIn?'EIN':'AUS')+'</span>'+
+    '</div>';
+  }).join('');
+}
+
+function mgrLoadShiftSettings(){
+  var ss=localStorage.getItem('denis_shift_start')||'19:45';
+  var se=localStorage.getItem('denis_shift_end')||'07:00';
+  var alarm=localStorage.getItem('denis_alarm_min')||'15';
+  var si=document.getElementById('mgrShiftStart');
+  var ei=document.getElementById('mgrShiftEnd');
+  var ai=document.getElementById('mgrAlarmMin');
+  if(si)si.value=ss;
+  if(ei)ei.value=se;
+  if(ai)ai.value=alarm;
+}
+
+function mgrSaveShiftSettings(){
+  var ss=document.getElementById('mgrShiftStart').value;
+  var se=document.getElementById('mgrShiftEnd').value;
+  var alarm=document.getElementById('mgrAlarmMin').value;
+  if(ss)localStorage.setItem('denis_shift_start',ss);
+  if(se)localStorage.setItem('denis_shift_end',se);
+  if(alarm)localStorage.setItem('denis_alarm_min',alarm);
+  showToast('✅ Schichtzeiten gespeichert');
+  updateClock();
+}
+
+function mgrChangePin(){
+  var inp=document.getElementById('mgrNewPin');
+  var val=(inp.value||'').trim();
+  if(!/^[0-9]{4}$/.test(val)){showToast('PIN muss 4 Ziffern sein','error');return;}
+  localStorage.setItem(MANAGER_PIN_KEY,val);
+  inp.value='';
+  showToast('🔐 Manager-PIN geändert');
+}
+
+function mgrResetEmployee(){
+  if(!confirm('Mitarbeiter-Daten wirklich zurücksetzen? (Archiv bleibt erhalten)'))return;
+  localStorage.removeItem('denis_protokoll');
+  localStorage.removeItem('denis_checkin_log');
+  localStorage.removeItem('denis_mitarbeiter');
+  localStorage.removeItem('denis_last_kunde');
+  showToast('🗑 Mitarbeiter-Daten gelöscht','error');
+  closeManagerPanel();
+}
+
+function mgrExportAll(){
+  exportData();
+}
+
 </script>
 <!-- ARCHIVE -->
 <div id="archiveBg" onclick="closeArchive()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999989;"></div>
@@ -2880,6 +3086,104 @@ function renderDashboardChart(rows){
     </div>
   </div>
   <div id="archiveList" style="flex:1;overflow-y:auto;padding:6px 8px 8px;display:flex;flex-direction:column;gap:5px;"></div>
+</div>
+
+<!-- MANAGER LOGIN OVERLAY -->
+<div id="managerLoginOverlay" style="display:none;position:fixed;inset:0;z-index:99999999;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;">
+  <div style="background:#1a2535;border-radius:18px;padding:28px 24px;width:300px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.6);text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:white;margin-bottom:4px;">Manager-Zugang</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:20px;letter-spacing:0.5px;">PIN eingeben</div>
+    <div id="managerPinDots" style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;">
+      <div class="pin-dot" id="mgrdot0"></div>
+      <div class="pin-dot" id="mgrdot1"></div>
+      <div class="pin-dot" id="mgrdot2"></div>
+      <div class="pin-dot" id="mgrdot3"></div>
+    </div>
+    <div id="managerPinError" style="color:#E8394A;font-size:11px;min-height:16px;margin-bottom:10px;"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;">
+      <button onclick="mgrPin('1')" class="pin-btn">1</button>
+      <button onclick="mgrPin('2')" class="pin-btn">2</button>
+      <button onclick="mgrPin('3')" class="pin-btn">3</button>
+      <button onclick="mgrPin('4')" class="pin-btn">4</button>
+      <button onclick="mgrPin('5')" class="pin-btn">5</button>
+      <button onclick="mgrPin('6')" class="pin-btn">6</button>
+      <button onclick="mgrPin('7')" class="pin-btn">7</button>
+      <button onclick="mgrPin('8')" class="pin-btn">8</button>
+      <button onclick="mgrPin('9')" class="pin-btn">9</button>
+      <button onclick="mgrPinClear()" class="pin-btn" style="color:rgba(255,255,255,0.4);font-size:18px;">⌫</button>
+      <button onclick="mgrPin('0')" class="pin-btn">0</button>
+      <button onclick="closeManagerLogin()" class="pin-btn" style="color:rgba(255,255,255,0.4);font-size:12px;">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGER PANEL -->
+<div id="managerPanel" style="display:none;position:fixed;inset:0;z-index:99999998;background:#0f1923;overflow-y:auto;font-family:'DM Sans',sans-serif;">
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#1e2d3d,#243447);padding:50px 16px 16px;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,0.08);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:2px;">MANAGER</div>
+        <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:900;color:white;">Denis <span style="color:#E8394A;">Control</span></div>
+      </div>
+      <button onclick="closeManagerPanel()" style="background:rgba(255,255,255,0.08);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+  </div>
+
+  <div style="padding:16px;max-width:600px;margin:0 auto;">
+
+    <!-- Stats Section -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:10px;">📊 STATISTIKEN</div>
+      <div id="mgrStats" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+    </div>
+
+    <!-- Activity Log -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:10px;">👁 MITARBEITER-AKTIVITÄT</div>
+      <div id="mgrActivityLog" style="background:#1a2535;border-radius:12px;overflow:hidden;"></div>
+    </div>
+
+    <!-- Shift Settings -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:10px;">⚙️ SCHICHTZEITEN</div>
+      <div style="background:#1a2535;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;color:rgba(255,255,255,0.6);">Schichtbeginn</span>
+          <input type="time" id="mgrShiftStart" style="background:#243447;border:1px solid rgba(255,255,255,0.1);color:white;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:700;">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;color:rgba(255,255,255,0.6);">Schichtende</span>
+          <input type="time" id="mgrShiftEnd" style="background:#243447;border:1px solid rgba(255,255,255,0.1);color:white;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:700;">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:12px;color:rgba(255,255,255,0.6);">Alarm (Min. vor Ende)</span>
+          <input type="number" id="mgrAlarmMin" min="0" max="60" style="background:#243447;border:1px solid rgba(255,255,255,0.1);color:white;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:700;width:70px;text-align:center;">
+        </div>
+        <button onclick="mgrSaveShiftSettings()" style="width:100%;padding:10px;border:none;border-radius:10px;background:linear-gradient(135deg,#E8394A,#c0392b);color:white;font-weight:800;font-size:13px;cursor:pointer;">💾 Speichern</button>
+      </div>
+    </div>
+
+    <!-- PIN Change -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:10px;">🔐 MANAGER-PIN ÄNDERN</div>
+      <div style="background:#1a2535;border-radius:12px;padding:14px;display:flex;gap:8px;">
+        <input type="password" id="mgrNewPin" maxlength="4" placeholder="Neuer PIN (4-stellig)" style="flex:1;background:#243447;border:1px solid rgba(255,255,255,0.1);color:white;padding:8px 12px;border-radius:8px;font-size:13px;">
+        <button onclick="mgrChangePin()" style="padding:8px 14px;border:none;border-radius:8px;background:rgba(232,57,74,0.2);border:1px solid rgba(232,57,74,0.3);color:#E8394A;font-weight:800;cursor:pointer;font-size:12px;">Ändern</button>
+      </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div style="margin-bottom:30px;">
+      <div style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-bottom:10px;">⚠️ GEFAHRENZONE</div>
+      <div style="background:rgba(232,57,74,0.08);border:1px solid rgba(232,57,74,0.2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;">
+        <button onclick="mgrResetEmployee()" style="padding:10px;border:none;border-radius:8px;background:rgba(232,57,74,0.15);color:#E8394A;font-weight:700;cursor:pointer;font-size:12px;">🗑 Mitarbeiter-Daten zurücksetzen</button>
+        <button onclick="mgrExportAll()" style="padding:10px;border:none;border-radius:8px;background:rgba(21,101,192,0.15);color:rgba(100,180,255,0.9);font-weight:700;cursor:pointer;font-size:12px;">📤 Vollständiges Backup exportieren</button>
+      </div>
+    </div>
+
+  </div>
 </div>
 </body>
 </html>
