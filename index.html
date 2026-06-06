@@ -921,14 +921,42 @@ function getShiftTimes(){
   return{ss:ssh*60+ssm,se:seh*60+sem,ssStr:ss,seStr:se};
 }
 function updateClock(){
-  var now=new Date();var st=getShiftTimes();
-  var total=st.se>st.ss?st.se-st.ss:(24*60-st.ss)+st.se;
-  var nm=now.getHours()*60+now.getMinutes();
-  var el=nm>=st.ss?nm-st.ss:nm<=st.se?(24*60-st.ss)+nm:0;
-  var pct=Math.min(100,Math.round((el/total)*100));
-  var fill=document.getElementById('progressFill');if(fill)fill.style.width=pct+'%';
-  var pctEl=document.getElementById('progressPct');if(pctEl)pctEl.textContent=pct+'%';
-  var lbl=document.querySelector('.progress-label');if(lbl)lbl.textContent=st.ssStr+' → '+st.seStr;
+  var now=new Date();
+  var fill=document.getElementById('progressFill');
+  var pctEl=document.getElementById('progressPct');
+  var lbl=document.querySelector('.progress-label');
+
+  // Find actual first check-in timestamp
+  var log=ciGetLog();
+  var firstIn=null;
+  for(var i=0;i<log.length;i++){if(log[i].type==='in'&&log[i].ts){firstIn=log[i].ts;break;}}
+
+  if(!firstIn){
+    // No check-in yet — show 0% with scheduled times
+    var st=getShiftTimes();
+    if(fill)fill.style.width='0%';
+    if(pctEl)pctEl.textContent='0%';
+    if(lbl)lbl.textContent=st.ssStr+' → '+st.seStr;
+    return;
+  }
+
+  // Calculate progress from actual first check-in to scheduled shift end
+  var st=getShiftTimes();
+  var startMs=firstIn;
+  var startTime=new Date(startMs);
+  var startHM=startTime.getHours()*60+startTime.getMinutes();
+  var startStr=(String(startTime.getHours()).padStart(2,'0'))+':'+(String(startTime.getMinutes()).padStart(2,'0'));
+
+  // Total duration: from actual first checkin to shift end
+  var total=st.se>startHM?st.se-startHM:(24*60-startHM)+st.se;
+  var nowMs=now.getTime();
+  var elapsedMs=nowMs-startMs;
+  var elapsedMin=Math.max(0,Math.floor(elapsedMs/60000));
+  var pct=Math.min(100,Math.round((elapsedMin/total)*100));
+
+  if(fill)fill.style.width=pct+'%';
+  if(pctEl)pctEl.textContent=pct+'%';
+  if(lbl)lbl.textContent=startStr+' → '+st.seStr;
 }
 
 // ===== SHIFT KEY =====
