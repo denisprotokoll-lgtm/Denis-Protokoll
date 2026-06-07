@@ -1881,13 +1881,30 @@ function ciOut(){
   }
   log.push({kunde:ciSelected,type:'out',time:time,ts:Date.now()});ciSaveLog(log);
   var found=false;
+  // Match by Kunde AND beginn time from lastIn (exact match for multi-visit support)
+  var lastInTime=lastIn?lastIn.time:'';
   Array.from(document.querySelectorAll('.proto-row')).reverse().forEach(function(row){
     if(found)return;var id=row.id.replace('row-','');
     var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
-    var ed=document.getElementById('ed-'+id);var isC=kcust&&kcust.style.display!=='none';
+    var bd=document.getElementById('bd-'+id);var ed=document.getElementById('ed-'+id);
+    var isC=kcust&&kcust.style.display!=='none';
     var k=isC?kcust.value:(ksel?ksel.value:'');
-    if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){ed.value=time;colorTime(ed);found=true;saveData();}
+    // Match: same Kunde + same beginn time + no end time yet
+    var bMatch=lastInTime&&bd&&bd.value===lastInTime;
+    if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')&&bMatch){
+      ed.value=time;colorTime(ed);found=true;saveData();
+    }
   });
+  // Fallback: match by Kunde only (no lastIn time available)
+  if(!found&&lastInTime===''){
+    Array.from(document.querySelectorAll('.proto-row')).reverse().forEach(function(row){
+      if(found)return;var id=row.id.replace('row-','');
+      var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
+      var ed=document.getElementById('ed-'+id);var isC=kcust&&kcust.style.display!=='none';
+      var k=isC?kcust.value:(ksel?ksel.value:'');
+      if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')){ed.value=time;colorTime(ed);found=true;saveData();}
+    });
+  }
   if(!found){addRow({k:ciSelected,b:'',e:time,n:[]});saveData();}
   ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
   ciShowToast(ciSelected+' – Ausgang 🚪');showCheckinFlash('out');playCheckinSound('out');
@@ -2016,18 +2033,52 @@ function ciCloseSheet(){
 function ciSheetSaveKunde(idx){
   var sel=document.getElementById('sheet-kunde-'+idx);if(!sel)return;
   var log=ciGetLog();if(!log[idx])return;
-  auditLog('KUNDE_EDIT','Kunde geändert: '+log[idx].kunde+' → '+sel.value);
-  log[idx].kunde=sel.value;
-  ciSaveLog(log);ciRenderLog();updateQuickBar();ciRenderKunden();
+  var oldKunde=log[idx].kunde;
+  var newKunde=sel.value;
+  auditLog('KUNDE_EDIT','Kunde geändert: '+oldKunde+' → '+newKunde);
+  log[idx].kunde=newKunde;
+  ciSaveLog(log);
+  // Also update the proto-row in the DOM
+  // Find the matching row by beginn time and old kunde
+  var rows=document.querySelectorAll('.proto-row');
+  rows.forEach(function(row){
+    var rowIdx=row.id.replace('row-','');
+    var ksel=document.getElementById('ksel-'+rowIdx);
+    var kcust=document.getElementById('kcust-'+rowIdx);
+    var bd=document.getElementById('bd-'+rowIdx);
+    var isC=kcust&&kcust.style.display!=='none';
+    var curKunde=isC?kcust.value:(ksel?ksel.value:'');
+    if(curKunde===oldKunde&&bd&&bd.value===log[idx].time){
+      if(isC&&kcust){kcust.value=newKunde;}
+      else if(ksel){
+        var opt=Array.from(ksel.options).find(function(o){return o.value===newKunde;});
+        if(opt){ksel.value=newKunde;}
+      }
+    }
+  });
+  ciRenderLog();updateQuickBar();ciRenderKunden();
   ciCloseSheet();ciShowToast('✅ Kunde aktualisiert');saveData();
 }
 
 function ciSheetSaveTime(idx){
   var inp=document.getElementById('sheet-time-'+idx);if(!inp)return;
   var log=ciGetLog();if(!log[idx])return;
-  auditLog('TIME_EDIT','Zeit geändert: '+log[idx].kunde+' '+log[idx].time+' → '+inp.value);
-  log[idx].time=inp.value;
-  ciSaveLog(log);ciRenderLog();updateQuickBar();
+  var oldTime=log[idx].time;
+  var newTime=inp.value;
+  var isIn=log[idx].type==='in';
+  auditLog('TIME_EDIT','Zeit geändert: '+log[idx].kunde+' '+oldTime+' → '+newTime);
+  log[idx].time=newTime;
+  ciSaveLog(log);
+  // Update the proto-row DOM element
+  var rows=document.querySelectorAll('.proto-row');
+  rows.forEach(function(row){
+    var rowIdx=row.id.replace('row-','');
+    var bd=document.getElementById('bd-'+rowIdx);
+    var ed=document.getElementById('ed-'+rowIdx);
+    if(isIn&&bd&&bd.value===oldTime){bd.value=newTime;colorTime(bd);}
+    else if(!isIn&&ed&&ed.value===oldTime){ed.value=newTime;colorTime(ed);}
+  });
+  ciRenderLog();updateQuickBar();
   ciCloseSheet();ciShowToast('✅ Zeit gespeichert');saveData();
 }
 
