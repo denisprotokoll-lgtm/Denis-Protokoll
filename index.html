@@ -1845,13 +1845,23 @@ function updateQuickBar(){
 
 function ciIn(){
   if(!ciSelected)return;var time=nowHM();
+  auditLog('CHECKIN','Eingang: '+ciSelected+' um '+time);
   localStorage.setItem('denis_last_kunde',ciSelected);
   var log=ciGetLog();
   var snapshot=JSON.stringify(log);
   var rowsBefore=document.getElementById('rowsWrap').innerHTML;
   var rowIdBefore=rowId;
-  log.push({kunde:ciSelected,type:'in',time:time,ts:Date.now()});ciSaveLog(log);
+  // Push entry first (rowId not yet known)
+  var entryIdx=log.length;
+  log.push({kunde:ciSelected,type:'in',time:time,ts:Date.now(),rowRef:null});
+  ciSaveLog(log);
+  // addRow increments rowId — capture it after
   addRow({k:ciSelected,b:time,e:'',n:[]});
+  var newRowId=rowId; // rowId was incremented by addRow
+  // Save the rowRef into the log entry
+  log=ciGetLog();
+  if(log[entryIdx])log[entryIdx].rowRef=newRowId;
+  ciSaveLog(log);
   ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
   ciShowToast(ciSelected+' – Eingang ✅');showCheckinFlash('in');playCheckinSound('in');saveData();
   var savedKunde=ciSelected;
@@ -1881,22 +1891,13 @@ function ciOut(){
   }
   log.push({kunde:ciSelected,type:'out',time:time,ts:Date.now()});ciSaveLog(log);
   var found=false;
-  // Match by Kunde AND beginn time from lastIn (exact match for multi-visit support)
-  var lastInTime=lastIn?lastIn.time:'';
-  Array.from(document.querySelectorAll('.proto-row')).reverse().forEach(function(row){
-    if(found)return;var id=row.id.replace('row-','');
-    var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
-    var bd=document.getElementById('bd-'+id);var ed=document.getElementById('ed-'+id);
-    var isC=kcust&&kcust.style.display!=='none';
-    var k=isC?kcust.value:(ksel?ksel.value:'');
-    // Match: same Kunde + same beginn time + no end time yet
-    var bMatch=lastInTime&&bd&&bd.value===lastInTime;
-    if(k===ciSelected&&ed&&(!ed.value||ed.value==='00:00')&&bMatch){
-      ed.value=time;colorTime(ed);found=true;saveData();
-    }
-  });
-  // Fallback: match by Kunde only (no lastIn time available)
-  if(!found&&lastInTime===''){
+  // PRIMARY: use rowRef (direct ID link set during Check-In)
+  if(lastIn&&lastIn.rowRef){
+    var ed=document.getElementById('ed-'+lastIn.rowRef);
+    if(ed){ed.value=time;colorTime(ed);found=true;saveData();}
+  }
+  // FALLBACK: match by Kunde + no end time (for old entries without rowRef)
+  if(!found){
     Array.from(document.querySelectorAll('.proto-row')).reverse().forEach(function(row){
       if(found)return;var id=row.id.replace('row-','');
       var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
