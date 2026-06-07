@@ -1906,82 +1906,149 @@ function ciRenderLog(){
   if(!log.length){list.innerHTML='<div class="ci-log-empty">Noch keine Einträge</div>';return;}
   list.innerHTML='';
   log.slice().reverse().forEach(function(entry,i){
-    var realIdx=log.length-1-i;var isIn=entry.type==='in';
+    var realIdx=log.length-1-i;
+    var isIn=entry.type==='in';
     var wrap=document.createElement('div');
+    wrap.style.cssText='border-bottom:1px solid rgba(255,255,255,0.06);';
+
+    // === CLEAN CARD (just name + time + status + ⋯) ===
     var item=document.createElement('div');
     item.className='ci-log-item '+(isIn?'log-in':'log-out');
     item.style.cssText='border-bottom:none;';
     item.innerHTML=
       '<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
       +'<div style="flex:1;min-width:0;overflow:hidden;">'
-      +'<div style="display:flex;align-items:center;gap:4px;">'
-      +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+entry.kunde+'</div>'
-      +'<button onclick="ciToggleEditKunde('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:11px;padding:1px 3px;" title="Kunde bearbeiten">✏️</button>'
+        +'<div style="font-size:13px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+entry.kunde+'</div>'
+        +'<div style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;">⏱ '+entry.time+'</div>'
       +'</div>'
-      +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;cursor:pointer;" onclick="ciToggleEditTime('+realIdx+')">⏱ '+entry.time+' <span style="font-size:9px;opacity:0.6;">✏️</span></div>'
-      +'</div>'
-      +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
-      +(isIn?'<button onclick="ciToggleLogDropdown('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;" title="Ereignis hinzufügen">📋</button>':'')
-      +'<button onclick="ciToggleType('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;padding:3px 6px;cursor:pointer;">'+(isIn?'→Aus':'→Ein')+'</button>'
-      +'<button onclick="ciDeleteEntry('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px 4px;">✕</button>';
-
-    var dropdown=document.createElement('div');
-    dropdown.id='ci-dropdown-'+realIdx;
-    dropdown.style.cssText='display:none;padding:8px 10px 10px 32px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);animation:rowIn 0.15s ease;';
-    var quickEvents=[
-      {label:'🚶 Obdachlose nach draußen gebracht',ev:'Obdachlose nach draußen gebracht'},
-      {label:'🚫 Unbefugte Person entfernt',ev:'Unbefugte Person entfernt'},
-      {label:'🚗 Fahrzeuge herausgelassen',ev:'Fahrzeuge herausgelassen'},
-    ];
-    quickEvents.forEach(function(qe,qi){
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
-      row.innerHTML=
-        '<div style="flex:1;font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">'+qe.label+'</div>'
-        +'<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">'
-        +'<button onclick="ciLogDropdownChange('+realIdx+','+qi+',-1)" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:white;font-size:12px;font-weight:800;cursor:pointer;">−</button>'
-        +'<span id="ci-dd-count-'+realIdx+'-'+qi+'" style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:800;color:white;min-width:18px;text-align:center;">1</span>'
-        +'<button onclick="ciLogDropdownChange('+realIdx+','+qi+',1)" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(76,186,107,0.3);background:rgba(76,186,107,0.12);color:#4cba6b;font-size:12px;font-weight:800;cursor:pointer;">+</button>'
-        +'</div>'
-        +'<button onclick="ciLogDropdownAdd('+realIdx+',\''+qe.ev+'\','+qi+')" style="padding:4px 10px;border-radius:7px;border:none;background:linear-gradient(135deg,#4a6080,#3d5268);color:white;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0;">+ Add</button>';
-      if(qi===quickEvents.length-1)row.style.borderBottom='none';
-      dropdown.appendChild(row);
-    });
-
-    var editRow=document.createElement('div');
-    editRow.id='ci-edit-row-'+realIdx;
-    editRow.style.cssText='display:none;padding:8px 10px 10px;background:rgba(245,166,35,0.06);border-top:1px solid rgba(245,166,35,0.15);animation:rowIn 0.18s ease;';
-    editRow.innerHTML=
-      '<div style="font-size:9px;font-weight:700;color:rgba(245,166,35,0.8);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">⏱ Zeit bearbeiten</div>'
-      +'<div style="display:flex;gap:8px;align-items:center;">'
-      +'<input type="time" id="ci-time-inp-'+realIdx+'" value="'+entry.time+'" style="flex:1;font-family:\'DM Sans\',sans-serif;font-size:16px;font-weight:700;color:white;background:rgba(255,255,255,0.1);border:1.5px solid rgba(245,166,35,0.5);border-radius:10px;padding:8px 10px;outline:none;text-align:center;">'
-      +'<button onclick="ciSetNowTime('+realIdx+')" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-size:10px;font-weight:700;padding:8px 10px;cursor:pointer;white-space:nowrap;flex-shrink:0;">Jetzt</button>'
-      +'<button onclick="ciSaveEditTime('+realIdx+')" style="background:linear-gradient(135deg,#4cba6b,#2e8b47);border:none;border-radius:8px;color:white;font-size:11px;font-weight:800;padding:8px 14px;cursor:pointer;flex-shrink:0;">✓ OK</button>'
-      +'<button onclick="ciToggleEditTime('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.4);font-size:11px;padding:8px 10px;cursor:pointer;flex-shrink:0;">✕</button>'
-      +'</div>';
-
-    var kundeEditRow=document.createElement('div');
-    kundeEditRow.id='ci-kunde-edit-'+realIdx;
-    kundeEditRow.style.cssText='display:none;padding:8px 10px 10px;background:rgba(100,181,246,0.06);border-top:1px solid rgba(100,181,246,0.15);animation:rowIn 0.18s ease;';
-    var allK=ciGetAllKunden();
-    var kOpts=allK.map(function(k){
-      return '<option value="'+k+'"'+(k===entry.kunde?' selected':'')+'>'+k+'</option>';
-    }).join('');
-    kundeEditRow.innerHTML=
-      '<div style="font-size:9px;font-weight:700;color:rgba(100,181,246,0.8);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">✏️ Kunde ändern</div>'
-      +'<div style="display:flex;gap:8px;align-items:center;">'
-      +'<select id="ci-kunde-inp-'+realIdx+'" style="flex:1;font-family:\'DM Sans\',sans-serif;font-size:14px;font-weight:700;color:white;background:rgba(255,255,255,0.1);border:1.5px solid rgba(100,181,246,0.5);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;">'+kOpts+'</select>'
-      +'<button onclick="ciSaveEditKunde('+realIdx+')" style="background:linear-gradient(135deg,#1565c0,#0d47a1);border:none;border-radius:8px;color:white;font-size:11px;font-weight:800;padding:8px 14px;cursor:pointer;flex-shrink:0;">✓ OK</button>'
-      +'<button onclick="ciToggleEditKunde('+realIdx+')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.4);font-size:11px;padding:8px 10px;cursor:pointer;flex-shrink:0;">✕</button>'
-      +'</div>';
+      +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';margin-right:6px;">'+(isIn?'Ein':'Aus')+'</span>'
+      +'<button onclick="ciOpenSheet('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:rgba(255,255,255,0.6);font-size:16px;font-weight:700;padding:4px 10px;cursor:pointer;">⋯</button>';
 
     wrap.appendChild(item);
-    wrap.appendChild(kundeEditRow);
-    wrap.appendChild(dropdown);
-    wrap.appendChild(editRow);
-    wrap.style.cssText='border-bottom:1px solid rgba(255,255,255,0.06);';
     list.appendChild(wrap);
   });
+}
+
+function ciOpenSheet(idx){
+  var log=ciGetLog();
+  var entry=log[idx];if(!entry)return;
+  var isIn=entry.type==='in';
+  var sheet=document.getElementById('ciActionSheet');
+  var body=document.getElementById('ciActionSheetBody');
+  if(!sheet||!body)return;
+
+  var allK=ciGetAllKunden();
+  var kOpts=allK.map(function(k){
+    return '<option value="'+k+'"'+(k===entry.kunde?' selected':'')+'>'+k+'</option>';
+  }).join('');
+
+  body.innerHTML=
+    // Header
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">'
+      +'<div>'
+        +'<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:800;color:white;">'+entry.kunde+'</div>'
+        +'<div style="font-size:11px;color:rgba(255,255,255,0.4);">⏱ '+entry.time+' · '+(isIn?'<span style="color:#4cba6b;">Ein</span>':'<span style="color:#E8394A;">Aus</span>')+'</div>'
+      +'</div>'
+      +'<button onclick="ciCloseSheet()" style="background:rgba(255,255,255,0.08);border:none;color:rgba(255,255,255,0.5);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;">✕</button>'
+    +'</div>'
+
+    // Kunde ändern
+    +'<div style="margin-bottom:12px;">'
+      +'<div style="font-size:9px;font-weight:700;color:rgba(100,181,246,0.8);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">✏️ Kunde ändern</div>'
+      +'<div style="display:flex;gap:6px;">'
+        +'<select id="sheet-kunde-'+idx+'" style="flex:1;font-size:13px;font-weight:700;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(100,181,246,0.3);border-radius:10px;padding:8px 10px;outline:none;cursor:pointer;">'+kOpts+'</select>'
+        +'<button onclick="ciSheetSaveKunde('+idx+')" style="padding:8px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,#1565c0,#0d47a1);color:white;font-size:11px;font-weight:800;cursor:pointer;">✓ OK</button>'
+      +'</div>'
+    +'</div>'
+
+    // Zeit ändern
+    +'<div style="margin-bottom:12px;">'
+      +'<div style="font-size:9px;font-weight:700;color:rgba(245,166,35,0.8);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">⏱ Zeit ändern</div>'
+      +'<div style="display:flex;gap:6px;">'
+        +'<input type="time" id="sheet-time-'+idx+'" value="'+entry.time+'" style="flex:1;font-size:16px;font-weight:700;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(245,166,35,0.3);border-radius:10px;padding:8px 10px;outline:none;text-align:center;">'
+        +'<button onclick="ciSheetSetNow('+idx+')" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-size:10px;font-weight:700;padding:8px 10px;cursor:pointer;white-space:nowrap;">Jetzt</button>'
+        +'<button onclick="ciSheetSaveTime('+idx+')" style="padding:8px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,#4cba6b,#2e8b47);color:white;font-size:11px;font-weight:800;cursor:pointer;">✓ OK</button>'
+      +'</div>'
+    +'</div>'
+
+    // Aktionen
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">'
+      +(isIn?'<button onclick="ciSheetDropdown('+idx+')" style="padding:10px;border:none;border-radius:10px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;cursor:pointer;">📋 Ereignis</button>':'<div></div>')
+      +'<button onclick="ciSheetToggleType('+idx+')" style="padding:10px;border:none;border-radius:10px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;cursor:pointer;">'+(isIn?'→ Aus':'→ Ein')+'</button>'
+    +'</div>'
+    +'<button onclick="ciSheetDelete('+idx+')" style="width:100%;padding:10px;border:none;border-radius:10px;background:rgba(232,57,74,0.12);border:1px solid rgba(232,57,74,0.2);color:#E8394A;font-size:12px;font-weight:700;cursor:pointer;">🗑 Eintrag löschen</button>'
+
+    // Quick events (if Ein)
+    +(isIn?
+      '<div id="sheet-quick-events-'+idx+'" style="display:none;margin-top:12px;border-top:1px solid rgba(255,255,255,0.07);padding-top:12px;">'
+        +'<div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:8px;">SCHNELL-EREIGNISSE</div>'
+        +[
+          {label:'🚶 Obdachlose nach draußen gebracht',ev:'Obdachlose nach draußen gebracht'},
+          {label:'🚫 Unbefugte Person entfernt',ev:'Unbefugte Person entfernt'},
+          {label:'🚗 Fahrzeuge herausgelassen',ev:'Fahrzeuge herausgelassen'},
+        ].map(function(qe,qi){
+          return '<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);">'
+            +'<div style="flex:1;font-size:11px;color:rgba(255,255,255,0.8);">'+qe.label+'</div>'
+            +'<div style="display:flex;align-items:center;gap:4px;">'
+              +'<button onclick="ciLogDropdownChange('+idx+','+qi+',-1)" style="width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:white;font-size:13px;cursor:pointer;">−</button>'
+              +'<span id="ci-dd-count-'+idx+'-'+qi+'" style="font-size:12px;font-weight:800;color:white;min-width:18px;text-align:center;">1</span>'
+              +'<button onclick="ciLogDropdownChange('+idx+','+qi+',1)" style="width:22px;height:22px;border-radius:6px;border:1px solid rgba(76,186,107,0.3);background:rgba(76,186,107,0.12);color:#4cba6b;font-size:13px;cursor:pointer;">+</button>'
+            +'</div>'
+            +'<button onclick="ciLogDropdownAdd('+idx+',\''+qe.ev+'\','+qi+')" style="padding:5px 10px;border-radius:7px;border:none;background:linear-gradient(135deg,#4a6080,#3d5268);color:white;font-size:10px;font-weight:800;cursor:pointer;">+ Add</button>'
+          +'</div>';
+        }).join('')
+      +'</div>'
+    :'');
+
+  // Store current idx on sheet
+  sheet._currentIdx=idx;
+  sheet.style.display='flex';
+  setTimeout(function(){sheet.querySelector('.ci-sheet-inner').style.transform='translateY(0)';},10);
+}
+
+function ciCloseSheet(){
+  var sheet=document.getElementById('ciActionSheet');if(!sheet)return;
+  var inner=sheet.querySelector('.ci-sheet-inner');
+  if(inner)inner.style.transform='translateY(100%)';
+  setTimeout(function(){sheet.style.display='none';},280);
+}
+
+function ciSheetSaveKunde(idx){
+  var sel=document.getElementById('sheet-kunde-'+idx);if(!sel)return;
+  var log=ciGetLog();if(!log[idx])return;
+  auditLog('KUNDE_EDIT','Kunde geändert: '+log[idx].kunde+' → '+sel.value);
+  log[idx].kunde=sel.value;
+  ciSaveLog(log);ciRenderLog();updateQuickBar();ciRenderKunden();
+  ciCloseSheet();ciShowToast('✅ Kunde aktualisiert');saveData();
+}
+
+function ciSheetSaveTime(idx){
+  var inp=document.getElementById('sheet-time-'+idx);if(!inp)return;
+  var log=ciGetLog();if(!log[idx])return;
+  auditLog('TIME_EDIT','Zeit geändert: '+log[idx].kunde+' '+log[idx].time+' → '+inp.value);
+  log[idx].time=inp.value;
+  ciSaveLog(log);ciRenderLog();updateQuickBar();
+  ciCloseSheet();ciShowToast('✅ Zeit gespeichert');saveData();
+}
+
+function ciSheetSetNow(idx){
+  var inp=document.getElementById('sheet-time-'+idx);
+  if(inp)inp.value=nowHM();
+}
+
+function ciSheetToggleType(idx){
+  ciCloseSheet();
+  setTimeout(function(){ciToggleType(idx);},300);
+}
+
+function ciSheetDelete(idx){
+  ciCloseSheet();
+  setTimeout(function(){ciDeleteEntry(idx);},300);
+}
+
+function ciSheetDropdown(idx){
+  var el=document.getElementById('sheet-quick-events-'+idx);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
 }
 
 function ciToggleLogDropdown(idx){
@@ -2838,6 +2905,15 @@ function mgrExportAll(){
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- CI ACTION SHEET -->
+<div id="ciActionSheet" style="display:none;position:fixed;inset:0;z-index:99999995;background:rgba(0,0,0,0.6);align-items:flex-end;justify-content:center;" onclick="if(event.target===this)ciCloseSheet();">
+  <div class="ci-sheet-inner" style="width:100%;max-width:520px;background:#1a2535;border-radius:20px 20px 0 0;padding:16px 16px 32px;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);max-height:85vh;overflow-y:auto;">
+    <!-- Drag handle -->
+    <div style="width:36px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 16px;"></div>
+    <div id="ciActionSheetBody"></div>
   </div>
 </div>
 </body>
