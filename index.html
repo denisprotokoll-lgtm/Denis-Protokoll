@@ -2974,9 +2974,31 @@ function mgrExportAll(){
     } else if(dx > SWIPE_THRESHOLD){
       openArchive();
     } else {
-      // Snap back
       var wasOpen = archiveDragStart > EDGE_ZONE;
       panel.style.transform = wasOpen ? 'translateX(0)' : 'translateX(-100%)';
+    }
+  }, {passive:true});
+
+  // Swipe UP from bottom → show Protokoll (when checkin screen is open)
+  var touchStartYUp = 0;
+  document.addEventListener('touchstart', function(e){
+    touchStartYUp = e.touches[0].clientY;
+  }, {passive:true});
+
+  document.addEventListener('touchend', function(e){
+    var dy = e.changedTouches[0].clientY - touchStartYUp;
+    var dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+    var fromBottom = touchStartYUp > window.innerHeight - 80;
+
+    // Swipe UP from bottom edge of screen
+    if(dy < -SWIPE_THRESHOLD && dx < 60 && fromBottom){
+      var ciScreen = document.getElementById('checkinScreen');
+      var sheet = document.getElementById('ciActionSheet');
+      // Only if checkin screen is open and no sheet is open
+      if(ciScreen && ciScreen.style.display !== 'none' &&
+         (!sheet || sheet.style.display !== 'flex')){
+        hideCheckin();
+      }
     }
   }, {passive:true});
 
