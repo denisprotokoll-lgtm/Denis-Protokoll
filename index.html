@@ -325,6 +325,10 @@
       <button onclick="ciAddNewKunde()" style="background:rgba(76,186,107,0.2);border:1.5px solid rgba(76,186,107,0.4);border-radius:12px;color:#4cba6b;font-size:20px;width:44px;height:44px;cursor:pointer;flex-shrink:0;font-weight:800;">＋</button>
     </div>
     <div class="ci-log-box">
+      <div id="ciActiveSection" style="display:none;margin-bottom:10px;">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;color:#4cba6b;margin-bottom:6px;">🟢 AKTUELL DRIN</div>
+        <div id="ciActiveList" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
       <div class="ci-log-title">📋 Protokoll Heute</div>
       <div id="ciLogList"><div class="ci-log-empty">Noch keine Einträge</div></div>
       <div class="ci-log-actions-bar"><button class="ci-log-act" onclick="ciClearLog()">🗑 Alle löschen</button></div>
@@ -1631,7 +1635,7 @@ function settingsRemoveKunde(k){localStorage.setItem('denis_extra_kunden',JSON.s
 function showCheckin(){
   document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';
   var fc=document.getElementById('fabCheckin');if(fc)fc.style.display='none';
-  ciRenderKunden();ciRenderLog();updateDayCounter();updateQuickBar();ciUpdateLayout();renderQuickAdd();updateGreeting();
+  ciRenderKunden();ciRenderLog();ciRenderActive();updateDayCounter();updateQuickBar();ciUpdateLayout();renderQuickAdd();updateGreeting();
   if(ciClockInterval)clearInterval(ciClockInterval);
   function tick(){
     var now=new Date();
@@ -1888,7 +1892,7 @@ function ciIn(){
   log=ciGetLog();
   if(log[entryIdx])log[entryIdx].rowRef=newRowId;
   ciSaveLog(log);
-  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
+  ciRenderLog();ciRenderActive();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
   ciShowToast(ciSelected+' – Eingang ✅');showCheckinFlash('in');playCheckinSound('in');saveData();
   var savedKunde=ciSelected;
   showUndoToast('✅ '+savedKunde+' Eingang',function(){
@@ -1908,14 +1912,31 @@ function ciOut(){
   var rowsSnapshot=document.getElementById('rowsWrap').innerHTML;
   var rowIdSnap=rowId;
   var lastIn=null;
-  for(var i=log.length-1;i>=0;i--){if(log[i].type==='in'&&log[i].kunde===ciSelected){lastIn=log[i];break;}}
+  // Find last 'in' for this kunde that has NOT been checked out yet
+  // A check-out exists if there's an 'out' entry after this 'in' with same kunde
+  for(var i=log.length-1;i>=0;i--){
+    if(log[i].type==='in'&&log[i].kunde===ciSelected){
+      // Check if this 'in' already has a matching 'out'
+      var hasOut=false;
+      for(var j=i+1;j<log.length;j++){
+        if(log[j].type==='out'&&log[j].kunde===ciSelected){
+          // Check if this out matches by rowRef or sequence
+          if(log[j].rowRef&&log[i].rowRef&&log[j].rowRef===log[i].rowRef){hasOut=true;break;}
+          else if(!log[j].rowRef&&!log[i].rowRef){hasOut=true;break;}
+        }
+      }
+      if(!hasOut){lastIn=log[i];break;}
+    }
+  }
   if(lastIn){
     var ip=lastIn.time.split(':');var op=time.split(':');
     var inM=parseInt(ip[0])*60+parseInt(ip[1]);var outM=parseInt(op[0])*60+parseInt(op[1]);
     var dur=outM-inM;if(dur<0)dur+=24*60;
     if(dur>0&&dur<720)saveVisitDuration(ciSelected,dur);
   }
-  log.push({kunde:ciSelected,type:'out',time:time,ts:Date.now()});ciSaveLog(log);
+  var outEntry={kunde:ciSelected,type:'out',time:time,ts:Date.now()};
+  if(lastIn&&lastIn.rowRef)outEntry.rowRef=lastIn.rowRef;
+  log.push(outEntry);ciSaveLog(log);
   var found=false;
   // PRIMARY: use rowRef (direct ID link set during Check-In)
   if(lastIn&&lastIn.rowRef){
@@ -1933,7 +1954,7 @@ function ciOut(){
     });
   }
   if(!found){addRow({k:ciSelected,b:'',e:time,n:[]});saveData();}
-  ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
+  ciRenderLog();ciRenderActive();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
   ciShowToast(ciSelected+' – Ausgang 🚪');showCheckinFlash('out');playCheckinSound('out');
   var savedKunde=ciSelected;
   showUndoToast('🚪 '+savedKunde+' Ausgang',function(){
@@ -3033,6 +3054,111 @@ function mgrExportAll(){
 })();
 
 
+
+
+function ciRenderActive(){
+  var log=ciGetLog();
+  var section=document.getElementById('ciActiveSection');
+  var list=document.getElementById('ciActiveList');
+  if(!section||!list)return;
+
+  // Find all 'in' entries that have no matching 'out'
+  var active=[];
+  log.forEach(function(entry,idx){
+    if(entry.type!=='in')return;
+    // Check if matched out exists
+    var matched=false;
+    for(var j=idx+1;j<log.length;j++){
+      if(log[j].type==='out'&&log[j].kunde===entry.kunde){
+        if(log[j].rowRef&&entry.rowRef&&log[j].rowRef===entry.rowRef){matched=true;break;}
+        else if(!log[j].rowRef&&!entry.rowRef){matched=true;break;}
+      }
+    }
+    if(!matched)active.push({entry:entry,idx:idx});
+  });
+
+  if(!active.length){section.style.display='none';return;}
+  section.style.display='block';
+  list.innerHTML='';
+
+  active.forEach(function(a){
+    var entry=a.entry;
+    var now=new Date();
+    var parts=entry.time.split(':');
+    var inMin=parseInt(parts[0])*60+parseInt(parts[1]);
+    var nowMin=now.getHours()*60+now.getMinutes();
+    var dur=nowMin-inMin;if(dur<0)dur+=24*60;
+    var durStr=dur>0?(dur+'min'):'';
+
+    var card=document.createElement('div');
+    card.style.cssText='display:flex;align-items:center;gap:10px;background:rgba(76,186,107,0.1);border:1px solid rgba(76,186,107,0.3);border-radius:10px;padding:8px 12px;';
+    card.innerHTML=
+      '<div style="width:8px;height:8px;border-radius:50%;background:#4cba6b;flex-shrink:0;animation:pulse 1.5s infinite;"></div>'
+      +'<div style="flex:1;">'
+        +'<div style="font-size:13px;font-weight:700;color:white;">'+entry.kunde+'</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,0.4);">Ein: '+entry.time+(durStr?' · '+durStr:'')+'</div>'
+      +'</div>'
+      +'<button onclick="ciDirectOut('+a.idx+')" style="padding:6px 14px;border:none;border-radius:8px;background:linear-gradient(135deg,#E8394A,#c0392b);color:white;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;">← Aus</button>';
+    list.appendChild(card);
+  });
+}
+
+function ciDirectOut(inIdx){
+  var log=ciGetLog();
+  var entry=log[inIdx];
+  if(!entry||entry.type!=='in')return;
+  var time=nowHM();
+  auditLog('CHECKOUT','Ausgang (direkt): '+entry.kunde+' um '+time);
+
+  // Snapshot for undo
+  var snapshot=JSON.stringify(ciGetLog());
+  var edSnap='';
+  if(entry.rowRef){var ed=document.getElementById('ed-'+entry.rowRef);if(ed)edSnap=ed.value;}
+
+  // Save duration
+  if(entry.time){
+    var ip=entry.time.split(':');var op=time.split(':');
+    var inM=parseInt(ip[0])*60+parseInt(ip[1]);
+    var outM=parseInt(op[0])*60+parseInt(op[1]);
+    var dur=outM-inM;if(dur<0)dur+=24*60;
+    if(dur>0&&dur<720)saveVisitDuration(entry.kunde,dur);
+  }
+
+  // Add out entry with rowRef
+  var outEntry={kunde:entry.kunde,type:'out',time:time,ts:Date.now()};
+  if(entry.rowRef)outEntry.rowRef=entry.rowRef;
+  log.push(outEntry);
+  ciSaveLog(log);
+
+  // Update proto-row directly via rowRef
+  if(entry.rowRef){
+    var ed=document.getElementById('ed-'+entry.rowRef);
+    if(ed){ed.value=time;colorTime(ed);}
+  }
+
+  saveData();
+  ciRenderLog();
+  ciRenderActive();
+  updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
+  ciShowToast(entry.kunde+' – Ausgang 🚪');
+  showCheckinFlash('out');
+  playCheckinSound('out');
+
+  // Undo support
+  var savedKunde=entry.kunde;
+  var savedRowRef=entry.rowRef;
+  showUndoToast('🚪 '+savedKunde+' Ausgang',function(){
+    ciSaveLog(JSON.parse(snapshot));
+    // Restore proto-row end time
+    if(savedRowRef){
+      var ed2=document.getElementById('ed-'+savedRowRef);
+      if(ed2){ed2.value=edSnap;if(edSnap)colorTime(ed2);}
+    }
+    ciRenderLog();ciRenderActive();
+    updateQuickBar();updateDayCounter();ciRenderKunden();
+    ciShowToast('↩ Rückgängig');saveData();
+  });
+}
 
 </script>
 
