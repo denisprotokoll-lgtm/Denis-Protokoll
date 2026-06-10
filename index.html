@@ -698,6 +698,12 @@ function updateClock(){
   if(fill)fill.style.width=pct+'%';
   if(pctEl)pctEl.textContent=pct+'%';
   if(lbl)lbl.textContent=startStr+' → '+st.seStr;
+
+  // Check 30-min warning
+  var nowMin=now.getHours()*60+now.getMinutes();
+  var seMin=st.se;
+  var minsLeft=seMin>nowMin?seMin-nowMin:(24*60-nowMin)+seMin;
+  checkArchiveReminder(minsLeft);
 }
 
 // ===== SHIFT KEY =====
@@ -3160,6 +3166,73 @@ function ciDirectOut(inIdx){
   });
 }
 
+
+// ===== ARCHIVE REMINDER =====
+var _archiveBannerShown = false;
+
+function checkArchiveReminder(minsLeft){
+  var banner = document.getElementById('archiveReminderBanner');
+  if(!banner) return;
+
+  // Only show if there's actual data
+  var log = ciGetLog();
+  if(!log || !log.length){ banner.style.display='none'; return; }
+
+  // Already archived today? Don't show again
+  if(localStorage.getItem('denis_archived_today') === new Date().toDateString()){
+    banner.style.display='none'; return;
+  }
+
+  if(minsLeft <= 30 && minsLeft > 0){
+    var title = document.getElementById('archiveBannerTitle');
+    var sub = document.getElementById('archiveBannerSub');
+    if(title) title.textContent = 'Schicht endet in ' + minsLeft + ' Min!';
+    if(sub) sub.textContent = 'Bericht jetzt archivieren & abschließen';
+    banner.style.display = 'block';
+
+    // Play alert sound once
+    if(!_archiveBannerShown){ playBeep('alarm'); _archiveBannerShown=true; }
+  } else {
+    banner.style.display = 'none';
+    if(minsLeft > 30) _archiveBannerShown = false;
+  }
+}
+
+function archiveBannerSave(){
+  // Close any open checkins first
+  var log = ciGetLog();
+  var hasOpenIn = log.some(function(e,i){
+    if(e.type!=='in') return false;
+    for(var j=i+1;j<log.length;j++){
+      if(log[j].type==='out'&&log[j].kunde===e.kunde){
+        if(log[j].rowRef&&e.rowRef&&log[j].rowRef===e.rowRef) return false;
+        else if(!log[j].rowRef&&!e.rowRef) return false;
+      }
+    }
+    return true;
+  });
+
+  if(hasOpenIn){
+    showToast('⚠️ Noch offene Check-Ins! Bitte erst auschecken.','error',3000);
+    return;
+  }
+
+  // Save to archive
+  saveData();
+  var dateEl = document.getElementById('dateInput');
+  var protoDate = dateEl ? dateEl.value : '';
+  var refDate = new Date();
+  if(protoDate){var parts=protoDate.split('.');if(parts.length===3)refDate=new Date(parts[2],parts[1]-1,parts[0]);}
+  var dk = refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
+  var data = collectData();
+  data.savedAt = new Date().toISOString();
+  localStorage.setItem('arc_'+dk, JSON.stringify(data));
+  localStorage.setItem('denis_archived_today', new Date().toDateString());
+
+  document.getElementById('archiveReminderBanner').style.display='none';
+  showToast('✅ Bericht archiviert! W'+String(getISOWeek(new Date())).padStart(2,'0'),'success',3000);
+}
+
 </script>
 
 <div id="archiveBg" onclick="closeArchive()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999989;"></div>
@@ -3305,5 +3378,17 @@ function ciDirectOut(inIdx){
   </div>
 </div>
 
+
+<!-- ARCHIVE REMINDER BANNER -->
+<div id="archiveReminderBanner" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999990;width:calc(100% - 32px);max-width:480px;">
+  <div style="background:linear-gradient(135deg,#E8394A,#c0392b);border-radius:16px;padding:14px 16px;box-shadow:0 8px 32px rgba(232,57,74,0.4);display:flex;align-items:center;gap:12px;animation:bounceIn 0.4s ease;">
+    <div style="font-size:28px;flex-shrink:0;">⏰</div>
+    <div style="flex:1;">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:white;" id="archiveBannerTitle">Schicht endet bald!</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.8);margin-top:2px;" id="archiveBannerSub">Bericht archivieren nicht vergessen</div>
+    </div>
+    <button onclick="archiveBannerSave()" style="flex-shrink:0;padding:10px 16px;border:none;border-radius:12px;background:white;color:#E8394A;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;">📁 Archivieren</button>
+  </div>
+</div>
 </body>
 </html>
