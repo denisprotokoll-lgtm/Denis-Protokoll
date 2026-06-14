@@ -3277,6 +3277,71 @@ function mgrExportAll(){
 
 
 
+
+// ===== FIX OLD ARCHIVE KEYS =====
+function fixOldArchiveKeys(){
+  var ss=localStorage.getItem('denis_shift_start')||'19:45';
+  var startH=parseInt(ss.split(':')[0]);
+  var keys=Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');});
+  var fixed=0,merged=0;
+
+  keys.forEach(function(key){
+    try{
+      var d=JSON.parse(localStorage.getItem(key));
+      if(!d)return;
+
+      // Determine correct date from savedAt or first row time
+      var savedAt=d.savedAt?new Date(d.savedAt):null;
+      if(!savedAt)return;
+
+      var savedH=savedAt.getHours();
+      // If saved in early morning (0-12) and shift starts evening → belongs to yesterday
+      var correctDate=new Date(savedAt);
+      if(savedH<12&&startH>=12){
+        correctDate.setDate(correctDate.getDate()-1);
+      }
+
+      var correctKey='arc_'+correctDate.getFullYear()+'_'
+        +String(correctDate.getMonth()+1).padStart(2,'0')+'_'
+        +String(correctDate.getDate()).padStart(2,'0');
+
+      if(correctKey===key)return; // Already correct
+
+      // Check if correct key already exists
+      var existing=localStorage.getItem(correctKey);
+      if(existing){
+        // Merge rows
+        try{
+          var existData=JSON.parse(existing);
+          var mergedRows=(existData.rows||[]).concat(d.rows||[]);
+          // Deduplicate by beginn time + kunde
+          var seen={};
+          mergedRows=mergedRows.filter(function(r){
+            var k=(r.k||'')+(r.b||'');
+            if(seen[k])return false;
+            seen[k]=true;return true;
+          });
+          existData.rows=mergedRows;
+          localStorage.setItem(correctKey,JSON.stringify(existData));
+          localStorage.removeItem(key);
+          merged++;
+        }catch(e){}
+      } else {
+        // Move to correct key
+        localStorage.setItem(correctKey,JSON.stringify(d));
+        localStorage.removeItem(key);
+        fixed++;
+      }
+    }catch(e){}
+  });
+
+  if(fixed>0||merged>0){
+    showToast('🔧 Archiv korrigiert: '+fixed+' verschoben, '+merged+' zusammengeführt','success',4000);
+  } else {
+    showToast('✅ Archiv ist korrekt — keine Änderungen nötig','success',3000);
+  }
+}
+
 </script>
 
 <div id="archiveBg" onclick="closeArchive()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999989;"></div>
@@ -3407,6 +3472,7 @@ function mgrExportAll(){
       <div style="background:rgba(232,57,74,0.08);border:1px solid rgba(232,57,74,0.2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;">
         <button onclick="mgrResetEmployee()" style="padding:10px;border:none;border-radius:8px;background:rgba(232,57,74,0.15);color:#E8394A;font-weight:700;cursor:pointer;font-size:12px;">🗑 Mitarbeiter-Daten zurücksetzen</button>
         <button onclick="mgrExportAll()" style="padding:10px;border:none;border-radius:8px;background:rgba(21,101,192,0.15);color:rgba(100,180,255,0.9);font-weight:700;cursor:pointer;font-size:12px;">📤 Vollständiges Backup exportieren</button>
+        <button onclick="fixOldArchiveKeys()" style="padding:10px;border:none;border-radius:8px;background:rgba(76,186,107,0.15);color:#4cba6b;font-weight:700;cursor:pointer;font-size:12px;">🔧 Alte Archivdaten korrigieren</button>
       </div>
     </div>
 
