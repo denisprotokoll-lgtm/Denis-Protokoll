@@ -52,7 +52,7 @@
 .ui-flex-between{display:flex;align-items:center;justify-content:space-between;}
 .ui-section-hdr{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:8px;}
 .ui-chip-light{background:#fff0f0;border:1px solid #fcc;padding:2px 10px;border-radius:20px;}
-</style>
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}</style>
 
 <script>
 // ===== OFFLINE SUPPORT =====
@@ -129,15 +129,13 @@
 </div>
 
 <div id="splashScreen" style="position:fixed;inset:0;z-index:999999;background:#0a0f14;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease;">
-
-  <!-- Minimal Logo -->
   <div style="text-align:center;">
-    <div id="splashDenis" style="font-family:'Syne',sans-serif;font-size:42px;font-weight:900;color:white;letter-spacing:-1px;opacity:0;transform:translateY(10px);transition:opacity 0.6s ease,transform 0.6s ease;">Denis</div>
-    <div id="splashProtokoll" style="font-family:'Syne',sans-serif;font-size:42px;font-weight:900;color:#E8394A;letter-spacing:-1px;opacity:0;transform:translateY(10px);transition:opacity 0.6s ease 0.3s,transform 0.6s ease 0.3s;">Protokoll</div>
-    <div id="splashLine" style="width:0px;height:2px;background:#E8394A;margin:16px auto;transition:width 0.8s ease 0.6s;"></div>
-    <div id="splashSub" style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.25);opacity:0;transition:opacity 0.6s ease 0.9s;text-transform:uppercase;">Sicherheitsdienst</div>
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:900;letter-spacing:-0.5px;min-height:36px;display:flex;align-items:center;justify-content:center;gap:0;">
+      <span id="splashText1" style="color:white;"></span><span id="splashText2" style="color:#E8394A;"></span><span id="splashCursor" style="color:#E8394A;animation:blink 0.7s step-end infinite;">|</span>
+    </div>
+    <div id="splashLine" style="width:0px;height:2px;background:#E8394A;margin:14px auto 0;border-radius:2px;transition:width 0.6s ease;"></div>
+    <div id="splashSub" style="font-size:10px;letter-spacing:3px;color:rgba(255,255,255,0.2);margin-top:10px;opacity:0;transition:opacity 0.5s ease;text-transform:uppercase;">Sicherheitsdienst</div>
   </div>
-
 </div>
 
 <div id="pinScreen">
@@ -470,7 +468,16 @@ var _audioCtx=null;
 // ===== UTILS =====
 function p2(n){return String(n).padStart(2,'0');}
 function nowHM(){var n=new Date();return p2(n.getHours())+':'+p2(n.getMinutes());}
-function getShiftDate(){var now=new Date();if(now.getHours()<17){var d=new Date(now);d.setDate(d.getDate()-1);return d;}return now;}
+function getShiftDate(){
+  var now=new Date();
+  var ss=localStorage.getItem('denis_shift_start')||'19:45';
+  var startH=parseInt(ss.split(':')[0]);
+  // If current hour is before noon AND shift starts in evening → night shift → use yesterday
+  if(now.getHours()<12 && startH>=12){
+    var d=new Date(now);d.setDate(d.getDate()-1);return d;
+  }
+  return now;
+}
 function dayLabel(d){return['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][d.getDay()];}
 function isoDate(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
 function deDate(d){return p2(d.getDate())+'.'+p2(d.getMonth()+1)+'.'+d.getFullYear();}
@@ -502,25 +509,54 @@ function showToast(msg,type,duration){
 // ===== SPLASH + PIN =====
 window.addEventListener('load',function(){
   var splash=document.getElementById('splashScreen');
-  // Animate in
-  setTimeout(function(){
-    var d=document.getElementById('splashDenis');
-    var p=document.getElementById('splashProtokoll');
-    var l=document.getElementById('splashLine');
-    var s=document.getElementById('splashSub');
-    if(d){d.style.opacity='1';d.style.transform='translateY(0)';}
-    if(p){p.style.opacity='1';p.style.transform='translateY(0)';}
-    if(l)l.style.width='60px';
-    if(s)s.style.opacity='1';
-  },100);
-  // Fade out and show PIN
-  setTimeout(function(){
-    if(splash){
-      splash.style.opacity='0';
-      setTimeout(function(){splash.style.display='none';showPinScreen();},600);
+
+  // Typewriter effect
+  var part1='Denis ';
+  var part2='Protokoll';
+  var t1=document.getElementById('splashText1');
+  var t2=document.getElementById('splashText2');
+  var line=document.getElementById('splashLine');
+  var sub=document.getElementById('splashSub');
+  var cursor=document.getElementById('splashCursor');
+  var i=0;var j=0;
+  var speed=80;
+
+  function typePart1(){
+    if(i<part1.length){
+      if(t1)t1.textContent+=part1[i++];
+      setTimeout(typePart1,speed);
+    } else {
+      setTimeout(typePart2,100);
     }
-  },2200);
-  setTimeout(function(){checkBackupReminder(false);},3500);
+  }
+
+  function typePart2(){
+    if(j<part2.length){
+      if(t2)t2.textContent+=part2[j++];
+      setTimeout(typePart2,speed);
+    } else {
+      // Done typing - show line and sub
+      setTimeout(function(){
+        if(cursor)cursor.style.animation='none';
+        if(cursor)cursor.style.opacity='0';
+        if(line)line.style.width='60px';
+        if(sub)sub.style.opacity='1';
+      },300);
+      // Fade out
+      setTimeout(function(){
+        if(splash){
+          splash.style.opacity='0';
+          setTimeout(function(){
+            splash.style.display='none';
+            showPinScreen();
+          },600);
+        }
+      },1400);
+    }
+  }
+
+  setTimeout(typePart1, 300);
+  setTimeout(function(){checkBackupReminder(false);},4000);
 });
 function updateGreeting(){
   var now=new Date();
@@ -990,7 +1026,15 @@ function saveData(){
         var dateEl=document.getElementById('dateInput');
         var protoDate=dateEl?dateEl.value:'';
         var refDate=new Date();
-        if(protoDate){var parts=protoDate.split('.');if(parts.length===3)refDate=new Date(parts[2],parts[1]-1,parts[0]);}
+        if(protoDate){
+          var parts=protoDate.split('.');
+          if(parts.length===3)refDate=new Date(parts[2],parts[1]-1,parts[0]);
+        } else {
+          // No date set: if before noon, assume night shift started yesterday
+          var ss=localStorage.getItem('denis_shift_start')||'19:45';
+          var startH=parseInt(ss.split(':')[0]);
+          if(refDate.getHours()<12&&startH>=12){refDate.setDate(refDate.getDate()-1);}
+        }
         var dk=refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
         data.savedAt=new Date().toISOString();
         localStorage.setItem('arc_'+dk,JSON.stringify(data));
