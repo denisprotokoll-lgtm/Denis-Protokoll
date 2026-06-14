@@ -128,22 +128,16 @@
   </div>
 </div>
 
-<div id="splashScreen" style="position:fixed;inset:0;z-index:999999;background:#0f1923;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;transition:opacity 0.5s ease;">
-  
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);width:300px;height:300px;background:radial-gradient(circle,rgba(232,57,74,0.08) 0%,transparent 70%);pointer-events:none;"></div>
-  
-  <div style="margin-bottom:32px;display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;background:linear-gradient(145deg,#1e2d3d,#152030);box-shadow:0 0 0 1px rgba(255,255,255,0.06),0 16px 40px rgba(0,0,0,0.6);">
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" fill="rgba(232,57,74,0.9)"/><path d="M9 12l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<div id="splashScreen" style="position:fixed;inset:0;z-index:999999;background:#0a0f14;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease;">
+
+  <!-- Minimal Logo -->
+  <div style="text-align:center;">
+    <div id="splashDenis" style="font-family:'Syne',sans-serif;font-size:42px;font-weight:900;color:white;letter-spacing:-1px;opacity:0;transform:translateY(10px);transition:opacity 0.6s ease,transform 0.6s ease;">Denis</div>
+    <div id="splashProtokoll" style="font-family:'Syne',sans-serif;font-size:42px;font-weight:900;color:#E8394A;letter-spacing:-1px;opacity:0;transform:translateY(10px);transition:opacity 0.6s ease 0.3s,transform 0.6s ease 0.3s;">Protokoll</div>
+    <div id="splashLine" style="width:0px;height:2px;background:#E8394A;margin:16px auto;transition:width 0.8s ease 0.6s;"></div>
+    <div id="splashSub" style="font-size:11px;letter-spacing:3px;color:rgba(255,255,255,0.25);opacity:0;transition:opacity 0.6s ease 0.9s;text-transform:uppercase;">Sicherheitsdienst</div>
   </div>
-  
-  <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:4px;margin-bottom:4px;">DENIS</div>
-  <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#E8394A;letter-spacing:4px;margin-bottom:8px;">PROTOKOLL</div>
-  <div style="width:32px;height:1px;background:rgba(232,57,74,0.4);margin-bottom:8px;"></div>
-  <div style="font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:6px;text-transform:uppercase;margin-bottom:52px;">Sicherheitsdienst</div>
-  
-  <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,0.04);">
-    <div id="splashBar" style="height:100%;width:0%;background:linear-gradient(90deg,transparent,#E8394A,transparent);transition:width 0.85s ease;"></div>
-  </div>
+
 </div>
 
 <div id="pinScreen">
@@ -503,11 +497,25 @@ function showToast(msg,type,duration){
 // ===== SPLASH + PIN =====
 window.addEventListener('load',function(){
   var splash=document.getElementById('splashScreen');
-  setTimeout(function(){var b=document.getElementById('splashBar');if(b)b.style.width='100%';},50);
+  // Animate in
   setTimeout(function(){
-    if(splash){splash.style.opacity='0';setTimeout(function(){splash.style.display='none';showPinScreen();},500);}
-  },1000);
-  setTimeout(function(){checkBackupReminder(false);},3000);
+    var d=document.getElementById('splashDenis');
+    var p=document.getElementById('splashProtokoll');
+    var l=document.getElementById('splashLine');
+    var s=document.getElementById('splashSub');
+    if(d){d.style.opacity='1';d.style.transform='translateY(0)';}
+    if(p){p.style.opacity='1';p.style.transform='translateY(0)';}
+    if(l)l.style.width='60px';
+    if(s)s.style.opacity='1';
+  },100);
+  // Fade out and show PIN
+  setTimeout(function(){
+    if(splash){
+      splash.style.opacity='0';
+      setTimeout(function(){splash.style.display='none';showPinScreen();},600);
+    }
+  },2200);
+  setTimeout(function(){checkBackupReminder(false);},3500);
 });
 function updateGreeting(){
   var now=new Date();
