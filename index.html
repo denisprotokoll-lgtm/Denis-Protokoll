@@ -1027,10 +1027,15 @@ function saveData(){
         var protoDate=dateEl?dateEl.value:'';
         var refDate=new Date();
         if(protoDate){
-          var parts=protoDate.split('.');
-          if(parts.length===3)refDate=new Date(parts[2],parts[1]-1,parts[0]);
+          // Handle both ISO (YYYY-MM-DD) and German (DD.MM.YYYY) formats
+          if(protoDate.indexOf('-')>=0){
+            var parts=protoDate.split('-');
+            if(parts.length===3)refDate=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+          } else if(protoDate.indexOf('.')>=0){
+            var parts=protoDate.split('.');
+            if(parts.length===3)refDate=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
+          }
         } else {
-          // No date set: if before noon, assume night shift started yesterday
           var ss=localStorage.getItem('denis_shift_start')||'19:45';
           var startH=parseInt(ss.split(':')[0]);
           if(refDate.getHours()<12&&startH>=12){refDate.setDate(refDate.getDate()-1);}
@@ -2520,8 +2525,13 @@ function ciFinish(){
     var refDate=new Date(now);
     var protoDate=document.getElementById('dateInput')?document.getElementById('dateInput').value:'';
     if(protoDate){
-      var parts=protoDate.split('.');
-      if(parts.length===3)refDate=new Date(parts[2],parts[1]-1,parts[0]);
+      if(protoDate.indexOf('-')>=0){
+        var pts=protoDate.split('-');
+        if(pts.length===3)refDate=new Date(parseInt(pts[0]),parseInt(pts[1])-1,parseInt(pts[2]));
+      } else if(protoDate.indexOf('.')>=0){
+        var pts=protoDate.split('.');
+        if(pts.length===3)refDate=new Date(parseInt(pts[2]),parseInt(pts[1])-1,parseInt(pts[0]));
+      }
     } else if(now.getHours()<startH&&now.getHours()<12){
       refDate.setDate(refDate.getDate()-1);
     }
@@ -3358,6 +3368,7 @@ function fixOldArchiveKeys(){
       </div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="arcToggleSelectMode()" id="arcSelectBtn" title="Mehrfachauswahl" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">☑</button>
+        <button onclick="fixOldArchiveKeys()" title="Archiv korrigieren" style="background:rgba(76,186,107,0.15);border:1px solid rgba(76,186,107,0.3);color:#4cba6b;font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">🔧</button>
         <button onclick="archiveExportAll()" title="Exportieren" style="background:rgba(21,101,192,0.2);border:1px solid rgba(21,101,192,0.4);color:rgba(100,180,255,0.9);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">📤</button>
         <button onclick="archiveDeleteAll()" title="Alle löschen" style="background:rgba(232,57,74,0.15);border:1px solid rgba(232,57,74,0.3);color:rgba(232,57,74,0.8);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">🗑</button>
         <button onclick="closeArchive()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;">✕</button>
