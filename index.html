@@ -43,7 +43,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;">
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
   import {
     getFirestore, collection, doc, setDoc, getDoc, getDocs,
     query, orderBy, limit, onSnapshot, serverTimestamp
@@ -55,21 +54,14 @@
     projectId: "denis-protokoll",
     storageBucket: "denis-protokoll.firebasestorage.app",
     messagingSenderId: "573380448570",
-    appId: "1:573380448570:web:82f58bdbb257906131c003",
-    measurementId: "G-GJBCNJH2Y7"
+    appId: "1:573380448570:web:82f58bdbb257906131c003"
   };
 
   const fbApp = initializeApp(firebaseConfig);
   const db = getFirestore(fbApp);
-  const analytics = getAnalytics(fbApp);
-
-  // Log app open event
-  logEvent(analytics, 'app_open');
 
   // Expose to global scope for use in main script
   window._fbDb = db;
-  window._fbAnalytics = analytics;
-  window._fbLogEvent = logEvent;
   window._fbFns = {
     collection, doc, setDoc, getDoc, getDocs,
     query, orderBy, limit, onSnapshot, serverTimestamp
@@ -679,10 +671,6 @@ function unlockApp(){
   document.getElementById('appContent').style.display='block';
   initApp();
   setTimeout(function(){showCheckin();},300);
-  // Analytics: login
-  if(window._fbLogEvent && window._fbAnalytics){
-    try{ window._fbLogEvent(window._fbAnalytics,'login',{method:'PIN',mitarbeiter:localStorage.getItem('denis_mitarbeiter')||'unknown'}); }catch(e){}
-  }
 }
 document.addEventListener('keydown',function(e){
   var pin=document.getElementById('pinScreen');
@@ -2649,10 +2637,6 @@ function ciSOSSelect(ereignis,overlay){
 
 // ===== FLASH & SOUND =====
 function showCheckinFlash(type){
-  // Analytics: checkin/checkout event
-  if(window._fbLogEvent && window._fbAnalytics){
-    try{ window._fbLogEvent(window._fbAnalytics, type==='in'?'checkin':'checkout', {mitarbeiter:localStorage.getItem('denis_mitarbeiter')||'unknown'}); }catch(e){}
-  }
   var old=document.querySelector('.ci-flash-overlay');if(old)old.remove();
   var o=document.createElement('div');o.className='ci-flash-overlay '+(type==='in'?'green':'red');
   o.innerHTML='<div class="ci-flash-icon">'+(type==='in'?'OK':'OUT')+'</div>';
@@ -3068,6 +3052,7 @@ function openManagerPanel(){
   mgrLoadStats();
   mgrLoadActivity();
   mgrLoadShiftSettings();
+  mgrLoadLiveStatus();
 }
 
 function closeManagerPanel(){
@@ -3532,10 +3517,6 @@ function fbSyncArchive(key, data){
       mitarbeiter: data.mitarbeiter || ''
     }).then(function(){
       console.log('☁️ Synced:', key);
-      // Analytics: archive saved
-      if(window._fbLogEvent && window._fbAnalytics){
-        try{ window._fbLogEvent(window._fbAnalytics,'archive_saved',{mitarbeiter:data.mitarbeiter||'unknown'}); }catch(e){}
-      }
     }).catch(function(e){
       console.warn('Firebase sync failed:', e);
     });
@@ -3580,6 +3561,60 @@ function startFbLiveSync(){
 }
 function stopFbLiveSync(){
   if(_fbLiveSyncInterval){clearInterval(_fbLiveSyncInterval);_fbLiveSyncInterval=null;}
+}
+
+
+function mgrLoadLiveStatus(){
+  var dot = document.getElementById('mgrLiveDot');
+  var content = document.getElementById('mgrLiveContent');
+  if(!dot || !content) return;
+
+  if(!_fbReady || !window._fbDb){
+    dot.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#E8394A;"></span><span>Offline</span>';
+    content.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.3);">Keine Cloud-Verbindung</span>';
+    setTimeout(mgrLoadLiveStatus, 2000);
+    return;
+  }
+
+  dot.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#4cba6b;animation:pulse 1.5s infinite;"></span><span>Live</span>';
+
+  try{
+    var fns = window._fbFns;
+    var colRef = fns.collection(window._fbDb, 'liveShifts');
+    fns.getDocs(colRef).then(function(snapshot){
+      if(snapshot.empty){
+        content.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.3);">Kein Mitarbeiter aktiv</span>';
+        return;
+      }
+      content.innerHTML = '';
+      content.style.display = 'flex';
+      content.style.flexDirection = 'column';
+      content.style.gap = '8px';
+      content.style.alignItems = 'stretch';
+      content.style.justifyContent = 'flex-start';
+
+      snapshot.forEach(function(docSnap){
+        try{
+          var d = JSON.parse(docSnap.data().data);
+          var rows = (d.rows||[]).filter(function(r){return r.k && r.k!=='— Standort —';});
+          var openRows = rows.filter(function(r){return r.b && !r.e;});
+          var worker = docSnap.id;
+
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,0.04);border-radius:10px;';
+          row.innerHTML =
+            '<div style="width:8px;height:8px;border-radius:50%;background:'+(openRows.length?'#4cba6b':'#888')+';flex-shrink:0;"></div>'
+            +'<div style="flex:1;">'
+              +'<div style="font-size:12px;font-weight:700;color:white;">'+worker+'</div>'
+              +'<div style="font-size:10px;color:rgba(255,255,255,0.4);">'+rows.length+' Einträge'+(openRows.length?' · '+openRows[0].k+' aktiv':'')+'</div>'
+            +'</div>';
+          content.appendChild(row);
+        }catch(e){}
+      });
+    }).catch(function(e){
+      content.innerHTML = '<span style="font-size:11px;color:rgba(232,57,74,0.6);">Fehler beim Laden</span>';
+    });
+  }catch(e){}
 }
 
 </script>
@@ -3677,6 +3712,17 @@ function stopFbLiveSync(){
     </div>
 
     <div style="margin-bottom:20px;">
+      <div class="mgr-section-label">☁️ LIVE STATUS</div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:-22px;margin-bottom:8px;">
+        <div id="mgrLiveDot" style="display:flex;align-items:center;gap:5px;font-size:9px;color:rgba(255,255,255,0.3);">
+          <span style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);"></span>
+          <span>Verbinde...</span>
+        </div>
+      </div>
+      <div id="mgrLiveContent" style="background:#1a2535;border-radius:12px;padding:14px;min-height:60px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+        <span style="font-size:11px;color:rgba(255,255,255,0.3);">Lade Live-Daten...</span>
+      </div>
+
       <div class="mgr-section-label">👁 MITARBEITER-AKTIVITÄT</div>
       <div id="mgrActivityLog" style="background:#1a2535;border-radius:12px;overflow:hidden;"></div>
     </div>
