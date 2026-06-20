@@ -585,6 +585,7 @@ window.addEventListener('load',function(){
 
   setTimeout(typePart1, 300);
   setTimeout(function(){checkBackupReminder(false);},4000);
+  setTimeout(function(){fbAutoLoadOnStart();},1500);
 });
 function updateGreeting(){
   var now=new Date();
@@ -3510,7 +3511,7 @@ function fbSyncArchive(key, data){
   }
   try{
     var fns = window._fbFns;
-    var docRef = fns.doc(window._fbDb, 'archives', key);
+    var docRef = fns.doc(window._fbDb, 'reports', key);
     fns.setDoc(docRef, {
       data: JSON.stringify(data),
       syncedAt: fns.serverTimestamp(),
@@ -3529,12 +3530,79 @@ function fbSyncCurrentShift(){
     var data = collectData();
     var fns = window._fbFns;
     var worker = data.mitarbeiter || 'unknown';
-    var docRef = fns.doc(window._fbDb, 'liveShifts', worker);
+    var docRef = fns.doc(window._fbDb, 'reports', 'live_'+worker);
     fns.setDoc(docRef, {
       data: JSON.stringify(data),
       updatedAt: fns.serverTimestamp()
     }).catch(function(e){console.warn('Live sync failed:', e);});
   }catch(e){}
+}
+
+// ===== FETCH / LOAD FROM FIREBASE =====
+
+// جلب كل التقارير (الأرشيف) من Firebase وحفظها محلياً في localStorage
+function fbFetchAllReports(){
+  return new Promise(function(resolve, reject){
+    if(!_fbReady || !window._fbDb){
+      reject('Firebase nicht bereit');
+      return;
+    }
+    try{
+      var fns = window._fbFns;
+      var colRef = fns.collection(window._fbDb, 'reports');
+      fns.getDocs(colRef).then(function(snapshot){
+        var count = 0;
+        snapshot.forEach(function(docSnap){
+          var id = docSnap.id;
+          // تجاهل وثائق live_ — هذه ليست أرشيف
+          if(id.indexOf('live_') === 0) return;
+          if(id.indexOf('arc_') !== 0) return;
+
+          try{
+            var docData = docSnap.data();
+            var parsed = JSON.parse(docData.data);
+            // احفظ محلياً فقط إذا غير موجود أو أحدث
+            var existing = localStorage.getItem(id);
+            var shouldSave = true;
+            if(existing){
+              try{
+                var existingParsed = JSON.parse(existing);
+                var existingTs = existingParsed.savedAt ? new Date(existingParsed.savedAt).getTime() : 0;
+                var newTs = parsed.savedAt ? new Date(parsed.savedAt).getTime() : 0;
+                shouldSave = newTs > existingTs;
+              }catch(e){}
+            }
+            if(shouldSave){
+              localStorage.setItem(id, JSON.stringify(parsed));
+              count++;
+            }
+          }catch(e){}
+        });
+        resolve(count);
+      }).catch(reject);
+    }catch(e){reject(e);}
+  });
+}
+
+// تحميل تلقائي عند بدء التطبيق
+function fbAutoLoadOnStart(){
+  if(!_fbReady || !window._fbDb){
+    _fbSyncQueue.push(fbAutoLoadOnStart);
+    return;
+  }
+  fbFetchAllReports().then(function(count){
+    if(count > 0){
+      console.log('☁️ '+count+' Berichte von Firebase geladen');
+      // حدّث عرض الأرشيف إذا كان مفتوحاً
+      var panel = document.getElementById('archivePanel');
+      if(panel && (panel.style.transform === 'translateX(0px)' || panel.style.transform === 'translateX(0)')){
+        renderArchiveList(document.getElementById('archiveSearch') ? document.getElementById('archiveSearch').value : '');
+        if(typeof updateArcQuickStats === 'function') updateArcQuickStats();
+      }
+    }
+  }).catch(function(e){
+    console.warn('Firebase Auto-Load fehlgeschlagen:', e);
+  });
 }
 
 // Sync to Firebase whenever archive is saved
@@ -3580,7 +3648,7 @@ function mgrLoadLiveStatus(){
 
   try{
     var fns = window._fbFns;
-    var colRef = fns.collection(window._fbDb, 'liveShifts');
+    var colRef = fns.collection(window._fbDb, 'reports');
     fns.getDocs(colRef).then(function(snapshot){
       if(snapshot.empty){
         content.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.3);">Kein Mitarbeiter aktiv</span>';
@@ -3617,6 +3685,22 @@ function mgrLoadLiveStatus(){
   }catch(e){}
 }
 
+
+function fbManualRefresh(){
+  if(!_fbReady || !window._fbDb){
+    showToast('☁️ Keine Cloud-Verbindung','error');
+    return;
+  }
+  showToast('☁️ Lade von Cloud...','success',1500);
+  fbFetchAllReports().then(function(count){
+    renderArchiveList(document.getElementById('archiveSearch') ? document.getElementById('archiveSearch').value : '');
+    if(typeof updateArcQuickStats === 'function') updateArcQuickStats();
+    showToast(count > 0 ? '☁️ '+count+' Berichte aktualisiert' : '✅ Alles aktuell','success',2500);
+  }).catch(function(e){
+    showToast('❌ Fehler beim Laden','error');
+  });
+}
+
 </script>
 
 <div id="archiveBg" onclick="closeArchive()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999989;"></div>
@@ -3633,6 +3717,7 @@ function mgrLoadLiveStatus(){
       </div>
       <div style="display:flex;gap:5px;align-items:center;">
         <button onclick="arcToggleSelectMode()" id="arcSelectBtn" title="Mehrfachauswahl" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">☑</button>
+        <button onclick="fbManualRefresh()" title="Von Cloud aktualisieren" style="background:rgba(21,101,192,0.2);border:1px solid rgba(21,101,192,0.4);color:rgba(100,180,255,0.9);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">☁️</button>
         <button onclick="fixOldArchiveKeys()" title="Archiv korrigieren" style="background:rgba(76,186,107,0.15);border:1px solid rgba(76,186,107,0.3);color:#4cba6b;font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">🔧</button>
         <button onclick="archiveExportAll()" title="Exportieren" style="background:rgba(21,101,192,0.2);border:1px solid rgba(21,101,192,0.4);color:rgba(100,180,255,0.9);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">📤</button>
         <button onclick="archiveDeleteAll()" title="Alle löschen" style="background:rgba(232,57,74,0.15);border:1px solid rgba(232,57,74,0.3);color:rgba(232,57,74,0.8);font-size:11px;font-weight:700;padding:4px 8px;border-radius:7px;cursor:pointer;">🗑</button>
