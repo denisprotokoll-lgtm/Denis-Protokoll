@@ -3583,16 +3583,22 @@ function fbFetchAllReports(){
       var colRef = fns.collection(window._fbDb, 'reports');
       fns.getDocs(colRef).then(function(snapshot){
         var count = 0;
+        var allIds = [];
+        snapshot.forEach(function(docSnap){
+          allIds.push(docSnap.id);
+        });
+        console.log('📋 Alle Dokumente in reports:', allIds);
+
         snapshot.forEach(function(docSnap){
           var id = docSnap.id;
           // تجاهل وثائق live_ — هذه ليست أرشيف
           if(id.indexOf('live_') === 0) return;
-          if(id.indexOf('arc_') !== 0) return;
+          // قبول أي وثيقة لا تبدأ بـ live_ (مرن أكثر)
 
           try{
             var docData = docSnap.data();
+            if(!docData.data){console.warn('⚠️ Dokument ohne data Feld:', id); return;}
             var parsed = JSON.parse(docData.data);
-            // احفظ محلياً فقط إذا غير موجود أو أحدث
             var existing = localStorage.getItem(id);
             var shouldSave = true;
             if(existing){
@@ -3604,13 +3610,19 @@ function fbFetchAllReports(){
               }catch(e){}
             }
             if(shouldSave){
-              localStorage.setItem(id, JSON.stringify(parsed));
+              // إذا المعرف لا يبدأ بـ arc_ نضيف البادئة لضمان ظهوره في الأرشيف
+              var saveKey = id.indexOf('arc_')===0 ? id : 'arc_'+id;
+              localStorage.setItem(saveKey, JSON.stringify(parsed));
               count++;
+              console.log('✅ Gespeichert:', saveKey);
             }
-          }catch(e){}
+          }catch(e){console.warn('Fehler bei Dokument', id, e);}
         });
         resolve(count);
-      }).catch(reject);
+      }).catch(function(err){
+        console.error('❌ getDocs failed:', err);
+        reject(err);
+      });
     }catch(e){reject(e);}
   });
 }
