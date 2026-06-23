@@ -42,15 +42,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;">
 <script type="module">
-  console.log('🔥 Firebase module script started');
   try{
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js");
-    console.log('🔥 firebase-app.js loaded OK');
     const {
       getFirestore, collection, doc, setDoc, getDoc, getDocs,
       query, orderBy, limit, onSnapshot, serverTimestamp
     } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js");
-    console.log('🔥 firebase-firestore.js loaded OK');
 
     const firebaseConfig = {
       apiKey: "AIzaSyB3XnCqqGls7QiFBn5hxNDqVVRKb7HMc6k",
@@ -62,9 +59,7 @@
     };
 
     const fbApp = initializeApp(firebaseConfig);
-    console.log('🔥 initializeApp OK');
     const db = getFirestore(fbApp);
-    console.log('🔥 getFirestore OK');
 
     window._fbDb = db;
     window._fbFns = {
@@ -72,7 +67,6 @@
       query, orderBy, limit, onSnapshot, serverTimestamp
     };
     window._fbReady = true;
-    console.log('🔥 Firebase fully ready, dispatching event');
     window.dispatchEvent(new Event('firebaseReady'));
   }catch(err){
     console.error('🔥 FIREBASE INIT FAILED:', err);
@@ -137,6 +131,7 @@
   }
 
   window.addEventListener('online',  updateOnlineStatus);
+  window.addEventListener('online', function(){ if(typeof fbRetryPending==='function') fbRetryPending(); });
   window.addEventListener('offline', updateOnlineStatus);
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -3509,9 +3504,9 @@ var _fbReady = false;
 function _fbMarkReady(){
   if(_fbReady) return;
   _fbReady = true;
-  console.log('Firebase verbunden ✅');
   _fbSyncQueue.forEach(function(fn){ try{fn();}catch(e){} });
   _fbSyncQueue = [];
+  fbRetryPending();
 }
 
 // الاستماع للحدث (الحالة الطبيعية)
@@ -3535,7 +3530,10 @@ if(window._fbReady === true){
   }, 100);
 }
 
-function fbSyncArchive(key, data){
+function fbSyncArchive(key, data, attempt){
+  attempt = attempt || 1;
+  var MAX_ATTEMPTS = 4;
+
   if(!_fbReady || !window._fbDb){
     _fbSyncQueue.push(function(){ fbSyncArchive(key, data); });
     return;
@@ -3548,11 +3546,49 @@ function fbSyncArchive(key, data){
       syncedAt: fns.serverTimestamp(),
       mitarbeiter: data.mitarbeiter || ''
     }).then(function(){
-      console.log('☁️ Synced:', key);
+      // علامة نجاح محلية — يساعد في تتبع حالة المزامنة
+      try{
+        var pending = JSON.parse(localStorage.getItem('denis_fb_pending')||'[]');
+        pending = pending.filter(function(k){return k!==key;});
+        localStorage.setItem('denis_fb_pending', JSON.stringify(pending));
+      }catch(e){}
     }).catch(function(e){
-      console.warn('Firebase sync failed:', e);
+      console.warn('Firebase sync failed (Versuch '+attempt+'/'+MAX_ATTEMPTS+'):', e);
+      if(attempt < MAX_ATTEMPTS){
+        // إعادة محاولة مع تأخير متزايد (exponential backoff)
+        var delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+        setTimeout(function(){
+          fbSyncArchive(key, data, attempt+1);
+        }, delay);
+      } else {
+        // فشلت كل المحاولات — احفظ كـ pending للمحاولة لاحقاً
+        try{
+          var pending = JSON.parse(localStorage.getItem('denis_fb_pending')||'[]');
+          if(pending.indexOf(key)<0)pending.push(key);
+          localStorage.setItem('denis_fb_pending', JSON.stringify(pending));
+        }catch(e2){}
+        console.error('☁️❌ Sync endgültig fehlgeschlagen für:', key);
+      }
     });
   }catch(e){console.warn('fbSyncArchive error:', e);}
+}
+
+// إعادة محاولة كل المزامنات المعلقة (يُستدعى عند فتح التطبيق أو استعادة الاتصال)
+function fbRetryPending(){
+  if(!_fbReady || !window._fbDb) return;
+  try{
+    var pending = JSON.parse(localStorage.getItem('denis_fb_pending')||'[]');
+    if(!pending.length) return;
+    pending.forEach(function(key){
+      var raw = localStorage.getItem(key);
+      if(raw){
+        try{
+          var data = JSON.parse(raw);
+          fbSyncArchive(key, data);
+        }catch(e){}
+      }
+    });
+  }catch(e){}
 }
 
 function fbSyncCurrentShift(){
@@ -3587,7 +3623,6 @@ function fbFetchAllReports(){
         snapshot.forEach(function(docSnap){
           allIds.push(docSnap.id);
         });
-        console.log('📋 Alle Dokumente in reports:', allIds);
 
         snapshot.forEach(function(docSnap){
           var id = docSnap.id;
@@ -3614,7 +3649,6 @@ function fbFetchAllReports(){
               var saveKey = id.indexOf('arc_')===0 ? id : 'arc_'+id;
               localStorage.setItem(saveKey, JSON.stringify(parsed));
               count++;
-              console.log('✅ Gespeichert:', saveKey);
             }
           }catch(e){console.warn('Fehler bei Dokument', id, e);}
         });
@@ -3629,17 +3663,12 @@ function fbFetchAllReports(){
 
 // تحميل تلقائي عند بدء التطبيق
 function fbAutoLoadOnStart(){
-  console.log('fbAutoLoadOnStart called, _fbReady=', _fbReady, 'window._fbDb=', !!window._fbDb);
   if(!_fbReady || !window._fbDb){
-    console.log('Firebase not ready yet, queueing...');
     _fbSyncQueue.push(fbAutoLoadOnStart);
     return;
   }
-  console.log('Fetching reports from Firebase...');
   fbFetchAllReports().then(function(count){
-    console.log('fbFetchAllReports resolved with count:', count);
     if(count > 0){
-      console.log('☁️ '+count+' Berichte von Firebase geladen');
       // حدّث عرض الأرشيف إذا كان مفتوحاً
       var panel = document.getElementById('archivePanel');
       if(panel && (panel.style.transform === 'translateX(0px)' || panel.style.transform === 'translateX(0)')){
@@ -3748,6 +3777,28 @@ function fbManualRefresh(){
   });
 }
 
+
+function arcDeleteSelected(){
+  if(!_arcSelected.length){showToast('Keine Schichten ausgewählt','error');return;}
+  var count=_arcSelected.length;
+  showConfirmDialog(count+' Schicht'+(count>1?'en':'')+' löschen?',function(){
+    _arcSelected.forEach(function(key){
+      localStorage.removeItem(key);
+      // Also delete from Firebase if connected
+      if(_fbReady && window._fbDb){
+        try{
+          var fns=window._fbFns;
+          var docRef=fns.doc(window._fbDb,'reports',key);
+          fns.setDoc(docRef,{deleted:true,deletedAt:fns.serverTimestamp()}).catch(function(){});
+        }catch(e){}
+      }
+    });
+    arcCancelSelect();
+    showToast('🗑 '+count+' Schicht'+(count>1?'en':'')+' gelöscht');
+    updateArcQuickStats();
+  });
+}
+
 </script>
 
 <div id="archiveBg" onclick="closeArchive()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999989;"></div>
@@ -3788,7 +3839,8 @@ function fbManualRefresh(){
   <div id="arcSelectBar" style="display:none;padding:8px;border-top:1px solid rgba(255,255,255,0.08);background:#1a2535;flex-shrink:0;">
     <div style="display:flex;gap:6px;align-items:center;">
       <div id="arcSelectCount" style="flex:1;font-size:10px;color:rgba(255,255,255,0.4);font-weight:700;letter-spacing:0.5px;"></div>
-      <button onclick="arcPrintSelected()" style="padding:7px 12px;border:none;border-radius:8px;background:rgba(232,57,74,0.2);border:1px solid rgba(232,57,74,0.4);color:#E8394A;font-size:11px;font-weight:700;cursor:pointer;">🖨 Drucken</button>
+      <button onclick="arcDeleteSelected()" style="padding:7px 12px;border:none;border-radius:8px;background:rgba(232,57,74,0.15);border:1px solid rgba(232,57,74,0.3);color:#E8394A;font-size:11px;font-weight:700;cursor:pointer;">🗑 Löschen</button>
+      <button onclick="arcPrintSelected()" style="padding:7px 12px;border:none;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;cursor:pointer;">🖨 Drucken</button>
       <button onclick="arcCancelSelect()" style="padding:7px 10px;border:none;border-radius:8px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);font-size:11px;cursor:pointer;">✕</button>
     </div>
   </div>
