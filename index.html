@@ -2358,24 +2358,30 @@ function ciSheetSaveKunde(idx){
   auditLog('KUNDE_EDIT','Kunde geändert: '+oldKunde+' → '+newKunde);
   log[idx].kunde=newKunde;
   ciSaveLog(log);
-  // Also update the proto-row in the DOM
-  // Find the matching row by beginn time and old kunde
-  var rows=document.querySelectorAll('.proto-row');
-  rows.forEach(function(row){
-    var rowIdx=row.id.replace('row-','');
-    var ksel=document.getElementById('ksel-'+rowIdx);
-    var kcust=document.getElementById('kcust-'+rowIdx);
-    var bd=document.getElementById('bd-'+rowIdx);
+  // Update proto-row via rowRef (direct & reliable)
+  var rowRef=log[idx].rowRef;
+  if(rowRef){
+    var ksel=document.getElementById('ksel-'+rowRef);
+    var kcust=document.getElementById('kcust-'+rowRef);
     var isC=kcust&&kcust.style.display!=='none';
-    var curKunde=isC?kcust.value:(ksel?ksel.value:'');
-    if(curKunde===oldKunde&&bd&&bd.value===log[idx].time){
-      if(isC&&kcust){kcust.value=newKunde;}
-      else if(ksel){
-        var opt=Array.from(ksel.options).find(function(o){return o.value===newKunde;});
-        if(opt){ksel.value=newKunde;}
+    if(isC&&kcust){
+      kcust.value=newKunde;
+      // trigger update
+      var klabel=document.getElementById('klabel-'+rowRef);
+      if(klabel)klabel.textContent=newKunde;
+    } else if(ksel){
+      var opt=Array.from(ksel.options).find(function(o){return o.value===newKunde;});
+      if(opt){ksel.value=newKunde;}
+      else {
+        // Custom kunde - switch to custom input
+        if(kcust){kcust.style.display='block';kcust.value=newKunde;}
+        if(ksel){ksel.style.display='none';}
+        var klabel2=document.getElementById('klabel-'+rowRef);
+        if(klabel2)klabel2.textContent=newKunde;
       }
     }
-  });
+    updateSummary();
+  }
   ciRenderLog();updateQuickBar();ciRenderKunden();
   ciCloseSheet();ciShowToast('✅ Kunde aktualisiert');saveData();
 }
@@ -2389,15 +2395,18 @@ function ciSheetSaveTime(idx){
   auditLog('TIME_EDIT','Zeit geändert: '+log[idx].kunde+' '+oldTime+' → '+newTime);
   log[idx].time=newTime;
   ciSaveLog(log);
-  // Update the proto-row DOM element
-  var rows=document.querySelectorAll('.proto-row');
-  rows.forEach(function(row){
-    var rowIdx=row.id.replace('row-','');
-    var bd=document.getElementById('bd-'+rowIdx);
-    var ed=document.getElementById('ed-'+rowIdx);
-    if(isIn&&bd&&bd.value===oldTime){bd.value=newTime;colorTime(bd);}
-    else if(!isIn&&ed&&ed.value===oldTime){ed.value=newTime;colorTime(ed);}
-  });
+  // Update proto-row via rowRef (direct & reliable)
+  var rowRef=log[idx].rowRef;
+  if(rowRef){
+    if(isIn){
+      var bd=document.getElementById('bd-'+rowRef);
+      if(bd){bd.value=newTime;colorTime(bd);}
+    } else {
+      var ed=document.getElementById('ed-'+rowRef);
+      if(ed){ed.value=newTime;colorTime(ed);}
+    }
+    updateSummary();
+  }
   ciRenderLog();updateQuickBar();
   ciCloseSheet();ciShowToast('✅ Zeit gespeichert');saveData();
 }
