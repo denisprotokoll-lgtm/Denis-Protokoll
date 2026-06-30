@@ -591,6 +591,7 @@ window.addEventListener('load',function(){
   setTimeout(typePart1, 300);
   setTimeout(function(){checkBackupReminder(false);},4000);
   setTimeout(function(){fbAutoLoadOnStart();},1500);
+  setTimeout(function(){weeklyArchiveCleanup();},2000);
 });
 function updateGreeting(){
   var now=new Date();
@@ -3806,6 +3807,49 @@ function arcDeleteSelected(){
     showToast('🗑 '+count+' Schicht'+(count>1?'en':'')+' gelöscht');
     updateArcQuickStats();
   });
+}
+
+
+// ===== TÄGLICHE/WÖCHENTLICHE ARCHIV-BEREINIGUNG =====
+// يحذف الأرشيف من الأسابيع السابقة — يحتفظ فقط بالأسبوع الحالي (الاثنين-الأحد)
+
+function getArchiveWeekKey(date){
+  var year = date.getFullYear();
+  var week = getISOWeek(date);
+  return year + '-W' + String(week).padStart(2,'0');
+}
+
+function weeklyArchiveCleanup(){
+  var lastCleanup = localStorage.getItem('denis_last_weekly_cleanup');
+  var currentWeekKey = getArchiveWeekKey(new Date());
+
+  // إذا تم التنظيف بالفعل لهذا الأسبوع، لا تكرر
+  if(lastCleanup === currentWeekKey) return;
+
+  var keys = Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');});
+  var removed = 0;
+
+  keys.forEach(function(key){
+    try{
+      // استخراج التاريخ من المفتاح: arc_YYYY_MM_DD
+      var parts = key.replace('arc_','').split('_');
+      if(parts.length !== 3) return;
+      var archDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+      var archWeekKey = getArchiveWeekKey(archDate);
+
+      if(archWeekKey !== currentWeekKey){
+        localStorage.removeItem(key);
+        removed++;
+      }
+    }catch(e){}
+  });
+
+  localStorage.setItem('denis_last_weekly_cleanup', currentWeekKey);
+
+  if(removed > 0){
+    console.warn('🗓 Wöchentliche Bereinigung: '+removed+' alte Schichten gelöscht');
+    auditLog('ARCHIVE_CLEANUP', removed+' Schichten aus Vorwochen gelöscht');
+  }
 }
 
 </script>
