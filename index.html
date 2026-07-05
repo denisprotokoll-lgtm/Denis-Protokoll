@@ -43,6 +43,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" onerror="this.onerror=null;">
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
   import {
     getFirestore, collection, doc, setDoc, getDoc, getDocs,
     query, orderBy, limit, onSnapshot, serverTimestamp
@@ -54,14 +55,21 @@
     projectId: "denis-protokoll",
     storageBucket: "denis-protokoll.firebasestorage.app",
     messagingSenderId: "573380448570",
-    appId: "1:573380448570:web:82f58bdbb257906131c003"
+    appId: "1:573380448570:web:82f58bdbb257906131c003",
+    measurementId: "G-GJBCNJH2Y7"
   };
 
   const fbApp = initializeApp(firebaseConfig);
   const db = getFirestore(fbApp);
+  const analytics = getAnalytics(fbApp);
+
+  // Log app open event
+  logEvent(analytics, 'app_open');
 
   // Expose to global scope for use in main script
   window._fbDb = db;
+  window._fbAnalytics = analytics;
+  window._fbLogEvent = logEvent;
   window._fbFns = {
     collection, doc, setDoc, getDoc, getDocs,
     query, orderBy, limit, onSnapshot, serverTimestamp
@@ -371,7 +379,7 @@
     <button class="btn btn-green" onclick="openReportPreview()">📲 WhatsApp</button>
     <button class="btn btn-blue" onclick="generatePDFAndSave()">📄 PDF</button>
     <button class="btn btn-ghost" onclick="resetForm()">↺</button>
-    <button class="btn btn-red" onclick="sortRowsByTime();window.print()">🖨</button>
+    <button class="btn btn-red" onclick="sortRowsByTime(true);window.print()">🖨</button>
   </div>
 </div>
 
@@ -416,7 +424,6 @@
     <button class="rm-row-btn" onclick="removeLastRow()">− Zeile</button>
     <span id="rowCountLabel" style="font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--muted);min-width:55px;text-align:center;">0 Zeilen</span>
     <button class="add-row-btn" onclick="addRow()">＋ Zeile</button>
-    <button class="rm-row-btn" onclick="sortRowsByTime()" style="background:white;color:#3d5268;border:1.5px solid #3d5268;">Sort</button>
   </div>
   <div class="print-sig-area" id="printSigArea">
     <div style="display:flex;gap:40px;align-items:flex-end;">
@@ -671,6 +678,9 @@ function unlockApp(){
   document.getElementById('appContent').style.display='block';
   initApp();
   setTimeout(function(){showCheckin();},300);
+  if(window._fbLogEvent && window._fbAnalytics){
+    try{ window._fbLogEvent(window._fbAnalytics,'login',{method:'PIN',mitarbeiter:localStorage.getItem('denis_mitarbeiter')||'unknown'}); }catch(e){}
+  }
 }
 document.addEventListener('keydown',function(e){
   var pin=document.getElementById('pinScreen');
@@ -1053,21 +1063,15 @@ function saveData(){
       try{
         var dateEl=document.getElementById('dateInput');
         var protoDate=dateEl?dateEl.value:'';
-        var refDate=new Date();
-        if(protoDate){
-          // Handle both ISO (YYYY-MM-DD) and German (DD.MM.YYYY) formats
-          if(protoDate.indexOf('-')>=0){
-            var parts=protoDate.split('-');
-            if(parts.length===3)refDate=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
-          } else if(protoDate.indexOf('.')>=0){
-            var parts=protoDate.split('.');
-            if(parts.length===3)refDate=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
-          }
-        } else {
-          var ss=localStorage.getItem('denis_shift_start')||'19:45';
-          var startH=parseInt(ss.split(':')[0]);
-          if(refDate.getHours()<12&&startH>=12){refDate.setDate(refDate.getDate()-1);}
+        var refDate;
+        if(protoDate && protoDate.indexOf('-')>=0){
+          var parts=protoDate.split('-');
+          if(parts.length===3) refDate=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+        } else if(protoDate && protoDate.indexOf('.')>=0){
+          var parts=protoDate.split('.');
+          if(parts.length===3) refDate=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
         }
+        if(!refDate || isNaN(refDate.getTime())) refDate=getShiftDate();
         var dk=refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
         data.savedAt=new Date().toISOString();
         localStorage.setItem('arc_'+dk,JSON.stringify(data));
@@ -1372,34 +1376,48 @@ function arcPrintSelected(){
   if(!_arcSelected.length){showToast('Keine Schichten ausgewählt','error');return;}
   var keys=[].concat(_arcSelected).sort();
 
-  var html='<!DOCTYPE html><html><head><meta charset="utf-8">'+
-    '<style>'+'body{margin:0;padding:0;background:white;font-family:Arial,sans-serif}'+'@page{size:A4 portrait;margin:8mm}'+'@media print{body{margin:0}.no-print{display:none!important}}'+'</style></head><body>';
-
   var count=0;
+  var blocksHtml='';
   keys.forEach(function(key){
     var raw=localStorage.getItem(key);
     if(!raw)return;
     try{
       var d=JSON.parse(raw);
-      html+=arcBuildReportBlock(d, count>0);
+      blocksHtml+='<div style="page-break-after:always;">'+arcBuildReportBlock(d,false)+'</div>';
       count++;
     }catch(e){}
   });
 
-  html+='<div class="no-print" style="position:fixed;bottom:0;left:0;right:0;background:#1e2d3d;color:white;text-align:center;padding:10px;font-size:12px;">'+
-    count+' Schichten · Druckvorschau lädt… <button onclick="window.print()" style="margin-left:16px;padding:5px 16px;background:#E8394A;border:none;color:white;border-radius:6px;cursor:pointer;font-weight:700;">🖨 Drucken</button>'+
-    '<button onclick="window.close()" style="margin-left:8px;padding:5px 12px;background:rgba(255,255,255,0.1);border:none;color:white;border-radius:6px;cursor:pointer;">✕ Schließen</button>'+
-  '</div>';
-
-  html+='</body></html>';
+  if(!count){showToast('Keine Daten gefunden','error');return;}
 
   var win=window.open('','_blank','width=900,height=700,scrollbars=yes');
   if(!win){showToast('Popup blockiert – bitte erlauben','error');return;}
+
   win.document.open();
-  win.document.write(html);
+  win.document.write(
+    '<!DOCTYPE html><html><head><meta charset="utf-8">'+
+    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">'+
+    '<style>'+
+      '*{box-sizing:border-box;margin:0;padding:0}'+
+      'body{font-family:"DM Sans",Arial,sans-serif;background:white;padding:0;}'+
+      '@page{size:A4 portrait;margin:6mm}'+
+      '@media print{.no-print{display:none!important}body{padding:0!important}div[style*="page-break-after"]:last-child{page-break-after:auto!important}}'+
+      '.no-print{position:fixed;bottom:0;left:0;right:0;background:#1e2d3d;color:white;text-align:center;padding:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:10px;}'+
+      '.print-btn{padding:7px 20px;background:#E8394A;border:none;color:white;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;}'+
+      '.close-btn{padding:7px 14px;background:rgba(255,255,255,0.1);border:none;color:white;border-radius:8px;cursor:pointer;font-size:13px;}'+
+      '.ui-chip-light{color:#555;font-size:7pt;}'+
+    '</style></head><body>'+
+    blocksHtml+
+    '<div class="no-print">'+
+      '<span>'+count+' Schichten bereit</span>'+
+      '<button class="print-btn" onclick="window.print()">🖨 Drucken</button>'+
+      '<button class="close-btn" onclick="window.close()">✕ Schließen</button>'+
+    '</div>'+
+    '</body></html>'
+  );
   win.document.close();
   win.focus();
-  showToast('📄 '+count+' Schichten in neuem Fenster','success');
+  showToast('📄 '+count+' Schichten bereit','success');
 }
 
 function filterArchive(q){renderArchiveList(q);}
@@ -1627,12 +1645,12 @@ function updateShiftNotes(val){
   if(pt)pt.textContent=val;if(pa)pa.style.display=val.trim()?'block':'none';
   localStorage.setItem('denis_shift_notes',val);
 }
-function sortRowsByTime(){
+function sortRowsByTime(silent){
   var wrap=document.getElementById('rowsWrap');if(!wrap)return;
   var rows=Array.from(wrap.querySelectorAll('.proto-row'));
   var toMins=function(t){if(!t)return 9999;var h=parseInt(t.split(':')[0]),m=parseInt(t.split(':')[1]);return h<7?h*60+m+1440:h*60+m;};
   rows.sort(function(a,b){var ia=a.id.replace('row-',''),ib=b.id.replace('row-','');var ta=document.getElementById('bd-'+ia),tb=document.getElementById('bd-'+ib);return toMins(ta?ta.value:'')-toMins(tb?tb.value:'');});
-  rows.forEach(function(r){wrap.appendChild(r);});showToast('Zeilen sortiert','success');
+  rows.forEach(function(r){wrap.appendChild(r);});if(!silent)showToast('Zeilen sortiert','success');
 }
 
 // ===== ARCHIVE =====
@@ -2562,21 +2580,16 @@ function ciFinish(){
   try{
     var data=collectData();
     var now=new Date();
-    var shiftStart=localStorage.getItem('denis_shift_start')||'19:45';
-    var startH=parseInt(shiftStart.split(':')[0]);
-    var refDate=new Date(now);
     var protoDate=document.getElementById('dateInput')?document.getElementById('dateInput').value:'';
-    if(protoDate){
-      if(protoDate.indexOf('-')>=0){
-        var pts=protoDate.split('-');
-        if(pts.length===3)refDate=new Date(parseInt(pts[0]),parseInt(pts[1])-1,parseInt(pts[2]));
-      } else if(protoDate.indexOf('.')>=0){
-        var pts=protoDate.split('.');
-        if(pts.length===3)refDate=new Date(parseInt(pts[2]),parseInt(pts[1])-1,parseInt(pts[0]));
-      }
-    } else if(now.getHours()<startH&&now.getHours()<12){
-      refDate.setDate(refDate.getDate()-1);
+    var refDate;
+    if(protoDate && protoDate.indexOf('-')>=0){
+      var pts=protoDate.split('-');
+      if(pts.length===3) refDate=new Date(parseInt(pts[0]),parseInt(pts[1])-1,parseInt(pts[2]));
+    } else if(protoDate && protoDate.indexOf('.')>=0){
+      var pts=protoDate.split('.');
+      if(pts.length===3) refDate=new Date(parseInt(pts[2]),parseInt(pts[1])-1,parseInt(pts[0]));
     }
+    if(!refDate || isNaN(refDate.getTime())) refDate=getShiftDate();
     var dk=refDate.getFullYear()+'_'+String(refDate.getMonth()+1).padStart(2,'0')+'_'+String(refDate.getDate()).padStart(2,'0');
     data.savedAt=now.toISOString();data.archiveKey=dk;
     localStorage.setItem('denis_'+dk,JSON.stringify(data));
@@ -2637,6 +2650,9 @@ function ciSOSSelect(ereignis,overlay){
 
 // ===== FLASH & SOUND =====
 function showCheckinFlash(type){
+  if(window._fbLogEvent && window._fbAnalytics){
+    try{ window._fbLogEvent(window._fbAnalytics, type==='in'?'checkin':'checkout', {mitarbeiter:localStorage.getItem('denis_mitarbeiter')||'unknown'}); }catch(e){}
+  }
   var old=document.querySelector('.ci-flash-overlay');if(old)old.remove();
   var o=document.createElement('div');o.className='ci-flash-overlay '+(type==='in'?'green':'red');
   o.innerHTML='<div class="ci-flash-icon">'+(type==='in'?'OK':'OUT')+'</div>';
@@ -3525,6 +3541,9 @@ function fbSyncArchive(key, data){
       mitarbeiter: data.mitarbeiter || ''
     }).then(function(){
       console.log('☁️ Synced:', key);
+      if(window._fbLogEvent && window._fbAnalytics){
+        try{ window._fbLogEvent(window._fbAnalytics,'archive_saved',{mitarbeiter:data.mitarbeiter||'unknown'}); }catch(e){}
+      }
     }).catch(function(e){
       console.warn('Firebase sync failed:', e);
     });
