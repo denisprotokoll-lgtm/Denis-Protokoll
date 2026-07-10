@@ -1375,49 +1375,47 @@ function arcBuildReportBlock(d, pageBreak){
 function arcPrintSelected(){
   if(!_arcSelected.length){showToast('Keine Schichten ausgewählt','error');return;}
   var keys=[].concat(_arcSelected).sort();
+  var count=keys.length;
 
-  var count=0;
-  var blocksHtml='';
-  keys.forEach(function(key){
+  // Load first shift, print, then chain the rest
+  closeArchive();
+
+  var orig=localStorage.getItem('denis_protokoll');
+  var printQueue=keys.slice();
+
+  function printNext(){
+    if(!printQueue.length){
+      // Restore original data
+      document.body.classList.remove('archive-print-mode');
+      if(orig)localStorage.setItem('denis_protokoll',orig);
+      document.getElementById('rowsWrap').innerHTML='';
+      rowId=0;
+      Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+      loadData();updateSummary();
+      showToast('🖨 '+count+' Schichten gedruckt','success');
+      return;
+    }
+    var key=printQueue.shift();
     var raw=localStorage.getItem(key);
-    if(!raw)return;
+    if(!raw){printNext();return;}
     try{
       var d=JSON.parse(raw);
-      blocksHtml+='<div style="page-break-after:always;">'+arcBuildReportBlock(d,false)+'</div>';
-      count++;
-    }catch(e){}
-  });
+      localStorage.setItem('denis_protokoll',JSON.stringify(d));
+      document.getElementById('rowsWrap').innerHTML='';
+      rowId=0;
+      Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
+      loadData();updateSummary();
+      sortRowsByTime(true);
+      setTimeout(function(){
+        document.body.classList.add('archive-print-mode');
+        window.print();
+        document.body.classList.remove('archive-print-mode');
+        setTimeout(printNext, 800);
+      },300);
+    }catch(e){printNext();}
+  }
 
-  if(!count){showToast('Keine Daten gefunden','error');return;}
-
-  var win=window.open('','_blank','width=900,height=700,scrollbars=yes');
-  if(!win){showToast('Popup blockiert – bitte erlauben','error');return;}
-
-  win.document.open();
-  win.document.write(
-    '<!DOCTYPE html><html><head><meta charset="utf-8">'+
-    '<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">'+
-    '<style>'+
-      '*{box-sizing:border-box;margin:0;padding:0}'+
-      'body{font-family:"DM Sans",Arial,sans-serif;background:white;padding:0;}'+
-      '@page{size:A4 portrait;margin:6mm}'+
-      '@media print{.no-print{display:none!important}body{padding:0!important}div[style*="page-break-after"]:last-child{page-break-after:auto!important}}'+
-      '.no-print{position:fixed;bottom:0;left:0;right:0;background:#1e2d3d;color:white;text-align:center;padding:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:10px;}'+
-      '.print-btn{padding:7px 20px;background:#E8394A;border:none;color:white;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;}'+
-      '.close-btn{padding:7px 14px;background:rgba(255,255,255,0.1);border:none;color:white;border-radius:8px;cursor:pointer;font-size:13px;}'+
-      '.ui-chip-light{color:#555;font-size:7pt;}'+
-    '</style></head><body>'+
-    blocksHtml+
-    '<div class="no-print">'+
-      '<span>'+count+' Schichten bereit</span>'+
-      '<button class="print-btn" onclick="window.print()">🖨 Drucken</button>'+
-      '<button class="close-btn" onclick="window.close()">✕ Schließen</button>'+
-    '</div>'+
-    '</body></html>'
-  );
-  win.document.close();
-  win.focus();
-  showToast('📄 '+count+' Schichten bereit','success');
+  printNext();
 }
 
 function filterArchive(q){renderArchiveList(q);}
