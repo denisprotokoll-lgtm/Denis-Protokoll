@@ -1375,173 +1375,73 @@ function arcBuildReportBlock(d, pageBreak){
 function arcPrintSelected(){
   if(!_arcSelected.length){showToast('Keine Schichten ausgewählt','error');return;}
   var keys=[].concat(_arcSelected).sort();
-  var count=keys.length;
   closeArchive();
 
   var orig=localStorage.getItem('denis_protokoll');
   var origHtml=document.getElementById('rowsWrap').innerHTML;
   var origRowId=rowId;
-  var origNCounts=JSON.parse(JSON.stringify(nCounts));
 
-  // Build a combined print container with all reports
-  var oldContainer=document.getElementById('arcMultiPrintWrap');
-  if(oldContainer)oldContainer.remove();
+  // Remove old container
+  var oldWrap=document.getElementById('arcMultiPrintWrap');
+  if(oldWrap)oldWrap.remove();
 
-  var container=document.createElement('div');
-  container.id='arcMultiPrintWrap';
-  container.style.display='none';
-  document.body.appendChild(container);
+  var wrap=document.createElement('div');
+  wrap.id='arcMultiPrintWrap';
+  wrap.style.display='none';
+  document.body.appendChild(wrap);
 
-  // Load each shift's rows into separate hidden card clones
   var loaded=0;
-  keys.forEach(function(key, ki){
+
+  // Load each shift sequentially using index
+  function loadShift(idx){
+    if(idx>=keys.length){
+      // All loaded — restore original and print
+      if(orig)localStorage.setItem('denis_protokoll',orig);
+      document.getElementById('rowsWrap').innerHTML=origHtml;
+      rowId=origRowId;
+
+      setTimeout(function(){
+        wrap.style.display='block';
+        document.body.classList.add('archive-print-mode','arc-multi-print');
+        window.print();
+        document.body.classList.remove('archive-print-mode','arc-multi-print');
+        wrap.style.display='none';
+        setTimeout(function(){wrap.remove();},500);
+        showToast('🖨 '+loaded+' Schichten gedruckt','success');
+      },300);
+      return;
+    }
+
+    var key=keys[idx];
     var raw=localStorage.getItem(key);
-    if(!raw)return;
+    if(!raw){loadShift(idx+1);return;}
+
     try{
       var d=JSON.parse(raw);
-      // Temporarily load this shift to get rendered HTML
       localStorage.setItem('denis_protokoll',JSON.stringify(d));
       document.getElementById('rowsWrap').innerHTML='';
-      rowId=origRowId;
+      rowId=0;
       Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
-      loadData();updateSummary();sortRowsByTime(true);
+      loadData();
+      updateSummary();
+      sortRowsByTime(true);
 
-      // Clone the rendered card
-      var cardClone=document.getElementById('mainCard').cloneNode(true);
-      cardClone.style.cssText='page-break-after:always;margin-bottom:0;box-shadow:none;border-radius:0;';
-      if(ki===keys.length-1)cardClone.style.pageBreakAfter='auto';
-
-      // Remove no-print elements from clone
-      cardClone.querySelectorAll('.no-print').forEach(function(el){el.remove();});
-
-      // Show print-sig-area
-      var sig=cardClone.querySelector('#printSigArea');
-      if(sig)sig.style.display='block';
-
-      container.appendChild(cardClone);
-      loaded++;
-    }catch(e){}
-  });
-
-  if(!loaded){
-    container.remove();
-    showToast('Keine Daten','error');
-    return;
+      // Give DOM time to render then clone
+      setTimeout(function(){
+        var clone=document.getElementById('mainCard').cloneNode(true);
+        clone.removeAttribute('id');
+        clone.style.cssText='page-break-after:'+(idx<keys.length-1?'always':'auto')+';margin-bottom:0;box-shadow:none;border-radius:0;max-width:100%;';
+        clone.querySelectorAll('.no-print').forEach(function(el){el.remove();});
+        var sig=clone.querySelector('.print-sig-area');
+        if(sig)sig.style.display='block';
+        wrap.appendChild(clone);
+        loaded++;
+        loadShift(idx+1);
+      },150);
+    }catch(e){loadShift(idx+1);}
   }
 
-  // Restore original data
-  if(orig)localStorage.setItem('denis_protokoll',orig);
-  document.getElementById('rowsWrap').innerHTML=origHtml;
-  rowId=origRowId;
-  Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
-  Object.keys(origNCounts).forEach(function(k){nCounts[k]=origNCounts[k];});
-  updateSummary();
-
-  // Print all combined
-  setTimeout(function(){
-    container.style.display='block';
-    document.body.classList.add('archive-print-mode','arc-multi-print');
-    window.print();
-    document.body.classList.remove('archive-print-mode','arc-multi-print');
-    container.style.display='none';
-    setTimeout(function(){container.remove();},500);
-    showToast('🖨 '+loaded+' Schichten gedruckt','success');
-  },400);
-}
-
-function filterArchive(q){renderArchiveList(q);}
-
-function archiveDeleteOne(key){
-  showConfirmDialog('Schicht löschen?',function(){
-    localStorage.removeItem(key);
-    renderArchiveList(document.getElementById('archiveSearch').value||'');
-    showToast('🗑 Schicht gelöscht');
-  });
-}
-
-function archiveDeleteAll(){
-  var keys=Object.keys(localStorage).filter(function(k){return k.startsWith('arc_');});
-  if(!keys.length){showToast('Kein Archiv vorhanden','error');return;}
-  showConfirmDialog('Alle '+keys.length+' Schichten löschen?',function(){
-    keys.forEach(function(k){localStorage.removeItem(k);});
-    renderArchiveList('');
-    showToast('🗑 Archiv geleert');
-  });
-}
-function closeArchive(){
-  document.getElementById('archivePanel').style.transform='translateX(-100%)';
-  document.getElementById('archiveBg').style.display='none';
-}
-function showArchivePreview(d){
-  var old=document.getElementById('arcPrev');if(old)old.remove();
-  var ov=document.createElement('div');ov.id='arcPrev';
-  ov.style.cssText='position:fixed;inset:0;z-index:9999995;background:#0f1923;display:flex;flex-direction:column;overflow-y:auto;font-family:\'DM Sans\',sans-serif;';
-
-  var validRows=(d.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';});
-  var allEvents=validRows.reduce(function(a,r){return a.concat((r.n||[]).filter(function(n){return n.ev&&n.ev!=='— Ereignis —'&&n.ev!=='Freitext…';}));} ,[]);
-  var dangerCount=validRows.filter(function(r){return(r.n||[]).some(function(n){return(typeof DANGER_EVENTS!=='undefined')&&DANGER_EVENTS.indexOf(n.ev)>=0;});}).length;
-  var totalMin=0;
-  validRows.forEach(function(r){if(r.b&&r.e){var b=r.b.split(':'),e=r.e.split(':');var diff=(parseInt(e[0])*60+parseInt(e[1]))-(parseInt(b[0])*60+parseInt(b[1]));if(diff<0)diff+=1440;totalMin+=diff;}});
-  var avgMin=validRows.length?Math.round(totalMin/validRows.length):0;
-
-  var hdr='<div style="background:#1e2d3d;padding:50px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;">'+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">'+
-      '<div>'+
-        '<div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:3px;">ARCHIV</div>'+
-        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:white;margin-top:4px;">'+(d.day||'')+' '+(d.date||'')+'</div>'+
-        (d.mitarbeiter?'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;">👤 '+d.mitarbeiter+'</div>':'')+
-      '</div>'+
-      '<div style="display:flex;gap:6px;">'+
-        '<button onclick="archivePrint(window._arcD)" style="padding:7px 11px;border-radius:9px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-size:11px;font-weight:700;cursor:pointer;">🖨</button>'+
-        '<button onclick="archivePDF(window._arcD)" style="padding:7px 11px;border-radius:9px;border:none;background:linear-gradient(135deg,#3d6a9e,#2a4f7c);color:white;font-size:11px;font-weight:700;cursor:pointer;">📄</button>'+
-        '<button onclick="document.getElementById(\'arcPrev\').remove()" style="padding:7px 11px;border-radius:9px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.6);font-size:11px;cursor:pointer;">✕</button>'+
-      '</div>'+
-    '</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">'+
-      '<div style="background:rgba(61,82,104,0.4);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:white;">'+validRows.length+'</div>'+
-        '<div class="ui-muted-xs">BESUCHE</div>'+
-      '</div>'+
-      '<div style="background:rgba(76,186,107,0.15);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#4cba6b;">'+allEvents.reduce(function(s,n){return s+(n.c||1);},0)+'</div>'+
-        '<div class="ui-muted-xs">EREIGNISSE</div>'+
-      '</div>'+
-      '<div style="background:rgba(232,57,74,0.15);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#E8394A;">'+dangerCount+'</div>'+
-        '<div class="ui-muted-xs">VORFÄLLE</div>'+
-      '</div>'+
-      '<div style="background:rgba(245,166,35,0.15);border-radius:8px;padding:7px;text-align:center;">'+
-        '<div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:#f5a623;">'+avgMin+'m</div>'+
-        '<div class="ui-muted-xs">Ø DAUER</div>'+
-      '</div>'+
-    '</div>'+
-  '</div>';
-
-  var rows='<div style="padding:12px;display:flex;flex-direction:column;gap:6px;">';
-  (d.rows||[]).forEach(function(row){
-    if(!row.k||row.k==='— Standort —')return;
-    var notizen=(row.n||[]).filter(function(n){return n.ev&&n.ev!=='— Ereignis —';});
-    var hasDanger=(typeof DANGER_EVENTS!=='undefined')&&notizen.some(function(n){return DANGER_EVENTS.indexOf(n.ev)>=0;});
-    var borderColor=hasDanger?'rgba(232,57,74,0.4)':'rgba(255,255,255,0.07)';
-    rows+='<div style="background:rgba(255,255,255,0.04);border:1px solid '+borderColor+';border-radius:10px;padding:12px;">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">'+
-        '<div style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:800;color:white;">'+row.k+'</div>'+
-        '<div style="font-size:10px;color:rgba(255,255,255,0.35);">⏱ '+(row.b||'—')+' – '+(row.e||'—')+'</div>'+
-      '</div>';
-    if(notizen.length){
-      notizen.forEach(function(n){
-        var danger=(typeof DANGER_EVENTS!=='undefined')&&DANGER_EVENTS.indexOf(n.ev)>=0;
-        rows+='<div style="font-size:11px;color:'+(danger?'#ff8090':'rgba(255,255,255,0.55)')+';">'+
-          (danger?'⚠️ ':'• ')+(n.c>1?'['+n.c+'×] ':'')+n.ev+'</div>';
-      });
-    } else {
-      rows+='<div style="font-size:11px;color:rgba(255,255,255,0.2);">— Keine Vorfälle</div>';
-    }
-    rows+='</div>';
-  });
-  rows+='</div>';
-
-  ov.innerHTML=hdr+rows;window._arcD=d;document.body.appendChild(ov);
+  loadShift(0);
 }
 function archivePrint(d){
   var ov=document.getElementById('arcPrev');if(ov)ov.style.display='none';
