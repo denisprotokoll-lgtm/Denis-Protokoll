@@ -2167,17 +2167,12 @@ function ciRenderLog(){
     item.innerHTML=
       '<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
       +'<div style="flex:1;min-width:0;overflow:hidden;">'
-      +'<div style="display:flex;align-items:center;gap:4px;">'
       +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(entry.kunde)+'</div>'
-      +'<button onclick="ciToggleEditKunde('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:11px;padding:1px 3px;" title="Kunde bearbeiten">✏️</button>'
-      +'</div>'
-      +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;cursor:pointer;" onclick="ciToggleEditTime('+realIdx+')">⏱ '+entry.time+' <span style="font-size:9px;opacity:0.6;">✏️</span></div>'
+      +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;">⏱ '+escapeHtml(entry.time)+'</div>'
       +'</div>'
       +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
-      // زر القائمة المنسدلة — فقط للدخول
-      +(isIn?'<button onclick="ciToggleLogDropdown('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;padding:4px 8px;cursor:pointer;" title="Ereignis hinzufügen">📋</button>':'')
-      +'<button onclick="ciToggleType('+realIdx+')" style="flex-shrink:0;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:7px;color:rgba(255,255,255,0.4);font-size:9px;font-weight:700;padding:3px 6px;cursor:pointer;">'+(isIn?'→Aus':'→Ein')+'</button>'
-      +'<button onclick="ciDeleteEntry('+realIdx+')" style="flex-shrink:0;background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:14px;padding:2px 4px;">✕</button>';
+      +'<button data-row-menu style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:rgba(255,255,255,0.7);font-size:16px;font-weight:800;padding:5px 12px;cursor:pointer;line-height:1;" title="Bearbeiten">⋮</button>';
+    item.querySelector('[data-row-menu]').addEventListener('click',function(){ciOpenRowMenu(realIdx,isIn);});
 
     // القائمة المنسدلة
     var dropdown=document.createElement('div');
@@ -2239,6 +2234,41 @@ function ciRenderLog(){
     wrap.style.cssText='border-bottom:1px solid rgba(255,255,255,0.06);';
     list.appendChild(wrap);
   });
+}
+
+// القائمة الموحّدة لكل إجراءات التعديل على سطر واحد (بدل عدة أيقونات متفرقة)
+function ciOpenRowMenu(idx,isIn){
+  var old=document.getElementById('ciRowMenu');if(old)old.remove();
+  var overlay=document.createElement('div');
+  overlay.id='ciRowMenu';
+  overlay.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,0.55);display:flex;align-items:flex-end;justify-content:center;';
+  var sheet=document.createElement('div');
+  sheet.style.cssText='background:linear-gradient(160deg,#1e2d3d,#152030);border-radius:18px 18px 0 0;padding:10px 14px 18px;width:100%;max-width:480px;border-top:1px solid rgba(255,255,255,0.1);animation:slideUp 0.2s ease;';
+  sheet.innerHTML='<div style="width:36px;height:4px;background:rgba(255,255,255,0.2);border-radius:3px;margin:2px auto 12px;"></div>';
+
+  function actionBtn(icon,label,color,handler){
+    var b=document.createElement('button');
+    b.style.cssText='width:100%;display:flex;align-items:center;gap:12px;padding:13px 8px;border:none;background:transparent;border-bottom:1px solid rgba(255,255,255,0.06);color:'+(color||'white')+';font-size:14px;font-weight:700;cursor:pointer;text-align:left;';
+    b.innerHTML='<span style="font-size:18px;width:22px;text-align:center;">'+icon+'</span><span>'+label+'</span>';
+    b.addEventListener('click',function(){overlay.remove();handler();});
+    return b;
+  }
+
+  sheet.appendChild(actionBtn('✏️','Kunde bearbeiten',null,function(){ciToggleEditKunde(idx);}));
+  sheet.appendChild(actionBtn('⏱','Zeit bearbeiten',null,function(){ciToggleEditTime(idx);}));
+  if(isIn)sheet.appendChild(actionBtn('📋','Ereignis hinzufügen',null,function(){ciToggleLogDropdown(idx);}));
+  sheet.appendChild(actionBtn('🔄',isIn?'Zu "Aus" wechseln':'Zu "Ein" wechseln',null,function(){ciToggleType(idx);}));
+  sheet.appendChild(actionBtn('🗑','Eintrag löschen','#E8394A',function(){ciDeleteEntry(idx);}));
+
+  var cancelBtn=document.createElement('button');
+  cancelBtn.textContent='Abbrechen';
+  cancelBtn.style.cssText='width:100%;margin-top:10px;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font-size:13px;font-weight:700;cursor:pointer;';
+  cancelBtn.addEventListener('click',function(){overlay.remove();});
+  sheet.appendChild(cancelBtn);
+
+  overlay.appendChild(sheet);
+  overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
 }
 
 // فتح/إغلاق القائمة المنسدلة
