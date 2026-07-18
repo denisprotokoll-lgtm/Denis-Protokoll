@@ -604,11 +604,6 @@ body.app-ready::before{opacity:0.5;}
     <div class="ci-qb-item"><span class="ci-qb-label">Schichtende</span><span class="ci-qb-val orange" id="qbRemain">--</span></div>
     <div class="ci-qb-item"><span class="ci-qb-label">Letzter</span><span class="ci-qb-val" id="qbLast" style="font-size:11px;">--</span></div>
   </div>
-  <!-- Quick-Add Events Bar -->
-  <div id="quickAddBar" style="display:none;padding:8px 12px 4px;border-bottom:1px solid rgba(255,255,255,0.07);">
-    <div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">⚡ Schnell hinzufügen</div>
-    <div id="quickAddBtns" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
-  </div>
   <div class="ci-body" style="padding:0 12px 20px;">
     <div class="ci-section-label" style="margin-bottom:8px;">📍 Kunde auswählen</div>
     <div id="ciSearchWrap" style="display:none;margin-bottom:10px;">
@@ -1640,68 +1635,73 @@ function stripEmoji(str){
   if(!str)return str;
   return str.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]|\uFE0F/g,'').replace(/\s{2,}/g,' ').trim();
 }
+// يرسم صفحة تقرير واحدة على مستند jsPDF مُمرَّر — قابلة لإعادة الاستخدام لبناء PDF واحد يحوي عدة تقارير
+function buildReportPage(doc,data){
+  var pageW=210,margin=10,cW=pageW-2*margin;var y=margin;
+  doc.setFillColor(61,82,104);doc.rect(0,0,pageW,28,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(18);doc.setFont('helvetica','bold');doc.text('Denis Protokoll',margin,12);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('Tagesbericht · Vorfallprotokoll',margin,18);
+  doc.setFontSize(9);doc.text('Mitarbeiter: '+(data.mitarbeiter||'—'),margin,23);doc.text((data.day||'')+' '+fmtDateDisplay(data.date),160,23);y=33;
+  doc.setFillColor(240,241,244);doc.rect(margin,y,cW,7,'F');doc.setTextColor(80,80,80);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text('Kunde',margin+2,y+5);doc.text('Beginn',margin+38,y+5);doc.text('Ende',margin+60,y+5);doc.text('Dienstnotiz',margin+82,y+5);y+=9;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  (data.rows||[]).forEach(function(row,i){
+    if(y>270){doc.addPage();y=margin;}
+    var notizen=(row.n?row.n.filter(function(n){return n.ev&&n.ev!=='— Ereignis —';}):[]); 
+    var hasPhotos=row.photos&&row.photos.length>0;
+    var notizLines=notizen.length||1;
+    var photoRowH=hasPhotos?12:0;
+    var rH=Math.max(9,notizLines*6+6)+photoRowH;
+    if(y+rH>275){doc.addPage();y=margin;}
+    if(i%2===0){doc.setFillColor(252,252,252);doc.rect(margin,y,cW,rH,'F');}
+    doc.setDrawColor(220,220,220);doc.rect(margin,y,cW,rH);
+    doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');doc.text(stripEmoji(row.k==='— Standort —'?'':row.k),margin+2,y+5,{maxWidth:34});
+    doc.setFont('helvetica','normal');doc.text(stripEmoji(row.b||''),margin+38,y+5);doc.text(stripEmoji(row.e||''),margin+60,y+5);
+    var ny=y+4;
+    if(notizen.length){notizen.forEach(function(n){
+      doc.setFontSize(7.5);
+      var isDanger=DANGER_EVENTS.indexOf(n.ev)>=0;
+      doc.setTextColor(isDanger?180:20,isDanger?30:21,isDanger?30:24);
+      doc.setFont('helvetica',isDanger?'bold':'normal');
+      doc.text('• '+(n.c>0?'['+n.c+'x] '+stripEmoji(n.ev):stripEmoji(n.ev)),margin+82,ny,{maxWidth:cW-84});
+      ny+=5.5;
+      doc.setFont('helvetica','normal');
+    });}
+    else{doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
+    if(hasPhotos){
+      var imgW=10;var imgH=8;var gap=2;
+      var imgY=y+rH-photoRowH+2;
+      var imgX=margin+82;
+      imgX=margin+82;
+      var maxPics=Math.floor((cW-90)/(imgW+gap));
+      row.photos.forEach(function(b64,pi){
+        if(pi>=maxPics)return;
+        var xPos=imgX+pi*(imgW+gap);
+        try{
+          var fmt=b64.indexOf('data:image/png')===0?'PNG':'JPEG';
+          doc.addImage(b64,fmt,xPos,imgY,imgW,imgH);
+          doc.setDrawColor(180,180,180);doc.setLineWidth(0.2);doc.rect(xPos,imgY,imgW,imgH);
+        }catch(e){
+          doc.setFillColor(220,220,220);doc.rect(xPos,imgY,imgW,imgH,'F');
+        }
+      });
+      if(row.photos.length>maxPics){
+        doc.setFontSize(6);doc.setTextColor(100,100,120);
+        doc.text('+'+(row.photos.length-maxPics),imgX+maxPics*(imgW+gap)+1,imgY+5);
+      }
+    }
+    y+=rH+1;
+  });
+  var sig=localStorage.getItem('denis_signature');if(sig&&y<240){try{doc.addImage(sig,'PNG',margin,y,60,18);}catch(e){}}
+  doc.setFontSize(7);doc.setTextColor(180,180,180);doc.text('Denis Protokoll · '+new Date().toLocaleString('de-DE'),margin,292);
+}
 function generatePDFAndSave(){
   showPdfLoader(true);
   try{
     var lib=window.jspdf;if(!lib){showToast('jsPDF lädt noch…','error');showPdfLoader(false);return;}
     var doc=new lib.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    var data=collectData();var pageW=210,margin=10,cW=pageW-2*margin;var y=margin;
-    doc.setFillColor(61,82,104);doc.rect(0,0,pageW,28,'F');
-    doc.setTextColor(255,255,255);doc.setFontSize(18);doc.setFont('helvetica','bold');doc.text('Denis Protokoll',margin,12);
-    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('Tagesbericht · Vorfallprotokoll',margin,18);
-    doc.setFontSize(9);doc.text('Mitarbeiter: '+(data.mitarbeiter||'—'),margin,23);doc.text((data.day||'')+' '+fmtDateDisplay(data.date),160,23);y=33;
-    doc.setFillColor(240,241,244);doc.rect(margin,y,cW,7,'F');doc.setTextColor(80,80,80);doc.setFontSize(8);doc.setFont('helvetica','bold');
-    doc.text('Kunde',margin+2,y+5);doc.text('Beginn',margin+38,y+5);doc.text('Ende',margin+60,y+5);doc.text('Dienstnotiz',margin+82,y+5);y+=9;
-    doc.setFont('helvetica','normal');doc.setFontSize(9);
-    data.rows.forEach(function(row,i){
-      if(y>270){doc.addPage();y=margin;}
-      var notizen=(row.n?row.n.filter(function(n){return n.ev&&n.ev!=='— Ereignis —';}):[]); 
-      var hasPhotos=row.photos&&row.photos.length>0;
-      var notizLines=notizen.length||1;
-      var photoRowH=hasPhotos?12:0;
-      var rH=Math.max(9,notizLines*6+6)+photoRowH;
-      if(y+rH>275){doc.addPage();y=margin;}
-      if(i%2===0){doc.setFillColor(252,252,252);doc.rect(margin,y,cW,rH,'F');}
-      doc.setDrawColor(220,220,220);doc.rect(margin,y,cW,rH);
-      doc.setTextColor(20,21,24);doc.setFont('helvetica','bold');doc.text(stripEmoji(row.k==='— Standort —'?'':row.k),margin+2,y+5,{maxWidth:34});
-      doc.setFont('helvetica','normal');doc.text(stripEmoji(row.b||''),margin+38,y+5);doc.text(stripEmoji(row.e||''),margin+60,y+5);
-      var ny=y+4;
-      if(notizen.length){notizen.forEach(function(n){
-        doc.setFontSize(7.5);
-        var isDanger=DANGER_EVENTS.indexOf(n.ev)>=0;
-        doc.setTextColor(isDanger?180:20,isDanger?30:21,isDanger?30:24);
-        doc.setFont('helvetica',isDanger?'bold':'normal');
-        doc.text('• '+(n.c>0?'['+n.c+'x] '+stripEmoji(n.ev):stripEmoji(n.ev)),margin+82,ny,{maxWidth:cW-84});
-        ny+=5.5;
-        doc.setFont('helvetica','normal');
-      });}
-      else{doc.setFontSize(8);doc.setTextColor(160,160,160);doc.text('—',margin+82,y+5);}
-      if(hasPhotos){
-        var imgW=10;var imgH=8;var gap=2;
-        var imgY=y+rH-photoRowH+2;
-        var imgX=margin+82;
-        imgX=margin+82;
-        var maxPics=Math.floor((cW-90)/(imgW+gap));
-        row.photos.forEach(function(b64,pi){
-          if(pi>=maxPics)return;
-          var xPos=imgX+pi*(imgW+gap);
-          try{
-            var fmt=b64.indexOf('data:image/png')===0?'PNG':'JPEG';
-            doc.addImage(b64,fmt,xPos,imgY,imgW,imgH);
-            doc.setDrawColor(180,180,180);doc.setLineWidth(0.2);doc.rect(xPos,imgY,imgW,imgH);
-          }catch(e){
-            doc.setFillColor(220,220,220);doc.rect(xPos,imgY,imgW,imgH,'F');
-          }
-        });
-        if(row.photos.length>maxPics){
-          doc.setFontSize(6);doc.setTextColor(100,100,120);
-          doc.text('+'+(row.photos.length-maxPics),imgX+maxPics*(imgW+gap)+1,imgY+5);
-        }
-      }
-      y+=rH+1;
-    });
-    var sig=localStorage.getItem('denis_signature');if(sig&&y<240){try{doc.addImage(sig,'PNG',margin,y,60,18);}catch(e){}}
-    doc.setFontSize(7);doc.setTextColor(180,180,180);doc.text('Denis Protokoll · '+new Date().toLocaleString('de-DE'),margin,292);
+    var data=collectData();
+    buildReportPage(doc,data);
     doc.save('denis-protokoll-'+(data.date||'export')+'.pdf');
     showToast('📄 PDF gespeichert!','success');playBeep('success');
   }catch(e){showToast('❌ Fehler: '+e.message,'error');}
@@ -1847,7 +1847,7 @@ function settingsRemoveKunde(k){safeSetItem('denis_extra_kunden',JSON.stringify(
 function showCheckin(){
   document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';
   var fc=document.getElementById('fabCheckin');if(fc)fc.style.display='none';
-  ciRenderKunden();ciRenderLog();updateDayCounter();updateQuickBar();ciUpdateLayout();renderQuickAdd();updateGreeting();
+  ciRenderKunden();ciRenderLog();updateDayCounter();updateQuickBar();ciUpdateLayout();updateGreeting();
   if(ciClockInterval)clearInterval(ciClockInterval);
   function tick(){
     var now=new Date();
@@ -2002,6 +2002,53 @@ function ciSelectKunde(k){
 function ciGetLog(){try{return JSON.parse(localStorage.getItem('denis_checkin_log')||'[]');}catch(e){return[];}}
 function ciSaveLog(log){safeSetItem('denis_checkin_log',JSON.stringify(log));}
 
+// ===== تنبيه الوقت: أخضر أول 10 دقايق، برتقالي 10-20، أحمر بعد 20 =====
+function ciElapsedMinutes(entry){
+  if(entry&&entry.ts)return Math.max(0,Math.round((Date.now()-entry.ts)/60000));
+  if(!entry||!entry.time)return 0;
+  var parts=entry.time.split(':');if(parts.length!==2)return 0;
+  var h=parseInt(parts[0],10),m=parseInt(parts[1],10);
+  var now=new Date();
+  var entryMin=h*60+m,nowMin=now.getHours()*60+now.getMinutes();
+  var diff=nowMin-entryMin;if(diff<0)diff+=1440; // تجاوز منتصف الليل
+  return diff;
+}
+function ciElapsedColor(mins){
+  if(mins<10)return'#4cba6b'; // أخضر
+  if(mins<20)return'#f5a623'; // برتقالي
+  return'#E8394A'; // أحمر
+}
+// هل هذا السجل "دخول" لا يزال نشطًا (لا يوجد "خروج" لاحق لنفس الكند)؟
+function ciIsEntryActive(log,idx){
+  var entry=log[idx];
+  if(!entry||entry.type!=='in')return false;
+  for(var i=idx+1;i<log.length;i++){
+    if(log[i].kunde===entry.kunde&&log[i].type==='out')return false;
+  }
+  return true;
+}
+// يحوّل نص وقت HH:MM إلى timestamp متوافق مع تاريخ بداية الوردية (لدعم الورديات العابرة لمنتصف الليل)
+function timeStringToTs(timeStr){
+  try{
+    var parts=timeStr.split(':');
+    var h=parseInt(parts[0],10),m=parseInt(parts[1],10);
+    var sd=getShiftDate();
+    var d=new Date(sd.getFullYear(),sd.getMonth(),sd.getDate(),h,m,0,0);
+    if(h<12)d.setDate(d.getDate()+1); // وقت قبل الظهر غالبًا في اليوم التالي لبداية وردية ليلية
+    return d.getTime();
+  }catch(e){return Date.now();}
+}
+function ciRefreshElapsedBadges(){
+  document.querySelectorAll('[id^="ci-elapsed-"]').forEach(function(el){
+    var idx=parseInt(el.id.replace('ci-elapsed-',''),10);
+    var log=ciGetLog();var entry=log[idx];if(!entry)return;
+    var mins=ciElapsedMinutes(entry);var col=ciElapsedColor(mins);
+    el.textContent='⏱ '+mins+' Min';
+    el.style.background=col+'22';el.style.color=col;el.style.borderColor=col+'55';
+  });
+}
+setInterval(ciRefreshElapsedBadges,20000);
+
 function updateDayCounter(){
   var log=ciGetLog();
   var inC=log.filter(function(e){return e.type==='in';}).length;
@@ -2011,49 +2058,63 @@ function updateDayCounter(){
   if(e1)e1.textContent=inC;if(e2)e2.textContent=outC;
   if(e3){e3.textContent=active.size;e3.style.color=active.size>0?'#f5a623':'rgba(255,255,255,0.3)';}
 }
-// ===== QUICK-ADD: تتبع الأحداث المستخدمة =====
+// ===== QUICK-ADD الذكي: يتذكر أكثر الأحداث استخدامًا ويعرضها كبطاقات =====
 function trackEventUsage(ev){
   if(!ev||ev==='— Ereignis —')return;
   var freq=JSON.parse(localStorage.getItem('denis_event_freq')||'{}');
   freq[ev]=(freq[ev]||0)+1;
   safeSetItem('denis_event_freq',JSON.stringify(freq));
-  renderQuickAdd();
-}
-function renderQuickAdd(){
-  var bar=document.getElementById('quickAddBar');
-  var btns=document.getElementById('quickAddBtns');
-  if(!bar||!btns)return;
-  var freq=JSON.parse(localStorage.getItem('denis_event_freq')||'{}');
-  var top=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];}).slice(0,5);
-  if(!top.length){bar.style.display='none';return;}
-  bar.style.display='block';
-  btns.innerHTML=top.map(function(ev){
-    var isDanger=DANGER_EVENTS.indexOf(ev)>=0;
-    var bg=isDanger?'rgba(232,57,74,0.15)':'rgba(255,255,255,0.07)';
-    var border=isDanger?'rgba(232,57,74,0.4)':'rgba(255,255,255,0.15)';
-    var color=isDanger?'#ff8090':'rgba(255,255,255,0.8)';
-    var label=stripEmojiUI(ev);
-    if(label.length>22)label=label.substring(0,22)+'…';
-    return '<button onclick="ciQuickAddEvent(this.dataset.ev)" data-ev="'+ev.replace(/"/g,'&quot;')+'" style="padding:5px 10px;border-radius:8px;border:1px solid '+border+';background:'+bg+';color:'+color+';font-family:\'DM Sans\',sans-serif;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">'+label+' <span style="opacity:0.4;font-size:10px;">×'+freq[ev]+'</span></button>';
-  }).join('');
 }
 function stripEmojiUI(str){return str?str.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,'').replace(/[\u2600-\u27BF]|\uFE0F/g,'').trim():str;}
-function ciQuickAddEvent(ev){
-  if(!ciSelected){showToast('Bitte zuerst einen Kunden wählen','error');return;}
-  // أضف للصف الأخير أو أنشئ صفاً جديداً
-  var rows=document.querySelectorAll('.proto-row');
-  var lastMatchRow=null;
-  rows.forEach(function(row){
-    var id=row.id.replace('row-','');
-    var ksel=document.getElementById('ksel-'+id);
-    var kcust=document.getElementById('kcust-'+id);
-    var isC=kcust&&kcust.style.display!=='none';
-    var k=isC?kcust.value:(ksel?ksel.value:'');
-    if(k===ciSelected)lastMatchRow=id;
+
+// أهم N أحداث استخدامًا؛ يُكمل بأحداث افتراضية شائعة عند عدم وجود سجل استخدام كافٍ (بداية التشغيل)
+function getTopEvents(n){
+  var freq=JSON.parse(localStorage.getItem('denis_event_freq')||'{}');
+  var defaults=['Obdachlose nach draußen gebracht','Unbefugte Person entfernt','Fahrzeuge herausgelassen'];
+  var sorted=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];});
+  defaults.forEach(function(d){if(sorted.indexOf(d)<0)sorted.push(d);});
+  return sorted.slice(0,n);
+}
+// أيقونة مناسبة لكل حدث (تستخدم فئات الخطورة الموجودة، مع خريطة للأحداث الشائعة بدون إيموجي مدمج)
+function eventIcon(ev){
+  if(typeof DANGER_EVENTS!=='undefined'&&DANGER_EVENTS.indexOf(ev)>=0)return'🚨';
+  if(typeof ORANGE_EVENTS!=='undefined'&&ORANGE_EVENTS.indexOf(ev)>=0)return'⚠️';
+  if(typeof BLUE_EVENTS!=='undefined'&&BLUE_EVENTS.indexOf(ev)>=0)return'🔧';
+  var map={
+    'Obdachlose nach draußen gebracht':'🚶',
+    'Unbefugte Person entfernt':'🚫',
+    'Fahrzeuge herausgelassen':'🚗',
+    'Fahrzeugschaden festgestellt':'🚙',
+    'Parkverstoß dokumentiert':'🅿️',
+    'Sachschaden festgestellt – Dokumentiert':'📝'
+  };
+  return map[ev]||'📋';
+}
+
+// بطاقة موحّدة: أيقونة+اسم، عدّاد −/+، وزر + Add — تُستخدم في الشريط العلوي وفي القائمة المنبثقة لكل سطر
+var _sqaCounts={};
+function buildSmartQuickAddCard(ev,idPrefix,onAdd){
+  var key=idPrefix+'|'+ev;
+  if(!(key in _sqaCounts))_sqaCounts[key]=1;
+  var card=document.createElement('div');
+  card.style.cssText='background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:9px 10px;margin-bottom:6px;';
+  card.innerHTML=
+    '<div style="font-size:12px;font-weight:700;color:white;margin-bottom:7px;">'+eventIcon(ev)+' '+escapeHtml(stripEmojiUI(ev))+'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px;">'
+      +'<button data-act="minus" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:white;font-size:14px;font-weight:800;cursor:pointer;flex-shrink:0;">−</button>'
+      +'<div data-count style="flex:1;text-align:center;font-family:\'Syne\',sans-serif;font-size:15px;font-weight:800;color:white;">'+_sqaCounts[key]+'</div>'
+      +'<button data-act="plus" style="width:28px;height:28px;border-radius:8px;border:1px solid rgba(76,186,107,0.3);background:rgba(76,186,107,0.12);color:#4cba6b;font-size:14px;font-weight:800;cursor:pointer;flex-shrink:0;">+</button>'
+      +'<button data-act="add" style="padding:0 14px;height:28px;border-radius:8px;border:none;background:linear-gradient(135deg,#4a6080,#3d5268);color:white;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;">+ Add</button>'
+    +'</div>';
+  var countEl=card.querySelector('[data-count]');
+  card.querySelector('[data-act="minus"]').addEventListener('click',function(){_sqaCounts[key]=Math.max(1,_sqaCounts[key]-1);countEl.textContent=_sqaCounts[key];});
+  card.querySelector('[data-act="plus"]').addEventListener('click',function(){_sqaCounts[key]=_sqaCounts[key]+1;countEl.textContent=_sqaCounts[key];});
+  card.querySelector('[data-act="add"]').addEventListener('click',function(){
+    var count=_sqaCounts[key];
+    onAdd(ev,count);
+    _sqaCounts[key]=1;countEl.textContent='1';
   });
-  if(lastMatchRow){addNotiz(lastMatchRow,ev,1,'');}
-  else{addRow({k:ciSelected,b:nowHM(),e:'',n:[{ev:ev,c:1,ft:''}]});}
-  trackEventUsage(ev);saveData();showToast('⚡ '+stripEmojiUI(ev).substring(0,20),'success');
+  return card;
 }
 
 // ===== COPY LOCATION FROM ARCHIVE =====
@@ -2164,39 +2225,33 @@ function ciRenderLog(){
     var item=document.createElement('div');
     item.className='ci-log-item '+(isIn?'log-in':'log-out');
     item.style.cssText='border-bottom:none;';
+    var isActive=ciIsEntryActive(log,realIdx);
+    var elapsedHtml='';
+    if(isActive){
+      var mins=ciElapsedMinutes(entry);var col=ciElapsedColor(mins);
+      elapsedHtml='<span id="ci-elapsed-'+realIdx+'" style="margin-left:6px;font-size:9px;font-weight:800;padding:2px 6px;border-radius:7px;background:'+col+'22;color:'+col+';border:1px solid '+col+'55;">⏱ '+mins+' Min</span>';
+    }
     item.innerHTML=
       '<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
       +'<div style="flex:1;min-width:0;overflow:hidden;">'
       +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(entry.kunde)+'</div>'
-      +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;">⏱ '+escapeHtml(entry.time)+'</div>'
+      +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;">⏱ '+escapeHtml(entry.time)+elapsedHtml+'</div>'
       +'</div>'
-      +'<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:8px;flex-shrink:0;background:'+(isIn?'rgba(76,186,107,0.2)':'rgba(232,57,74,0.2)')+';color:'+(isIn?'#4cba6b':'var(--red)')+';">'+(isIn?'Ein':'Aus')+'</span>'
       +'<button data-row-menu style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:rgba(255,255,255,0.7);font-size:16px;font-weight:800;padding:5px 12px;cursor:pointer;line-height:1;" title="Bearbeiten">⋮</button>';
     item.querySelector('[data-row-menu]').addEventListener('click',function(){ciOpenRowMenu(realIdx,isIn);});
 
-    // القائمة المنسدلة
+    // القائمة المنسدلة — نفس بطاقات "Schnell hinzufügen" الذكية بالشريط العلوي، لكن تُضاف مباشرة لهذا الكند بدون اختيار
     var dropdown=document.createElement('div');
     dropdown.id='ci-dropdown-'+realIdx;
-    dropdown.style.cssText='display:none;padding:8px 10px 10px 32px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);animation:rowIn 0.15s ease;';
-    var quickEvents=[
-      {label:'🚶 Obdachlose nach draußen gebracht',ev:'Obdachlose nach draußen gebracht'},
-      {label:'🚫 Unbefugte Person entfernt',ev:'Unbefugte Person entfernt'},
-      {label:'🚗 Fahrzeuge herausgelassen',ev:'Fahrzeuge herausgelassen'},
-    ];
-    quickEvents.forEach(function(qe,qi){
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
-      row.innerHTML=
-        '<div style="flex:1;font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);">'+qe.label+'</div>'
-        +'<div style="display:flex;align-items:center;gap:3px;flex-shrink:0;">'
-        +'<button onclick="ciLogDropdownChange('+realIdx+','+qi+',-1)" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:white;font-size:12px;font-weight:800;cursor:pointer;">−</button>'
-        +'<span id="ci-dd-count-'+realIdx+'-'+qi+'" style="font-family:\'Syne\',sans-serif;font-size:12px;font-weight:800;color:white;min-width:18px;text-align:center;">1</span>'
-        +'<button onclick="ciLogDropdownChange('+realIdx+','+qi+',1)" style="width:20px;height:20px;border-radius:5px;border:1px solid rgba(76,186,107,0.3);background:rgba(76,186,107,0.12);color:#4cba6b;font-size:12px;font-weight:800;cursor:pointer;">+</button>'
-        +'</div>'
-        +'<button onclick="ciLogDropdownAdd('+realIdx+',\''+qe.ev+'\','+qi+')" style="padding:4px 10px;border-radius:7px;border:none;background:linear-gradient(135deg,#4a6080,#3d5268);color:white;font-size:10px;font-weight:800;cursor:pointer;flex-shrink:0;">+ Add</button>';
-      if(qi===quickEvents.length-1)row.style.borderBottom='none';
-      dropdown.appendChild(row);
-    });
+    dropdown.style.cssText='display:none;padding:8px 10px 10px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.06);animation:rowIn 0.15s ease;';
+    (function(rIdx){
+      getTopEvents(3).forEach(function(ev){
+        dropdown.appendChild(buildSmartQuickAddCard(ev,'row'+rIdx,function(evName,count){
+          ciRowQuickAdd(rIdx,evName,count);
+        }));
+      });
+    })(realIdx);
+
 
     // حقل تعديل الوقت
     var editRow=document.createElement('div');
@@ -2256,7 +2311,7 @@ function ciOpenRowMenu(idx,isIn){
 
   sheet.appendChild(actionBtn('✏️','Kunde bearbeiten',null,function(){ciToggleEditKunde(idx);}));
   sheet.appendChild(actionBtn('⏱','Zeit bearbeiten',null,function(){ciToggleEditTime(idx);}));
-  if(isIn)sheet.appendChild(actionBtn('📋','Ereignis hinzufügen',null,function(){ciToggleLogDropdown(idx);}));
+  sheet.appendChild(actionBtn('📋','Ereignis hinzufügen',null,function(){ciToggleLogDropdown(idx);}));
   sheet.appendChild(actionBtn('🔄',isIn?'Zu "Aus" wechseln':'Zu "Ein" wechseln',null,function(){ciToggleType(idx);}));
   sheet.appendChild(actionBtn('🗑','Eintrag löschen','#E8394A',function(){ciDeleteEntry(idx);}));
 
@@ -2282,24 +2337,11 @@ function ciToggleLogDropdown(idx){
   dd.style.display=dd.style.display==='none'?'block':'none';
 }
 
-// تغيير العداد في القائمة
-var ciDropdownCounts={};
-function ciLogDropdownChange(logIdx,evIdx,d){
-  var key=logIdx+'-'+evIdx;
-  if(!ciDropdownCounts[key])ciDropdownCounts[key]=1;
-  ciDropdownCounts[key]=Math.max(1,ciDropdownCounts[key]+d);
-  var el=document.getElementById('ci-dd-count-'+logIdx+'-'+evIdx);
-  if(el)el.textContent=ciDropdownCounts[key];
-}
-
-// إضافة الحدث للصف
-function ciLogDropdownAdd(logIdx,eventName,evIdx){
-  var key=logIdx+'-'+evIdx;
-  var count=ciDropdownCounts[key]||1;
+// إضافة حدث مباشرة لكند سطر مُعيّن من بطاقة "الإضافة الذكية" داخل القائمة المنبثقة
+function ciRowQuickAdd(logIdx,eventName,count){
   var log=ciGetLog();
   var kunde=log[logIdx]?log[logIdx].kunde:'';
   if(!kunde){ciShowToast('⚠️ Kein Kunde');return;}
-  // ابحث عن الصف المرتبط بهذا الكند
   var found=false;
   var rows=Array.from(document.querySelectorAll('.proto-row')).reverse();
   for(var i=0;i<rows.length;i++){
@@ -2309,12 +2351,10 @@ function ciLogDropdownAdd(logIdx,eventName,evIdx){
     if(k===kunde){addNotiz(parseInt(id),eventName,count,'');found=true;break;}
   }
   if(!found){addRow({k:kunde,b:nowHM(),e:'',n:[{ev:eventName,c:count,ft:''}]});}
+  trackEventUsage(eventName);
   saveData();
-  // إغلاق القائمة وإعادة العداد
   var dd=document.getElementById('ci-dropdown-'+logIdx);if(dd)dd.style.display='none';
-  ciDropdownCounts[key]=1;
-  var el=document.getElementById('ci-dd-count-'+logIdx+'-'+evIdx);if(el)el.textContent='1';
-  ciShowToast('✅ '+count+'× '+eventName.substring(0,22)+'…');
+  ciShowToast('✅ '+count+'× '+stripEmojiUI(eventName).substring(0,22)+'…');
   playBeep('success');
   if(navigator.vibrate)navigator.vibrate(60);
 }
@@ -2398,6 +2438,7 @@ function ciSaveEditTime(idx){
   var oldTime=log[idx].time;
   var newTime=inp.value;
   log[idx].time=newTime;
+  log[idx].ts=timeStringToTs(newTime);
   ciSaveLog(log);
   // حدّث الوقت في البروتوكول (الصف المرتبط)
   ciSyncTimeToProtocol(log[idx].kunde,log[idx].type,newTime,oldTime);
@@ -2528,69 +2569,6 @@ function checkForgottenCheckout(){
   }else hideForgottenAlert();
 }
 function hideForgottenAlert(){var b=document.getElementById('ciAlertBanner');if(b)b.classList.remove('show');}
-
-// ===== QUICK EVENTS =====
-var quickEventCounts=[1,1];
-var quickEventNames=['Obdachlose nach draußen gebracht','Fahrzeuge herausgelassen'];
-
-function quickEventChange(idx,d){
-  quickEventCounts[idx]=Math.max(1,quickEventCounts[idx]+d);
-  var el=document.getElementById('qe-count-'+idx);
-  if(el)el.textContent=quickEventCounts[idx];
-}
-
-function quickEventAdd(idx){
-  var allK=ciGetAllKunden();
-  if(!allK.length){ciShowToast('⚠️ Kein Kunde vorhanden');return;}
-  // نافذة اختيار الكند
-  var overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:24px;backdrop-filter:blur(6px);';
-  var eventName=quickEventNames[idx];
-  var count=quickEventCounts[idx];
-  var btns=allK.map(function(k){
-    return '<button onclick="quickEventConfirm(\''+k.replace(/'/g,"\\'")+'\','+idx+',this.closest(\'[style*=inset]\'))" '
-      +'style="width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);color:white;font-family:\'DM Sans\',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-align:left;margin-bottom:6px;display:flex;align-items:center;gap:10px;">'
-      +'<span style="font-size:20px;">📍</span>'+k+'</button>';
-  }).join('');
-  overlay.innerHTML='<div style="width:100%;max-width:480px;padding:0 16px;">'
-    +'<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:12px 16px;margin-bottom:12px;text-align:center;">'
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px;">Ereignis</div>'
-    +'<div style="font-size:13px;font-weight:700;color:white;">'+eventName+'</div>'
-    +'<div style="font-family:\'Syne\',sans-serif;font-size:22px;font-weight:800;color:#4cba6b;margin-top:4px;">× '+count+'</div>'
-    +'</div>'
-    +'<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Für welchen Kunden?</div>'
-    +btns
-    +'<button onclick="this.closest(\'[style*=inset]\').remove()" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.15);background:transparent;color:rgba(255,255,255,0.4);font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">Abbrechen</button>'
-    +'</div>';
-  document.body.appendChild(overlay);
-}
-
-function quickEventConfirm(kunde,idx,overlay){
-  if(overlay)overlay.remove();
-  var eventName=quickEventNames[idx];
-  var count=quickEventCounts[idx];
-  // ابحث عن آخر صف لهذا الكند وأضف الحدث له
-  var found=false;
-  var rows=Array.from(document.querySelectorAll('.proto-row')).reverse();
-  for(var i=0;i<rows.length;i++){
-    var row=rows[i];var id=row.id.replace('row-','');
-    var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
-    var isC=kcust&&kcust.style.display!=='none';var k=isC?kcust.value:(ksel?ksel.value:'');
-    if(k===kunde){addNotiz(parseInt(id),eventName,count,'');found=true;break;}
-  }
-  if(!found){
-    // لو ما في صف لهذا الكند — أضف صف جديد
-    var time=nowHM();
-    addRow({k:kunde,b:time,e:'',n:[{ev:eventName,c:count,ft:''}]});
-  }
-  saveData();
-  ciShowToast('✅ '+count+'× '+eventName.substring(0,20)+'…');
-  playBeep('success');
-  if(navigator.vibrate)navigator.vibrate(80);
-  // إعادة العداد لـ 1
-  quickEventCounts[idx]=1;
-  var el=document.getElementById('qe-count-'+idx);if(el)el.textContent='1';
-}
 
 // ===== ٢. بحث الكنده =====
 function ciFilterKunden(query){
@@ -3013,38 +2991,33 @@ function paPrintAll(){
 
 function paPDFAll(){
   if(!paCurrentData.length){showToast('Keine Daten','error');return;}
-  showToast('📄 PDF wird für '+paCurrentData.length+' Berichte erstellt…','info');
+  var lib=window.jspdf;if(!lib){showToast('jsPDF lädt noch…','error');return;}
+  showPdfLoader(true);
+  showToast('📄 Ein PDF wird für '+paCurrentData.length+' Berichte erstellt…','info');
 
-  // نولّد PDF واحد لكل تقرير بالتسلسل
-  var ci=document.getElementById('checkinScreen');
-  var ciWasOpen=ci&&ci.style.display!=='none';
-  if(ciWasOpen)ci.style.display='none';
-  var printArcOv=document.getElementById('printArchiveOverlay');
-  if(printArcOv)printArcOv.classList.remove('open');
+  var allReports=[];
+  paCurrentData.forEach(function(key){
+    try{var d=JSON.parse(localStorage.getItem(key));if(d)allReports.push(d);}catch(e){}
+  });
+  if(!allReports.length){showPdfLoader(false);showToast('Keine Daten','error');return;}
 
-  var origData=localStorage.getItem('denis_protokoll');
-  var queue=paCurrentData.slice();
-
-  function pdfNext(){
-    if(!queue.length){
-      if(ciWasOpen&&ci)ci.style.display='block';
-      if(printArcOv)printArcOv.classList.add('open');
-      if(origData)safeSetItem('denis_protokoll',origData);
-      document.getElementById('rowsWrap').innerHTML='';rowId=0;
-      Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
-      loadData();updateSummary();
-      showToast('✅ Alle PDFs erstellt!','success');
-      return;
-    }
-    var key=queue.shift();
-    var d;try{d=JSON.parse(localStorage.getItem(key));}catch(e){pdfNext();return;}
-    safeSetItem('denis_protokoll',JSON.stringify(d));
-    document.getElementById('rowsWrap').innerHTML='';rowId=0;
-    Object.keys(nCounts).forEach(function(k){delete nCounts[k];});
-    loadData();updateSummary();
-    setTimeout(function(){generatePDFAndSave();setTimeout(pdfNext,1200);},500);
+  try{
+    var doc=new lib.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    allReports.forEach(function(d,i){
+      if(i>0)doc.addPage();
+      buildReportPage(doc,d);
+    });
+    // اسم ملف يعكس نطاق التقارير المجمّعة (أول وآخر تاريخ)
+    var firstDate=allReports[0].date?fmtDateDisplay(allReports[0].date).replace(/\./g,'-'):'export';
+    var lastDate=allReports[allReports.length-1].date?fmtDateDisplay(allReports[allReports.length-1].date).replace(/\./g,'-'):'';
+    var filename='denis-protokoll-'+firstDate+(lastDate&&lastDate!==firstDate?'_bis_'+lastDate:'')+'.pdf';
+    doc.save(filename);
+    showToast('✅ Ein PDF mit '+allReports.length+' Berichten erstellt!','success');
+    playBeep('success');
+  }catch(e){
+    showToast('❌ Fehler: '+e.message,'error');
   }
-  pdfNext();
+  showPdfLoader(false);
 }
 
 </script>
