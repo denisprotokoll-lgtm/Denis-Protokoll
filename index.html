@@ -1715,11 +1715,12 @@ function switchReportTemplate(tpl,btn){
     if(einsatzForm){
       einsatzForm.style.display='block';
       renderPresetChips();
+      wireEinsatzLiveUpdate();
       var objEl=document.getElementById('einsatzObjekt');if(objEl&&!objEl.value)objEl.value=guessCurrentObjekt();
       var b=document.getElementById('einsatzBeginn');if(b&&!b.value)b.value=nowHM();
       var e=document.getElementById('einsatzEnde');if(e&&!e.value)e.value=nowHM();
     }
-    box.value='⬆️ Bitte Felder oben ausfüllen und auf "📝 Bericht erstellen" tippen.';
+    generateEinsatzbericht();
   }
 }
 function switchReportLang(lang,btn){
@@ -1745,7 +1746,7 @@ function renderPresetChips(){
     EINSATZART_PRESETS.forEach(function(txt){
       var chip=document.createElement('button');
       chip.type='button';chip.className='preset-chip';chip.textContent=txt;
-      chip.addEventListener('click',function(){document.getElementById('einsatzArt').value=txt;});
+      chip.addEventListener('click',function(){document.getElementById('einsatzArt').value=txt;generateEinsatzbericht();});
       artWrap.appendChild(chip);
     });
     artWrap.dataset.filled='1';
@@ -1759,6 +1760,7 @@ function renderPresetChips(){
       chip.addEventListener('click',function(){
         var el=document.getElementById('einsatzBeschreibung');
         el.value=el.value.trim()?el.value.trim()+' '+txt:txt;
+        generateEinsatzbericht();
       });
       descWrap.appendChild(chip);
     });
@@ -1767,6 +1769,17 @@ function renderPresetChips(){
 }
 function toggleEinsatzPolizei(chk){
   var wrap=document.getElementById('einsatzBeamteWrap');if(wrap)wrap.style.display=chk.checked?'block':'none';
+  generateEinsatzbericht();
+}
+// يربط الاستماع مرة واحدة فقط بكل حقول نموذج Einsatzbericht، بحيث يتحدّث نص المعاينة تلقائيًا فور الكتابة — بدون الحاجة لزر يدوي
+var _einsatzListenersWired=false;
+function wireEinsatzLiveUpdate(){
+  if(_einsatzListenersWired)return;
+  ['einsatzObjekt','einsatzArt','einsatzBeschreibung','einsatzBeamte','einsatzPersonen','einsatzBeginn','einsatzEnde'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)el.addEventListener('input',generateEinsatzbericht);
+  });
+  _einsatzListenersWired=true;
 }
 
 // Vorlage 1: "Einsatzbericht" — wird aus dem Mini-Formular generiert
