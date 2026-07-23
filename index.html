@@ -1772,25 +1772,23 @@ function toggleEinsatzPolizei(chk){
 // Vorlage 1: "Einsatzbericht" — wird aus dem Mini-Formular generiert
 function generateEinsatzbericht(){
   var data=collectData();
-  var objekt=(document.getElementById('einsatzObjekt').value||'').trim();
+  var objekt=(document.getElementById('einsatzObjekt').value||'').trim()||'Objekt';
   var art=(document.getElementById('einsatzArt').value||'').trim();
   var beschreibung=(document.getElementById('einsatzBeschreibung').value||'').trim();
   var polizei=document.getElementById('einsatzPolizei').checked;
   var beamte=(document.getElementById('einsatzBeamte').value||'').trim();
   var personen=(document.getElementById('einsatzPersonen').value||'').trim();
-  var beginn=document.getElementById('einsatzBeginn').value||nowHM();
-  var ende=document.getElementById('einsatzEnde').value||nowHM();
+  var beginn=document.getElementById('einsatzBeginn').value||'________';
+  var ende=document.getElementById('einsatzEnde').value||'________';
 
-  var t='🚨 *Einsatzbericht*'+(objekt?' '+objekt:'')+'\n\n';
-  t+='📅 Datum: '+fmtDateDisplay(data.date)+'\n';
-  t+='🕐 Uhrzeit: '+beginn+' Uhr\n';
-  t+='👤 Mitarbeiter: '+(data.mitarbeiter||'—')+'\n';
-  if(art)t+='📋 Einsatzart: '+art+'\n';
-  t+='\n';
-  if(polizei)t+='👮 Polizei war'+(beamte?' mit '+beamte+' Beamten':'')+' vor Ort.\n';
+  var t='Einsatzbericht\n';
+  t+='Datum: '+fmtDateDisplay(data.date)+'\n';
+  t+='Uhrzeit: '+beginn+' Uhr\n\n';
+  if(art)t+='Einsatzart: '+art+'\n\n';
+  if(polizei)t+='Polizei wurde verständigt und war mit '+(beamte||'___')+' Beamten vor Ort.\n';
   if(beschreibung)t+=beschreibung+'\n';
-  if(personen)t+='👥 Betroffene Personen: '+personen+'\n';
-  t+='\n✅ Einsatz beendet um '+ende+' Uhr.';
+  else t+=(personen||'___')+' Personen wurden aus dem '+objekt+' entfernt.\n';
+  t+='Einsatz um '+ende+' Uhr beendet.';
 
   currentReportText=t;
   document.getElementById('reportPreviewBox').value=t;
@@ -1801,16 +1799,11 @@ function generateEinsatzbericht(){
 // Vorlage 2: "Schichtbericht ohne Vorkommnisse" — ein Klick, keine Eingabe nötig
 function buildSchichtberichtText(){
   var data=collectData();
-  var objekt=guessCurrentObjekt();
-  var ss=localStorage.getItem('denis_shift_start')||'19:45';
-  var se=localStorage.getItem('denis_shift_end')||'07:00';
-  var t='✅ *Schichtbericht*'+(objekt?' '+objekt:'')+'\n\n';
-  t+='📅 Datum: '+fmtDateDisplay(data.date)+'\n';
-  t+='👤 Mitarbeiter: '+(data.mitarbeiter||'—')+'\n';
-  t+='🕐 Schicht: '+ss+' – '+se+' Uhr\n\n';
-  t+='Während der Schicht gab es keine besonderen Vorkommnisse.\n';
-  t+='Es waren keine Einsätze erforderlich.\n';
-  t+='Kontrollgänge im Objekt wurden durchgeführt.';
+  var t='Schichtbericht\n';
+  t+='Datum: '+fmtDateDisplay(data.date)+'\n\n';
+  t+='Während der Schicht keine besonderen Vorkommnisse.\n';
+  t+='Keine Einsätze erforderlich.\n';
+  t+='Kontrollen im Objekt wurden durchgeführt.';
   return t;
 }
 
