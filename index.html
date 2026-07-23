@@ -232,6 +232,9 @@ body.app-ready::before{opacity:0.5;}
 .einsatz-input{width:100%;box-sizing:border-box;padding:9px 10px;border-radius:9px;border:1.5px solid var(--border);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);}
 .einsatz-row2{display:flex;gap:8px;}
 .einsatz-row2 .einsatz-field{flex:1;}
+.preset-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.preset-chip{padding:5px 10px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap;}
+.preset-chip:active{background:#eef1f5;}
 /* SIG */
 .sig-canvas{border:2px dashed var(--border);border-radius:12px;background:#fafafa;width:100%;height:160px;cursor:crosshair;touch-action:none;display:block;}
 .sig-btns{display:flex;gap:8px;margin-top:12px;}
@@ -565,10 +568,12 @@ body.app-ready::before{opacity:0.5;}
         <div class="einsatz-field">
           <label class="einsatz-label">📋 Einsatzart</label>
           <input type="text" class="einsatz-input" id="einsatzArt" placeholder="z. B. Platzverweis, Ruhestörung, Diebstahl">
+          <div class="preset-chips" id="einsatzArtChips"></div>
         </div>
         <div class="einsatz-field">
           <label class="einsatz-label">📝 Kurze Beschreibung</label>
           <textarea class="einsatz-input" id="einsatzBeschreibung" rows="2" placeholder="z. B. 3 Jugendliche wurden aus dem Parkhaus entfernt."></textarea>
+          <div class="preset-chips" id="einsatzBeschreibungChips"></div>
         </div>
         <div class="einsatz-field">
           <label class="einsatz-label" style="display:flex;align-items:center;gap:6px;">
@@ -1709,6 +1714,7 @@ function switchReportTemplate(tpl,btn){
     if(langRow)langRow.style.display='none';
     if(einsatzForm){
       einsatzForm.style.display='block';
+      renderPresetChips();
       var objEl=document.getElementById('einsatzObjekt');if(objEl&&!objEl.value)objEl.value=guessCurrentObjekt();
       var b=document.getElementById('einsatzBeginn');if(b&&!b.value)b.value=nowHM();
       var e=document.getElementById('einsatzEnde');if(e&&!e.value)e.value=nowHM();
@@ -1721,6 +1727,44 @@ function switchReportLang(lang,btn){
   currentReportText=buildWaText(collectData(),lang);document.getElementById('reportPreviewBox').value=currentReportText;
 }
 
+// ===== نصوص جاهزة (Presets) لحقلي Einsatzart و Beschreibung =====
+var EINSATZART_PRESETS=['Platzverweis','Ruhestörung','Diebstahl','Sachbeschädigung','Unbefugtes Betreten','Verkehrsbehinderung','Fundsache','Erste Hilfe geleistet','Sonstiges'];
+var BESCHREIBUNG_PRESETS=[
+  'Person(en) wurde(n) des Platzes verwiesen.',
+  'Unbefugte Person(en) wurden aus dem Objekt entfernt.',
+  'Fahrzeug wurde entfernt/abgeschleppt.',
+  'Ruhestörung durch Anwohner gemeldet und beendet.',
+  'Sachschaden wurde dokumentiert und fotografiert.',
+  'Einbruchsversuch festgestellt, Polizei verständigt.',
+  'Obdachlose Person(en) nach draußen begleitet.',
+  'Streit zwischen Personen geschlichtet.'
+];
+function renderPresetChips(){
+  var artWrap=document.getElementById('einsatzArtChips');
+  if(artWrap&&!artWrap.dataset.filled){
+    EINSATZART_PRESETS.forEach(function(txt){
+      var chip=document.createElement('button');
+      chip.type='button';chip.className='preset-chip';chip.textContent=txt;
+      chip.addEventListener('click',function(){document.getElementById('einsatzArt').value=txt;});
+      artWrap.appendChild(chip);
+    });
+    artWrap.dataset.filled='1';
+  }
+  var descWrap=document.getElementById('einsatzBeschreibungChips');
+  if(descWrap&&!descWrap.dataset.filled){
+    BESCHREIBUNG_PRESETS.forEach(function(txt){
+      var chip=document.createElement('button');
+      chip.type='button';chip.className='preset-chip';chip.textContent=txt.length>28?txt.substring(0,28)+'…':txt;
+      chip.title=txt;
+      chip.addEventListener('click',function(){
+        var el=document.getElementById('einsatzBeschreibung');
+        el.value=el.value.trim()?el.value.trim()+' '+txt:txt;
+      });
+      descWrap.appendChild(chip);
+    });
+    descWrap.dataset.filled='1';
+  }
+}
 function toggleEinsatzPolizei(chk){
   var wrap=document.getElementById('einsatzBeamteWrap');if(wrap)wrap.style.display=chk.checked?'block':'none';
 }
