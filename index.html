@@ -562,27 +562,13 @@ body.app-ready::before{opacity:0.5;}
       </div>
       <div id="einsatzForm" style="display:none;background:#f8f9fc;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
         <div class="einsatz-field">
-          <label class="einsatz-label">📍 Objekt / Standort</label>
-          <input type="text" class="einsatz-input" id="einsatzObjekt" placeholder="z. B. Parkhaus Galeria">
+          <label class="einsatz-label">👮 Anzahl Polizeibeamte</label>
+          <input type="number" min="0" class="einsatz-input" id="einsatzBeamte" placeholder="z. B. 3">
         </div>
         <div class="einsatz-field">
-          <label class="einsatz-label">📋 Einsatzart</label>
-          <input type="text" class="einsatz-input" id="einsatzArt" placeholder="z. B. Platzverweis, Ruhestörung, Diebstahl">
-          <div class="preset-chips" id="einsatzArtChips"></div>
-        </div>
-        <div class="einsatz-field">
-          <label class="einsatz-label">📝 Kurze Beschreibung</label>
+          <label class="einsatz-label">📝 Kurze Beschreibung (ersetzt die Standardzeile unten)</label>
           <textarea class="einsatz-input" id="einsatzBeschreibung" rows="2" placeholder="z. B. 3 Jugendliche wurden aus dem Parkhaus entfernt."></textarea>
           <div class="preset-chips" id="einsatzBeschreibungChips"></div>
-        </div>
-        <div class="einsatz-field">
-          <label class="einsatz-label" style="display:flex;align-items:center;gap:6px;">
-            <input type="checkbox" id="einsatzPolizei" onchange="toggleEinsatzPolizei(this)" style="width:auto;"> Polizei war vor Ort
-          </label>
-        </div>
-        <div id="einsatzBeamteWrap" class="einsatz-field" style="display:none;">
-          <label class="einsatz-label">👮 Anzahl Polizeibeamte</label>
-          <input type="number" min="1" class="einsatz-input" id="einsatzBeamte" placeholder="z. B. 3">
         </div>
         <div class="einsatz-field">
           <label class="einsatz-label">👥 Anzahl betroffener Personen</label>
@@ -598,7 +584,6 @@ body.app-ready::before{opacity:0.5;}
             <input type="time" class="einsatz-input" id="einsatzEnde">
           </div>
         </div>
-        <button onclick="generateEinsatzbericht()" style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#E8394A,#c8102e);color:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;cursor:pointer;">📝 Bericht erstellen</button>
       </div>
       <textarea class="report-preview-box" id="reportPreviewBox" spellcheck="false">Bericht wird generiert…</textarea>
       <div style="font-size:10px;color:var(--muted);margin-top:6px;text-align:center;">✏️ Du kannst den Text hier direkt bearbeiten, bevor du ihn sendest.</div>
@@ -1666,22 +1651,6 @@ function buildWaText(data,lang){
   return t;
 }
 
-// أفضل تخمين للموقع/العميل الحالي — من الكند المختار في Checkin، وإلا من آخر صف بالبروتوكول
-function guessCurrentObjekt(){
-  try{
-    if(typeof ciSelected!=='undefined'&&ciSelected)return ciSelected;
-    var rows=document.querySelectorAll('.proto-row');
-    if(rows.length){
-      var lastId=rows[rows.length-1].id.replace('row-','');
-      var ksel=document.getElementById('ksel-'+lastId);var kcust=document.getElementById('kcust-'+lastId);
-      var isC=kcust&&kcust.style.display!=='none';
-      var k=isC?kcust.value:(ksel?ksel.value:'');
-      if(k&&k!=='— Standort —')return k;
-    }
-  }catch(e){}
-  return'';
-}
-
 var currentReportTemplate='standard';
 
 function openReportPreview(){
@@ -1716,9 +1685,6 @@ function switchReportTemplate(tpl,btn){
       einsatzForm.style.display='block';
       renderPresetChips();
       wireEinsatzLiveUpdate();
-      var objEl=document.getElementById('einsatzObjekt');if(objEl&&!objEl.value)objEl.value=guessCurrentObjekt();
-      var b=document.getElementById('einsatzBeginn');if(b&&!b.value)b.value=nowHM();
-      var e=document.getElementById('einsatzEnde');if(e&&!e.value)e.value=nowHM();
     }
     generateEinsatzbericht();
   }
@@ -1729,7 +1695,6 @@ function switchReportLang(lang,btn){
 }
 
 // ===== نصوص جاهزة (Presets) لحقلي Einsatzart و Beschreibung =====
-var EINSATZART_PRESETS=['Platzverweis','Ruhestörung','Diebstahl','Sachbeschädigung','Unbefugtes Betreten','Verkehrsbehinderung','Fundsache','Erste Hilfe geleistet','Sonstiges'];
 var BESCHREIBUNG_PRESETS=[
   'Person(en) wurde(n) des Platzes verwiesen.',
   'Unbefugte Person(en) wurden aus dem Objekt entfernt.',
@@ -1741,16 +1706,6 @@ var BESCHREIBUNG_PRESETS=[
   'Streit zwischen Personen geschlichtet.'
 ];
 function renderPresetChips(){
-  var artWrap=document.getElementById('einsatzArtChips');
-  if(artWrap&&!artWrap.dataset.filled){
-    EINSATZART_PRESETS.forEach(function(txt){
-      var chip=document.createElement('button');
-      chip.type='button';chip.className='preset-chip';chip.textContent=txt;
-      chip.addEventListener('click',function(){document.getElementById('einsatzArt').value=txt;generateEinsatzbericht();});
-      artWrap.appendChild(chip);
-    });
-    artWrap.dataset.filled='1';
-  }
   var descWrap=document.getElementById('einsatzBeschreibungChips');
   if(descWrap&&!descWrap.dataset.filled){
     BESCHREIBUNG_PRESETS.forEach(function(txt){
@@ -1767,15 +1722,11 @@ function renderPresetChips(){
     descWrap.dataset.filled='1';
   }
 }
-function toggleEinsatzPolizei(chk){
-  var wrap=document.getElementById('einsatzBeamteWrap');if(wrap)wrap.style.display=chk.checked?'block':'none';
-  generateEinsatzbericht();
-}
 // يربط الاستماع مرة واحدة فقط بكل حقول نموذج Einsatzbericht، بحيث يتحدّث نص المعاينة تلقائيًا فور الكتابة — بدون الحاجة لزر يدوي
 var _einsatzListenersWired=false;
 function wireEinsatzLiveUpdate(){
   if(_einsatzListenersWired)return;
-  ['einsatzObjekt','einsatzArt','einsatzBeschreibung','einsatzBeamte','einsatzPersonen','einsatzBeginn','einsatzEnde'].forEach(function(id){
+  ['einsatzBeschreibung','einsatzBeamte','einsatzPersonen','einsatzBeginn','einsatzEnde'].forEach(function(id){
     var el=document.getElementById(id);
     if(el)el.addEventListener('input',generateEinsatzbericht);
   });
@@ -1785,28 +1736,25 @@ function wireEinsatzLiveUpdate(){
 // Vorlage 1: "Einsatzbericht" — wird aus dem Mini-Formular generiert
 function generateEinsatzbericht(){
   var data=collectData();
-  var objekt=(document.getElementById('einsatzObjekt').value||'').trim()||'Objekt';
-  var art=(document.getElementById('einsatzArt').value||'').trim();
   var beschreibung=(document.getElementById('einsatzBeschreibung').value||'').trim();
-  var polizei=document.getElementById('einsatzPolizei').checked;
   var beamte=(document.getElementById('einsatzBeamte').value||'').trim();
   var personen=(document.getElementById('einsatzPersonen').value||'').trim();
-  var beginn=document.getElementById('einsatzBeginn').value||'________';
-  var ende=document.getElementById('einsatzEnde').value||'________';
+  var beginnEl=document.getElementById('einsatzBeginn').value;
+  var endeEl=document.getElementById('einsatzEnde').value;
+  var beginn=beginnEl||'________';
+  var ende=endeEl||'______';
+  var datum=data.date?fmtDateDisplay(data.date):'________';
 
   var t='Einsatzbericht\n';
-  t+='Datum: '+fmtDateDisplay(data.date)+'\n';
-  t+='Uhrzeit: '+beginn+' Uhr\n\n';
-  if(art)t+='Einsatzart: '+art+'\n\n';
-  if(polizei)t+='Polizei wurde verständigt und war mit '+(beamte||'___')+' Beamten vor Ort.\n';
+  t+='Datum: '+datum+'\n';
+  t+='Uhrzeit: '+beginn+'\n\n';
+  t+='Polizei wurde verständigt und war mit '+(beamte||'___')+' Beamten vor Ort.\n';
   if(beschreibung)t+=beschreibung+'\n';
-  else t+=(personen||'___')+' Personen wurden aus dem '+objekt+' entfernt.\n';
+  else t+=(personen||'___')+' Personen wurden aus dem Parkhaus entfernt.\n';
   t+='Einsatz um '+ende+' Uhr beendet.';
 
   currentReportText=t;
   document.getElementById('reportPreviewBox').value=t;
-  showToast('📝 Einsatzbericht erstellt — bitte prüfen','success');
-  playBeep('success');
 }
 
 // Vorlage 2: "Schichtbericht ohne Vorkommnisse" — ein Klick, keine Eingabe nötig
