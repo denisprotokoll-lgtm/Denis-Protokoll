@@ -575,6 +575,9 @@ body.app-ready::before{opacity:0.5;}
         <div class="einsatz-field">
           <label class="einsatz-label">👥 Anzahl betroffener Personen</label>
           <input type="number" min="0" class="einsatz-input" id="einsatzPersonen" placeholder="z. B. 3">
+          <label class="einsatz-label" style="display:flex;align-items:center;gap:6px;margin-top:7px;">
+            <input type="checkbox" id="einsatzObdachlos" checked style="width:auto;"> Obdachlose Person(en)
+          </label>
         </div>
         <div class="einsatz-row2">
           <div class="einsatz-field">
@@ -1711,16 +1714,28 @@ var BESCHREIBUNG_PRESETS=[
   'Obdachlose Person(en) nach draußen begleitet.',
   'Streit zwischen Personen geschlichtet.'
 ];
-// حالة الشرطة: 4 سيناريوهات ممكنة
+// يبني عبارة "الشخص/الأشخاص" بصيغة نحوية صحيحة (مفرد/جمع) مع مطابقة الفعل، ويضيف صفة "obdachlos" إن كانت مفعّلة
+function personenPhrase(countStr,obdachlos){
+  var n=parseInt(countStr,10);
+  var adj=obdachlos?'obdachlose ':'';
+  if(!countStr||isNaN(n)||n<1){
+    return {n:n||0,subject:'___ '+adj+'Person(en)',wurde:'wurde(n)',entfernte:'entfernte(n) sich'};
+  }
+  if(n===1){
+    return {n:1,subject:'1 '+adj+'Person',wurde:'wurde',entfernte:'entfernte sich'};
+  }
+  return {n:n,subject:n+' '+adj+'Personen',wurde:'wurden',entfernte:'entfernten sich'};
+}
+// حالة الشرطة: 4 سيناريوهات ممكنة — desc دالة تبني جملة الوصف المقترحة بصيغة نحوية صحيحة حسب العدد
 var POLICE_SITUATIONS=[
   {key:'vorort',label:'🚔 Vor Ort',line:null,
     desc:null},
   {key:'zuspaet',label:'🕐 Kam zu spät',line:'Die Polizei wurde telefonisch verständigt, traf jedoch erst nach dem Abzug der betroffenen Person(en) am Einsatzort ein.',
-    desc:'Die betroffenen Person(en) (Anzahl: {n}) entfernten sich eigenständig vor Eintreffen der Polizei.'},
+    desc:function(pp){return pp.subject+' '+pp.entfernte+' eigenständig vor Eintreffen der Polizei.';}},
   {key:'vorAnruf',label:'🚶 Weg vor Anruf',line:'Eine Verständigung der Polizei war nicht erforderlich, da sich die betroffene(n) Person(en) bereits vor einer möglichen Meldung eigenständig vom Einsatzort entfernt hatte(n).',
-    desc:'Die betroffenen Person(en) (Anzahl: {n}) wurden angetroffen, entfernten sich jedoch bereits vor der Verständigung der Polizei.'},
+    desc:function(pp){return pp.subject+' '+pp.wurde+' angetroffen, '+pp.entfernte+' jedoch bereits vor der Verständigung der Polizei.';}},
   {key:'abgesagt',label:'📵 Abgesagt',line:'Die Polizei wurde telefonisch verständigt. Da sich die betroffene(n) Person(en) vor Eintreffen der Beamten eigenständig entfernte(n), wurde die Polizei umgehend telefonisch darüber informiert, dass ein Einsatz vor Ort nicht mehr erforderlich sei.',
-    desc:'Die betroffenen Person(en) (Anzahl: {n}) entfernten sich eigenständig vor Eintreffen der Polizei.'}
+    desc:function(pp){return pp.subject+' '+pp.entfernte+' vor Eintreffen der Polizei.';}}
 ];
 var _policeSituation='vorort';
 function renderPresetChips(){
@@ -1753,11 +1768,13 @@ function renderPresetChips(){
         // إخفاء حقل "عدد رجال الشرطة" لو الشرطة لم تُستدعَ أصلاً (غير منطقي بهذي الحالة)
         var beamteInput=document.getElementById('einsatzBeamte');
         if(beamteInput)beamteInput.style.display=(sit.key==='vorAnruf')?'none':'block';
-        // نقترح جملة وصف مناسبة تلقائيًا لكل حالة، بدل التعارض مع الجملة الافتراضية — فقط لو الحقل لسه فاضي
+        // نقترح جملة وصف مناسبة تلقائيًا لكل حالة (بصيغة نحوية صحيحة مفرد/جمع)، بدل التعارض مع الجملة الافتراضية — فقط لو الحقل لسه فاضي
         var descEl=document.getElementById('einsatzBeschreibung');
         if(sit.desc&&!descEl.value.trim()){
           var personenVal=(document.getElementById('einsatzPersonen').value||'').trim();
-          descEl.value=sit.desc.replace('{n}',personenVal||'___');
+          var obdachlosChk=document.getElementById('einsatzObdachlos');
+          var pp=personenPhrase(personenVal,obdachlosChk&&obdachlosChk.checked);
+          descEl.value=sit.desc(pp);
         }
         generateEinsatzbericht();
       });
@@ -1774,6 +1791,8 @@ function wireEinsatzLiveUpdate(){
     var el=document.getElementById(id);
     if(el)el.addEventListener('input',generateEinsatzbericht);
   });
+  var obdEl=document.getElementById('einsatzObdachlos');
+  if(obdEl)obdEl.addEventListener('change',generateEinsatzbericht);
   _einsatzListenersWired=true;
 }
 
@@ -1783,6 +1802,7 @@ function generateEinsatzbericht(){
   var beschreibung=(document.getElementById('einsatzBeschreibung').value||'').trim();
   var beamte=(document.getElementById('einsatzBeamte').value||'').trim();
   var personen=(document.getElementById('einsatzPersonen').value||'').trim();
+  var obdachlos=document.getElementById('einsatzObdachlos').checked;
   var beginnEl=document.getElementById('einsatzBeginn').value;
   var endeEl=document.getElementById('einsatzEnde').value;
   var beginn=beginnEl||'________';
@@ -1790,13 +1810,14 @@ function generateEinsatzbericht(){
   var datum=data.date?fmtDateDisplay(data.date):'________';
   var sit=POLICE_SITUATIONS.filter(function(s){return s.key===_policeSituation;})[0]||POLICE_SITUATIONS[0];
   var policeLine=sit.line||('Die Polizei wurde telefonisch verständigt und war mit '+(beamte||'___')+' Beamten vor Ort im Einsatz.');
+  var pp=personenPhrase(personen,obdachlos);
 
   var t='Einsatzbericht\n\n';
   t+='Datum: '+datum+'\n';
   t+='Uhrzeit: '+beginn+' Uhr\n\n';
   t+=policeLine+'\n';
   if(beschreibung)t+=beschreibung+'\n';
-  else t+=(personen||'___')+' Person(en) wurden aus dem Bereich des Parkhauses verwiesen.\n';
+  else t+=pp.subject+' '+pp.wurde+' aus dem Bereich des Parkhauses verwiesen.\n';
   t+='Der Einsatz wurde um '+ende+' Uhr beendet.';
 
   currentReportText=t;
