@@ -562,10 +562,13 @@ body.app-ready::before{opacity:0.5;}
         <button class="lang-tab" onclick="switchReportLang('ar',this)">🇸🇦 عربي</button>
       </div>
       <div id="einsatzForm" style="display:none;background:#f8f9fc;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
-        <div class="einsatz-field" id="einsatzBeamteField">
-          <label class="einsatz-label">👮 Anzahl Polizeibeamte</label>
-          <input type="number" min="0" class="einsatz-input" id="einsatzBeamte" placeholder="z. B. 3">
+        <div class="einsatz-field">
+          <label class="einsatz-label">🚔 Polizei-Situation</label>
           <div class="preset-chips" id="policeSituationChips"></div>
+        </div>
+        <div class="einsatz-field" id="einsatzBeamteField">
+          <label class="einsatz-label">👮 Anzahl Polizeibeamte (falls vor Ort)</label>
+          <input type="number" min="0" class="einsatz-input" id="einsatzBeamte" placeholder="z. B. 3">
         </div>
         <div class="einsatz-field">
           <label class="einsatz-label">📝 Kurze Beschreibung (ersetzt die Standardzeile unten)</label>
