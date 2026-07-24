@@ -235,6 +235,7 @@ body.app-ready::before{opacity:0.5;}
 .preset-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
 .preset-chip{padding:5px 10px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap;}
 .preset-chip:active{background:#eef1f5;}
+.preset-chip.active{background:linear-gradient(135deg,#3d5268,#4a6080);color:white;border-color:transparent;}
 /* SIG */
 .sig-canvas{border:2px dashed var(--border);border-radius:12px;background:#fafafa;width:100%;height:160px;cursor:crosshair;touch-action:none;display:block;}
 .sig-btns{display:flex;gap:8px;margin-top:12px;}
@@ -561,9 +562,10 @@ body.app-ready::before{opacity:0.5;}
         <button class="lang-tab" onclick="switchReportLang('ar',this)">🇸🇦 عربي</button>
       </div>
       <div id="einsatzForm" style="display:none;background:#f8f9fc;border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
-        <div class="einsatz-field">
+        <div class="einsatz-field" id="einsatzBeamteField">
           <label class="einsatz-label">👮 Anzahl Polizeibeamte</label>
           <input type="number" min="0" class="einsatz-input" id="einsatzBeamte" placeholder="z. B. 3">
+          <div class="preset-chips" id="policeSituationChips"></div>
         </div>
         <div class="einsatz-field">
           <label class="einsatz-label">📝 Kurze Beschreibung (ersetzt die Standardzeile unten)</label>
@@ -1655,6 +1657,10 @@ var currentReportTemplate='standard';
 
 function openReportPreview(){
   document.getElementById('reportOverlay').classList.add('open');
+  _policeSituation='vorort';
+  var policeWrap=document.getElementById('policeSituationChips');
+  if(policeWrap)policeWrap.querySelectorAll('.preset-chip').forEach(function(c,i){c.classList.toggle('active',i===0);});
+  var beamteInput=document.getElementById('einsatzBeamte');if(beamteInput)beamteInput.style.display='block';
   switchReportTemplate('standard',document.querySelector('.report-tpl-btn[data-tpl="standard"]'));
 }
 function closeReportModal(){document.getElementById('reportOverlay').classList.remove('open');}
@@ -1694,7 +1700,7 @@ function switchReportLang(lang,btn){
   currentReportText=buildWaText(collectData(),lang);document.getElementById('reportPreviewBox').value=currentReportText;
 }
 
-// ===== نصوص جاهزة (Presets) لحقلي Einsatzart و Beschreibung =====
+// ===== نصوص جاهزة (Presets) لحقلي Beschreibung وحالة الشرطة =====
 var BESCHREIBUNG_PRESETS=[
   'Person(en) wurde(n) des Platzes verwiesen.',
   'Unbefugte Person(en) wurden aus dem Objekt entfernt.',
@@ -1705,6 +1711,18 @@ var BESCHREIBUNG_PRESETS=[
   'Obdachlose Person(en) nach draußen begleitet.',
   'Streit zwischen Personen geschlichtet.'
 ];
+// حالة الشرطة: 4 سيناريوهات ممكنة
+var POLICE_SITUATIONS=[
+  {key:'vorort',label:'🚔 Vor Ort',line:null,
+    desc:null},
+  {key:'zuspaet',label:'🕐 Kam zu spät',line:'Polizei wurde verständigt, traf jedoch erst nach Abzug der Personen ein.',
+    desc:'{n} Personen entfernten sich eigenständig, bevor die Polizei eintraf.'},
+  {key:'vorAnruf',label:'🚶 Weg vor Anruf',line:'Polizei wurde nicht verständigt, da sich die Personen bereits vor der Verständigung entfernt hatten.',
+    desc:'{n} Personen wurden angetroffen, hatten sich jedoch bereits vor der Verständigung der Polizei entfernt.'},
+  {key:'abgesagt',label:'📵 Abgesagt',line:'Polizei wurde verständigt. Die Personen entfernten sich vor Eintreffen der Beamten, woraufhin die Polizei telefonisch informiert wurde, dass der Einsatz nicht mehr erforderlich ist.',
+    desc:'{n} Personen entfernten sich vor Eintreffen der Polizei.'}
+];
+var _policeSituation='vorort';
 function renderPresetChips(){
   var descWrap=document.getElementById('einsatzBeschreibungChips');
   if(descWrap&&!descWrap.dataset.filled){
@@ -1720,6 +1738,32 @@ function renderPresetChips(){
       descWrap.appendChild(chip);
     });
     descWrap.dataset.filled='1';
+  }
+  var policeWrap=document.getElementById('policeSituationChips');
+  if(policeWrap&&!policeWrap.dataset.filled){
+    POLICE_SITUATIONS.forEach(function(sit){
+      var chip=document.createElement('button');
+      chip.type='button';chip.className='preset-chip'+(sit.key===_policeSituation?' active':'');
+      chip.textContent=sit.label;
+      chip.title=sit.line||'';
+      chip.addEventListener('click',function(){
+        _policeSituation=sit.key;
+        policeWrap.querySelectorAll('.preset-chip').forEach(function(c){c.classList.remove('active');});
+        chip.classList.add('active');
+        // إخفاء حقل "عدد رجال الشرطة" لو الشرطة لم تُستدعَ أصلاً (غير منطقي بهذي الحالة)
+        var beamteInput=document.getElementById('einsatzBeamte');
+        if(beamteInput)beamteInput.style.display=(sit.key==='vorAnruf')?'none':'block';
+        // نقترح جملة وصف مناسبة تلقائيًا لكل حالة، بدل التعارض مع الجملة الافتراضية — فقط لو الحقل لسه فاضي
+        var descEl=document.getElementById('einsatzBeschreibung');
+        if(sit.desc&&!descEl.value.trim()){
+          var personenVal=(document.getElementById('einsatzPersonen').value||'').trim();
+          descEl.value=sit.desc.replace('{n}',personenVal||'___');
+        }
+        generateEinsatzbericht();
+      });
+      policeWrap.appendChild(chip);
+    });
+    policeWrap.dataset.filled='1';
   }
 }
 // يربط الاستماع مرة واحدة فقط بكل حقول نموذج Einsatzbericht، بحيث يتحدّث نص المعاينة تلقائيًا فور الكتابة — بدون الحاجة لزر يدوي
@@ -1744,11 +1788,13 @@ function generateEinsatzbericht(){
   var beginn=beginnEl||'________';
   var ende=endeEl||'______';
   var datum=data.date?fmtDateDisplay(data.date):'________';
+  var sit=POLICE_SITUATIONS.filter(function(s){return s.key===_policeSituation;})[0]||POLICE_SITUATIONS[0];
+  var policeLine=sit.line||('Polizei wurde verständigt und war mit '+(beamte||'___')+' Beamten vor Ort.');
 
   var t='Einsatzbericht\n';
   t+='Datum: '+datum+'\n';
   t+='Uhrzeit: '+beginn+'\n\n';
-  t+='Polizei wurde verständigt und war mit '+(beamte||'___')+' Beamten vor Ort.\n';
+  t+=policeLine+'\n';
   if(beschreibung)t+=beschreibung+'\n';
   else t+=(personen||'___')+' Personen wurden aus dem Parkhaus entfernt.\n';
   t+='Einsatz um '+ende+' Uhr beendet.';
