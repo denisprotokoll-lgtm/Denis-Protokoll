@@ -337,6 +337,9 @@ body.app-ready::before{opacity:0.5;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
   .progress-wrap,.autosave-bar,
   .toast-wrap,.pdf-loading,.report-overlay,.overlay-base,#pinScreen,#homeScreen,#checkinScreen,#fabCheckin,#archivePreviewOverlay,#archivePanel,#archiveBg,#printArchiveOverlay,.print-archive-overlay{display:none!important;}
+  /* طباعة كود QR لموقع واحد — تُفعّل فقط عبر body.qr-print-mode */
+  body.qr-print-mode .card{display:none!important;}
+  body.qr-print-mode #qrPrintArea{display:block!important;}
   .card{box-shadow:none!important;border-radius:0!important;max-width:100%!important;width:100%!important;margin:0!important;padding:2px!important;}
   .proto-table{width:100%!important;font-size:7.5pt!important;border-collapse:collapse!important;}
   .proto-row{page-break-inside:avoid!important;}
@@ -546,6 +549,41 @@ body.app-ready::before{opacity:0.5;}
 
 
 
+<!-- QR SCAN (Kamera) -->
+<div id="qrScanOverlay" class="no-print" style="display:none;position:fixed;inset:0;z-index:999999;background:#000;">
+  <video id="qrScanVideo" muted playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+  <div style="position:absolute;top:0;left:0;right:0;padding:16px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,rgba(0,0,0,0.6),transparent);">
+    <div style="color:white;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;">📷 QR-Code scannen</div>
+    <button onclick="stopQrScan()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;">✕</button>
+  </div>
+  <div id="qrScanStatus" style="position:absolute;bottom:36px;left:0;right:0;text-align:center;color:white;font-size:13px;font-weight:700;padding:0 24px;text-shadow:0 1px 4px rgba(0,0,0,0.6);"></div>
+</div>
+
+<!-- QR GENERIEREN (für Kunden/Standorte) -->
+<div class="report-overlay" id="qrGenOverlay">
+  <div class="report-modal" style="max-width:360px;">
+    <div class="report-modal-hdr"><div class="report-modal-title">🔳 Standort-QR-Codes</div><button class="report-close-btn" onclick="closeQrGenModal()">✕</button></div>
+    <div class="report-modal-body">
+      <div id="qrGenName" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:12px;text-align:center;"></div>
+      <div style="text-align:left;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">🏢 Etagen / Bereiche (optional, für mehrstöckige Objekte)</div>
+        <div id="qrEtagenChips" class="preset-chips" style="margin-bottom:8px;"></div>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="qrEtageInput" class="einsatz-input" placeholder="z. B. 1. OG, Tiefgarage" style="flex:1;">
+          <button id="qrEtageAddBtn" style="padding:0 16px;border-radius:9px;border:none;background:#3d5268;color:white;font-weight:800;cursor:pointer;">+</button>
+        </div>
+      </div>
+      <div id="qrGenCodesContainer" style="text-align:center;"></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">Am Standort aufhängen. Mitarbeiter scannen den Code beim Rundgang, um den Besuch zu bestätigen.</div>
+    </div>
+    <div class="report-modal-ftr">
+      <button class="report-action-btn cancel" onclick="closeQrGenModal()">✕</button>
+      <button class="report-action-btn wa" onclick="printQrCode()" style="flex:2;">🖨 Drucken</button>
+    </div>
+  </div>
+</div>
+<div id="qrPrintArea" style="display:none;"></div>
+
 <!-- REPORT -->
 <div class="report-overlay" id="reportOverlay">
   <div class="report-modal">
@@ -655,7 +693,8 @@ body.app-ready::before{opacity:0.5;}
     <div class="ci-qb-item"><span class="ci-qb-label">Letzter</span><span class="ci-qb-val" id="qbLast" style="font-size:11px;">--</span></div>
   </div>
   <div class="ci-body" style="padding:0 12px 20px;">
-    <div class="ci-section-label" style="margin-bottom:8px;">📍 Kunde auswählen</div>
+    <button onclick="startQrScan()" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#4a6080,#3d5268);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin:14px 0 10px;display:flex;align-items:center;justify-content:center;gap:8px;">📷 QR-Code scannen &amp; einchecken</button>
+    <div class="ci-section-label" style="margin-bottom:8px;">📍 oder Kunde manuell auswählen</div>
     <div id="ciSearchWrap" style="display:none;margin-bottom:10px;">
       <input id="ciKundeSearch" type="text" placeholder="🔍 Suchen..." oninput="ciFilterKunden(this.value)"
         style="width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:white;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:9px 14px;outline:none;">
@@ -1146,9 +1185,15 @@ function toggleStatus(){
 // ===== EREIGNIS HELPERS =====
 function buildEreignisOpts(sel){
   sel=sel||'';
-  return'<option value="">— Ereignis —</option>'+EREIGNISSE.map(function(g){
+  var opts='<option value="">— Ereignis —</option>'+EREIGNISSE.map(function(g){
     return g.g?'<option disabled style="color:#aaa;font-size:10px;">'+g.label+'</option>':'<option'+(g.label===sel?' selected':'')+'>'+g.label+'</option>';
   }).join('');
+  // لو النص المطلوب تحديده (sel) غير موجود بالقائمة الثابتة (مثل ملاحظات "طابق تم تفتيشه" من مسح QR)، نضيفه كخيار إضافي حتى لا يُفقد
+  var existsInList=EREIGNISSE.some(function(g){return!g.g&&g.label===sel;});
+  if(sel&&!existsInList){
+    opts+='<option selected>'+escapeHtml(sel)+'</option>';
+  }
+  return opts;
 }
 function eventColor(val){if(DANGER_EVENTS.indexOf(val)>=0)return'red';if(ORANGE_EVENTS.indexOf(val)>=0)return'orange';if(BLUE_EVENTS.indexOf(val)>=0)return'blue';return'none';}
 function styleNotizSelect(s){
@@ -2052,9 +2097,12 @@ function settingsRenderKunden(){
   if(!kunden.length){list.innerHTML='<div style="padding:10px 0;font-size:12px;color:var(--muted);text-align:center;">Noch keine Kunden</div>';return;}
   list.innerHTML='';
   kunden.forEach(function(k){
-    var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);';
-    row.innerHTML='<span style="font-size:13px;font-weight:600;color:var(--text);">'+escapeHtml(k)+'</span><button style="background:#fff0f1;border:1px solid #f5c0c4;border-radius:6px;color:var(--red);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;">Löschen</button>';
-    row.querySelector('button').addEventListener('click',function(){settingsRemoveKunde(k);});
+    var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);gap:8px;';
+    row.innerHTML='<span style="font-size:13px;font-weight:600;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(k)+'</span>'
+      +'<button data-act="qr" style="background:#eef2fb;border:1px solid #c7d3ef;border-radius:6px;color:#3d5268;font-size:10px;font-weight:700;padding:4px 9px;cursor:pointer;flex-shrink:0;">🔳 QR</button>'
+      +'<button data-act="del" style="background:#fff0f1;border:1px solid #f5c0c4;border-radius:6px;color:var(--red);font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;flex-shrink:0;">Löschen</button>';
+    row.querySelector('[data-act="qr"]').addEventListener('click',function(){openQrGenModal(k);});
+    row.querySelector('[data-act="del"]').addEventListener('click',function(){settingsRemoveKunde(k);});
     list.appendChild(row);
   });
 }
@@ -2217,6 +2265,232 @@ function ciAddNewKunde(){
   kunden.push(name);safeSetItem('denis_extra_kunden',JSON.stringify(kunden));
   input.value='';ciRenderKunden();ciSelectKunde(name);ciShowToast(name+' hinzugefügt');playBeep('success');
 }
+// ===== QR-CODE: توليد لكل موقع + مسح بالكاميرا للتحقق الفعلي من تنفيذ الجولة =====
+var _qrGenLoaded=false,_qrScanLoaded=false;
+function loadScriptOnce(src){
+  return new Promise(function(resolve,reject){
+    var existing=document.querySelector('script[src="'+src+'"]');
+    if(existing){resolve();return;}
+    var s=document.createElement('script');
+    s.src=src;s.onload=function(){resolve();};s.onerror=function(){reject(new Error('load failed'));};
+    document.head.appendChild(s);
+  });
+}
+function ensureQrGenLib(){
+  if(_qrGenLoaded||window.QRCode)return Promise.resolve();
+  return loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js').then(function(){_qrGenLoaded=true;});
+}
+function ensureQrScanLib(){
+  if(_qrScanLoaded||window.QrScanner)return Promise.resolve();
+  return loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner.min.js').then(function(){
+    window.QrScanner.WORKER_PATH='https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner-worker.min.js';
+    _qrScanLoaded=true;
+  });
+}
+var QR_PREFIX='DENIS-STANDORT:';
+
+// ===== إدارة الطوابق/الأقسام لكل موقع =====
+function getKundeEtagen(name){
+  try{return JSON.parse(localStorage.getItem('denis_kunde_etagen')||'{}')[name]||[];}catch(e){return[];}
+}
+function saveKundeEtagen(name,arr){
+  var all={};try{all=JSON.parse(localStorage.getItem('denis_kunde_etagen')||'{}');}catch(e){}
+  all[name]=arr;
+  safeSetItem('denis_kunde_etagen',JSON.stringify(all));
+}
+
+// ----- توليد وطباعة QR لكل موقع/طابق (من الإعدادات) -----
+function openQrGenModal(kundeName){
+  document.getElementById('qrGenOverlay').classList.add('open');
+  document.getElementById('qrGenName').textContent=kundeName;
+  renderQrEtagenChips(kundeName);
+  renderQrCodes(kundeName);
+  var addBtn=document.getElementById('qrEtageAddBtn');
+  var input=document.getElementById('qrEtageInput');
+  addBtn.onclick=function(){
+    var val=input.value.trim();if(!val)return;
+    var etagen=getKundeEtagen(kundeName);
+    if(etagen.indexOf(val)>=0){showToast('Bereits vorhanden','error');return;}
+    etagen.push(val);saveKundeEtagen(kundeName,etagen);
+    input.value='';
+    renderQrEtagenChips(kundeName);renderQrCodes(kundeName);
+  };
+  input.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();addBtn.onclick();}};
+}
+function renderQrEtagenChips(kundeName){
+  var wrap=document.getElementById('qrEtagenChips');
+  var etagen=getKundeEtagen(kundeName);
+  if(!etagen.length){wrap.innerHTML='<div style="font-size:10px;color:var(--muted);">Keine Etagen definiert — es wird ein einzelner QR-Code für das gesamte Objekt erstellt.</div>';return;}
+  wrap.innerHTML='';
+  etagen.forEach(function(e,i){
+    var chip=document.createElement('button');
+    chip.type='button';chip.className='preset-chip';
+    chip.textContent=e+' ✕';
+    chip.addEventListener('click',function(){
+      var arr=getKundeEtagen(kundeName);arr.splice(i,1);saveKundeEtagen(kundeName,arr);
+      renderQrEtagenChips(kundeName);renderQrCodes(kundeName);
+    });
+    wrap.appendChild(chip);
+  });
+}
+function renderQrCodes(kundeName){
+  var container=document.getElementById('qrGenCodesContainer');
+  container.innerHTML='<div style="padding:30px 10px;color:#999;font-size:11px;">Lädt…</div>';
+  ensureQrGenLib().then(function(){
+    container.innerHTML='';
+    var etagen=getKundeEtagen(kundeName);
+    var targets=etagen.length?etagen:[null];
+    targets.forEach(function(etage){
+      var block=document.createElement('div');
+      block.className='qr-code-block';
+      block.style.cssText='display:inline-block;margin:8px;text-align:center;vertical-align:top;';
+      var label=document.createElement('div');
+      label.style.cssText='font-size:11px;font-weight:700;color:var(--text);margin-bottom:6px;';
+      label.textContent=etage||kundeName;
+      block.appendChild(label);
+      var canvasWrap=document.createElement('div');
+      canvasWrap.style.cssText='display:inline-block;padding:10px;background:white;border-radius:10px;';
+      block.appendChild(canvasWrap);
+      var qrText=QR_PREFIX+kundeName+(etage?('::'+etage):'');
+      new QRCode(canvasWrap,{text:qrText,width:120,height:120,correctLevel:QRCode.CorrectLevel.M});
+      container.appendChild(block);
+    });
+  }).catch(function(){
+    container.innerHTML='<div style="padding:20px 10px;color:var(--red);font-size:11px;">QR-Bibliothek konnte nicht geladen werden (Internetverbindung nötig).</div>';
+  });
+}
+function closeQrGenModal(){document.getElementById('qrGenOverlay').classList.remove('open');}
+function printQrCode(){
+  var blocks=document.querySelectorAll('#qrGenCodesContainer .qr-code-block');
+  if(!blocks.length){showToast('QR-Code noch nicht bereit','error');return;}
+  var kundeName=document.getElementById('qrGenName').textContent;
+  var html='';
+  blocks.forEach(function(block){
+    var label=block.querySelector('div').textContent;
+    var canvas=block.querySelector('canvas');
+    var imgEl=block.querySelector('img');
+    var src=canvas?canvas.toDataURL():(imgEl?imgEl.src:'');
+    if(!src)return;
+    html+='<div style="text-align:center;padding:40px 20px;page-break-inside:avoid;">'
+      +'<h2 style="font-family:\'Syne\',sans-serif;font-size:16pt;margin-bottom:4px;">'+escapeHtml(kundeName)+'</h2>'
+      +(label&&label!==kundeName?'<div style="font-size:13pt;font-weight:700;color:#3d5268;margin-bottom:14px;">'+escapeHtml(label)+'</div>':'<div style="font-size:9pt;color:#666;margin-bottom:14px;">Standort-Kontrollcode</div>')
+      +'<img src="'+src+'" style="width:200px;height:200px;">'
+      +'<div style="font-size:8pt;color:#999;margin-top:14px;">Denis Protokoll · Beim Rundgang scannen, um den Besuch zu bestätigen.</div>'
+      +'</div>';
+  });
+  document.getElementById('qrPrintArea').innerHTML=html;
+  document.body.classList.add('qr-print-mode');
+  setTimeout(function(){
+    window.print();
+    setTimeout(function(){document.body.classList.remove('qr-print-mode');},600);
+  },200);
+}
+
+// ----- مسح QR بالكاميرا (من شاشة Checkin) -----
+var _qrScannerInstance=null,_lastQrResult=null,_lastQrResultTime=0;
+function startQrScan(){
+  var overlay=document.getElementById('qrScanOverlay');
+  overlay.style.display='block';
+  var statusEl=document.getElementById('qrScanStatus');
+  statusEl.textContent='Lädt Kamera…';
+  ensureQrScanLib().then(function(){
+    var video=document.getElementById('qrScanVideo');
+    _qrScannerInstance=new window.QrScanner(video,function(result){
+      handleQrResult(typeof result==='string'?result:result.data);
+    },{highlightScanRegion:true,highlightCodeOutline:true,preferredCamera:'environment'});
+    _qrScannerInstance.start().then(function(){
+      statusEl.textContent='Code auf den QR-Aufkleber am Standort richten';
+    }).catch(function(){
+      statusEl.textContent='❌ Kamera nicht verfügbar oder Zugriff verweigert';
+    });
+  }).catch(function(){
+    statusEl.textContent='❌ Scanner konnte nicht geladen werden (Internet nötig)';
+  });
+}
+function stopQrScan(){
+  if(_qrScannerInstance){try{_qrScannerInstance.stop();_qrScannerInstance.destroy();}catch(e){}_qrScannerInstance=null;}
+  document.getElementById('qrScanOverlay').style.display='none';
+}
+// هل الكند حاليًا "بالداخل" (آخر سجل له بسجل الدخول/الخروج من نوع دخول)؟
+function ciIsKundeCurrentlyIn(kunde){
+  var log=ciGetLog();
+  for(var i=log.length-1;i>=0;i--){
+    if(log[i].kunde===kunde)return log[i].type==='in';
+  }
+  return false;
+}
+// أسماء الأحداث المسجَّلة فعليًا بصف هذا الكند بالبروتوكول الحالي
+function getRowNotesForKunde(kunde){
+  var data=collectData();
+  var matches=data.rows.filter(function(r){return r.k===kunde;});
+  var row=matches.length?matches[matches.length-1]:null;
+  return row&&row.n?row.n.map(function(n){return n.ev;}):[];
+}
+// يجد صف البروتوكول الخاص بهذا الكند، أو ينشئ صفًا جديدًا له إن لم يوجد
+function findOrCreateRowForKunde(kunde){
+  var rows=Array.from(document.querySelectorAll('.proto-row')).reverse();
+  for(var i=0;i<rows.length;i++){
+    var row=rows[i];var id=row.id.replace('row-','');
+    var ksel=document.getElementById('ksel-'+id);var kcust=document.getElementById('kcust-'+id);
+    var isC=kcust&&kcust.style.display!=='none';var k=isC?kcust.value:(ksel?ksel.value:'');
+    if(k===kunde)return parseInt(id);
+  }
+  addRow({k:kunde,b:nowHM(),e:'',n:[]});
+  var newRows=document.querySelectorAll('.proto-row');
+  return parseInt(newRows[newRows.length-1].id.replace('row-',''));
+}
+function handleQrResult(text){
+  if(!text)return;
+  var now=Date.now();
+  if(text===_lastQrResult&&now-_lastQrResultTime<3000)return; // تجاهل تكرار نفس الكود خلال 3 ثوانٍ
+  _lastQrResult=text;_lastQrResultTime=now;
+  var statusEl=document.getElementById('qrScanStatus');
+  if(text.indexOf(QR_PREFIX)!==0){
+    if(statusEl)statusEl.textContent='❌ Kein gültiger Denis-QR-Code';
+    return;
+  }
+  var rest=text.substring(QR_PREFIX.length);
+  var parts=rest.split('::');
+  var kunde=parts[0];
+  var etage=parts.length>1?parts[1]:null;
+  var allK=ciGetAllKunden();
+  if(allK.indexOf(kunde)<0){
+    if(statusEl)statusEl.textContent='❌ Unbekannter Standort: '+kunde;
+    playBeep('danger');
+    return;
+  }
+  if(!etage){
+    // كود موقع كامل (بدون طوابق) — تسجيل دخول مباشر
+    stopQrScan();
+    ciSelectKunde(kunde);
+    ciIn(true);
+    return;
+  }
+  // كود طابق/قسم داخل موقع متعدد الطوابق
+  if(!ciIsKundeCurrentlyIn(kunde)){ciSelectKunde(kunde);ciIn(true);}
+  var noteText='🏢 Etage kontrolliert: '+etage;
+  if(getRowNotesForKunde(kunde).indexOf(noteText)>=0){
+    if(statusEl)statusEl.textContent='ℹ️ '+etage+' bereits kontrolliert';
+    playBeep('save');
+    return;
+  }
+  addNotiz(findOrCreateRowForKunde(kunde),noteText,1,'');
+  saveData();
+  var floors=getKundeEtagen(kunde);
+  var notesNow=getRowNotesForKunde(kunde);
+  var doneCount=floors.filter(function(f){return notesNow.indexOf('🏢 Etage kontrolliert: '+f)>=0;}).length;
+  if(floors.length&&doneCount>=floors.length){
+    if(statusEl)statusEl.textContent='🎉 Alle '+floors.length+' Etagen kontrolliert!';
+    playBeep('success');
+    if(navigator.vibrate)navigator.vibrate([60,40,60,40,120]);
+    stopQrScan();
+  }else{
+    if(statusEl)statusEl.textContent='✅ '+etage+' erfasst ('+doneCount+'/'+(floors.length||'?')+' Etagen)';
+    playBeep('save');
+    if(navigator.vibrate)navigator.vibrate(50);
+  }
+}
+
 function ciSelectKunde(k){
   ciSelected=k;ciRenderKunden();
   var sos=document.getElementById('ciSosBtn');if(sos)sos.style.display='flex';
@@ -2376,17 +2650,25 @@ function updateQuickBar(){
   }
 }
 
-function ciIn(){
+function ciIn(viaQr){
   if(!ciSelected)return;var time=nowHM();
   safeSetItem('denis_last_kunde',ciSelected);
   var log=ciGetLog();
   var snapshot=JSON.stringify(log);
   var rowsBefore=document.getElementById('rowsWrap').innerHTML;
   var rowIdBefore=rowId;
-  log.push({kunde:ciSelected,type:'in',time:time,ts:Date.now()});ciSaveLog(log);
+  var entry={kunde:ciSelected,type:'in',time:time,ts:Date.now()};
+  if(viaQr)entry.qr=true;
+  log.push(entry);ciSaveLog(log);
   addRow({k:ciSelected,b:time,e:'',n:[]});
   ciRenderLog();updateQuickBar();updateDayCounter();ciRenderKunden();ciUpdateLayout();
-  ciShowToast(ciSelected+' – Eingang ✅');showCheckinFlash('in');playCheckinSound('in');saveData();
+  if(viaQr){
+    ciShowToast('✅ '+ciSelected+' – Eingang (📷 QR bestätigt)');
+    if(navigator.vibrate)navigator.vibrate([50,50,50]);
+  }else{
+    ciShowToast(ciSelected+' – Eingang ✅');
+  }
+  showCheckinFlash('in');playCheckinSound('in');saveData();
   // Undo
   var savedKunde=ciSelected;
   showUndoToast('✅ '+savedKunde+' Eingang',function(){
@@ -2453,10 +2735,11 @@ function ciRenderLog(){
       var mins=ciElapsedMinutes(entry);var col=ciElapsedColor(mins);
       elapsedHtml='<span id="ci-elapsed-'+realIdx+'" style="margin-left:6px;font-size:9px;font-weight:800;padding:2px 6px;border-radius:7px;background:'+col+'22;color:'+col+';border:1px solid '+col+'55;">⏱ '+mins+' Min</span>';
     }
+    var qrHtml=entry.qr?'<span style="margin-left:6px;font-size:9px;font-weight:800;padding:2px 6px;border-radius:7px;background:rgba(100,160,230,0.18);color:#7fb0e8;border:1px solid rgba(100,160,230,0.4);" title="Per QR-Code am Standort bestätigt">📷 QR</span>':'';
     item.innerHTML=
       '<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
       +'<div style="flex:1;min-width:0;overflow:hidden;">'
-      +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(entry.kunde)+'</div>'
+      +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(entry.kunde)+qrHtml+'</div>'
       +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;">⏱ '+escapeHtml(entry.time)+elapsedHtml+'</div>'
       +'</div>'
       +'<button data-row-menu style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:rgba(255,255,255,0.7);font-size:16px;font-weight:800;padding:5px 12px;cursor:pointer;line-height:1;" title="Bearbeiten">⋮</button>';
