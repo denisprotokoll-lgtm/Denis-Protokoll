@@ -1696,12 +1696,31 @@ function sortRowsByTime(){
 }
 
 // ===== ARCHIVE =====
+// يحسب عدد الزيارات "المؤكدة" فعليًا (فيها ملاحظة تحقق QR) مقابل إجمالي الزيارات — لعرض ملخص مصداقية بختام التقرير
+function computeVerificationSummary(data){
+  var rows=(data.rows||[]).filter(function(r){return r.k&&r.k!=='— Standort —';});
+  var total=rows.length;
+  var verified=rows.filter(function(r){
+    return (r.n||[]).some(function(n){return n.ev&&n.ev.indexOf('✅ Vor Ort bestätigt')===0;});
+  }).length;
+  return{total:total,verified:verified};
+}
 function buildWaText(data,lang){
   var t='';
   if(lang==='en')t='🛡 *Denis Security Report*\n📋 Nr: '+(data.protokollNr||'—')+'\n👤 '+(data.mitarbeiter||'—')+'\n📅 '+(data.day||'')+', '+fmtDateDisplay(data.date)+'\n\n';
   else if(lang==='ar')t='🛡 *تقرير دينيس الأمني*\n📋 رقم: '+(data.protokollNr||'—')+'\n👤 '+(data.mitarbeiter||'—')+'\n📅 '+(data.day||'')+', '+fmtDateDisplay(data.date)+'\n\n';
   else t='🛡 *Denis Protokoll*\n📋 Nr: '+(data.protokollNr||'—')+'\n👤 '+(data.mitarbeiter||'—')+'\n📅 '+(data.day||'')+', '+fmtDateDisplay(data.date)+'\n\n';
   data.rows.forEach(function(row,i){var k=row.k==='— Standort —'?'':row.k;if(!k)return;t+=(i+1)+'. *'+k+'* ('+(row.b||'—')+'–'+(row.e||'—')+')\n';if(row.n)row.n.forEach(function(n){if(n.ev&&n.ev!=='— Ereignis —')t+='   • '+n.ev+(n.c>1?' ['+n.c+'x]':'')+'\n';});});
+  var vs=computeVerificationSummary(data);
+  if(vs.total>0){
+    var head=lang==='en'?'✅ *Verified visits*: ':lang==='ar'?'✅ *الزيارات الموثّقة*: ':'✅ *Verifizierte Kontrollen*: ';
+    t+='\n'+head+vs.verified+'/'+vs.total+'\n';
+    if(vs.verified===vs.total){
+      t+=lang==='en'?'All rounds were confirmed via QR-code scan, GPS location, and automatic photo documentation.':
+         lang==='ar'?'تم توثيق جميع الجولات عبر مسح رمز QR وتأكيد الموقع GPS والتوثيق التصويري التلقائي.':
+         'Alle Rundgänge wurden durch QR-Code-Scan, GPS-Standortbestätigung und automatische Fotodokumentation nachweislich bestätigt.';
+    }
+  }
   return t;
 }
 
@@ -1960,6 +1979,21 @@ function buildReportPage(doc,data){
     }
     y+=rH+1;
   });
+  var vs=computeVerificationSummary(data);
+  if(vs.total>0){
+    var boxH=vs.verified===vs.total?15:9;
+    if(y+boxH>280){doc.addPage();y=margin;}
+    if(vs.verified===vs.total){doc.setFillColor(232,245,237);doc.setDrawColor(170,210,185);}
+    else{doc.setFillColor(250,245,230);doc.setDrawColor(220,200,160);}
+    doc.rect(margin,y,cW,boxH,'FD');
+    doc.setTextColor(40,100,60);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('✓ Verifizierte Kontrollen: '+vs.verified+'/'+vs.total,margin+3,y+6);
+    if(vs.verified===vs.total){
+      doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(70,70,70);
+      doc.text('Alle Rundgänge wurden durch QR-Code-Scan, GPS-Standortbestätigung und automatische Fotodokumentation nachweislich bestätigt.',margin+3,y+11,{maxWidth:cW-6});
+    }
+    y+=boxH+4;
+  }
   var sig=localStorage.getItem('denis_signature');if(sig&&y<240){try{doc.addImage(sig,'PNG',margin,y,60,18);}catch(e){}}
   doc.setFontSize(7);doc.setTextColor(180,180,180);doc.text('Denis Protokoll · '+new Date().toLocaleString('de-DE'),margin,292);
 }
@@ -2518,8 +2552,8 @@ function attachGpsToLatestEntry(kunde,afterTs){
         }
       }
       // نضيف الموقع كملاحظة بصف البروتوكول أيضًا — حتى يظهر بالطباعة/PDF/الأرشيف (اللي تُبنى من بيانات البروتوكول، مو من سجل الدخول)
-      var lat=pos.coords.latitude.toFixed(5),lng=pos.coords.longitude.toFixed(5);
-      addNotiz(findOrCreateRowForKunde(kunde),'📍 GPS bestätigt: '+lat+', '+lng+' (±'+Math.round(pos.coords.accuracy)+'m)',1,'');
+      // نستخدم شارة نظيفة + رابط خرائط مباشر بدل عرض الإحداثيات الخام
+      addNotiz(findOrCreateRowForKunde(kunde),'📍 GPS bestätigt — Karte: https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude,1,'');
       saveData();
     }catch(e){}
   },function(err){
@@ -2572,6 +2606,8 @@ function handleQrResult(text){
     var tsRef=Date.now()-1000;
     ciSelectKunde(kunde);
     ciIn(true);
+    addNotiz(findOrCreateRowForKunde(kunde),'✅ Vor Ort bestätigt (QR-Code-Scan)',1,'');
+    saveData();
     var photoOk=captureQrPhoto(kunde);
     stopQrScan();
     attachGpsToLatestEntry(kunde,tsRef);
@@ -2582,6 +2618,8 @@ function handleQrResult(text){
   if(!ciIsKundeCurrentlyIn(kunde)){
     var tsRef2=Date.now()-1000;
     ciSelectKunde(kunde);ciIn(true);
+    addNotiz(findOrCreateRowForKunde(kunde),'✅ Vor Ort bestätigt (QR-Code-Scan)',1,'');
+    saveData();
     attachGpsToLatestEntry(kunde,tsRef2);
   }
   var noteText='🏢 Etage kontrolliert: '+etage;
