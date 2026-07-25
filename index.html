@@ -2517,6 +2517,10 @@ function attachGpsToLatestEntry(kunde,afterTs){
           break;
         }
       }
+      // نضيف الموقع كملاحظة بصف البروتوكول أيضًا — حتى يظهر بالطباعة/PDF/الأرشيف (اللي تُبنى من بيانات البروتوكول، مو من سجل الدخول)
+      var lat=pos.coords.latitude.toFixed(5),lng=pos.coords.longitude.toFixed(5);
+      addNotiz(findOrCreateRowForKunde(kunde),'📍 GPS bestätigt: '+lat+', '+lng+' (±'+Math.round(pos.coords.accuracy)+'m)',1,'');
+      saveData();
     }catch(e){}
   },function(err){
     console.warn('GPS bei QR-Scan nicht verfügbar:',err);
