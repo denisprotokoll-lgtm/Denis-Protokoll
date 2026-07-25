@@ -2538,30 +2538,8 @@ function findOrCreateRowForKunde(kunde){
   return parseInt(newRows[newRows.length-1].id.replace('row-',''));
 }
 // يلتقط موقع GPS وقت مسح QR ويربطه بالسجل — دليل إضافي يمنع تصوير الكود ومسحه من مكان آخر
-function attachGpsToLatestEntry(kunde,afterTs){
-  if(!navigator.geolocation)return;
-  navigator.geolocation.getCurrentPosition(function(pos){
-    try{
-      var log=ciGetLog();
-      for(var i=log.length-1;i>=0;i--){
-        if(log[i].kunde===kunde&&log[i].ts>=afterTs){
-          log[i].gps={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy)};
-          ciSaveLog(log);
-          ciRenderLog();
-          break;
-        }
-      }
-      // نضيف الموقع كملاحظة بصف البروتوكول أيضًا — حتى يظهر بالطباعة/PDF/الأرشيف (اللي تُبنى من بيانات البروتوكول، مو من سجل الدخول)
-      // نستخدم شارة نظيفة + رابط خرائط مباشر بدل عرض الإحداثيات الخام
-      addNotiz(findOrCreateRowForKunde(kunde),'📍 GPS bestätigt — Karte: https://maps.google.com/?q='+pos.coords.latitude+','+pos.coords.longitude,1,'');
-      saveData();
-    }catch(e){}
-  },function(err){
-    console.warn('GPS bei QR-Scan nicht verfügbar:',err);
-  },{enableHighAccuracy:true,timeout:8000,maximumAge:10000});
-}
-// يلتقط لقطة من فيديو الكاميرا الحيّ نفسه (بدون طلب إذن إضافي) لحظة نجاح المسح، كدليل بصري إضافي
-function captureFrameFromVideo(videoEl,mW,mH,q){
+// يلتقط إطارًا خامًا من فيديو الكاميرا الحيّ فورًا (يجب استدعاؤها قبل إيقاف الكاميرا)
+function grabVideoFrame(videoEl,mW,mH){
   try{
     var vw=videoEl.videoWidth,vh=videoEl.videoHeight;
     if(!vw||!vh)return null;
@@ -2569,17 +2547,56 @@ function captureFrameFromVideo(videoEl,mW,mH,q){
     if(w>mW||h>mH){var ratio=Math.min(mW/w,mH/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}
     var c=document.createElement('canvas');c.width=w;c.height=h;
     c.getContext('2d').drawImage(videoEl,0,0,w,h);
-    return c.toDataURL('image/jpeg',q);
+    return c;
   }catch(e){return null;}
 }
-function captureQrPhoto(kunde){
-  var video=document.getElementById('qrScanVideo');
-  if(!video)return false;
-  var b64=captureFrameFromVideo(video,800,600,0.55);
-  if(!b64)return false;
-  appendPhotoThumb(findOrCreateRowForKunde(kunde),b64);
-  updateSummary();
-  return true;
+// يطبع طابعًا زمنيًا + الموقع + إحداثيات GPS داخل الصورة نفسها (أسلوب "Timestamp Camera") — دليل بصري واحد يصعب فصله أو التشكيك فيه
+// ينتظر GPS لحظات قليلة (حد أقصى 4 ثوانٍ) قبل ختم الصورة نهائيًا؛ لا يعطّل تسجيل الدخول نفسه لأنه يعمل بالتوازي معه
+function finalizeQrVisit(kunde,etage,rawCanvas,logTsRef,updateLogEntry){
+  var captureTime=new Date();
+  var rowIdTarget=findOrCreateRowForKunde(kunde);
+  function stampAndSave(coords){
+    var w=rawCanvas.width,h=rawCanvas.height;
+    var ctx=rawCanvas.getContext('2d');
+    var barH=Math.max(50,Math.round(h*0.16));
+    ctx.fillStyle='rgba(0,0,0,0.65)';ctx.fillRect(0,h-barH,w,barH);
+    ctx.fillStyle='#ffffff';ctx.textBaseline='middle';
+    var fs1=Math.max(13,Math.round(w*0.03)),fs2=Math.max(10,Math.round(w*0.021));
+    ctx.font='bold '+fs1+'px sans-serif';
+    ctx.fillText((kunde||'')+(etage?' · '+etage:''),10,h-barH+fs1*0.95);
+    ctx.font=fs2+'px sans-serif';
+    var dateStr=p2(captureTime.getDate())+'.'+p2(captureTime.getMonth()+1)+'.'+captureTime.getFullYear()+'  '+p2(captureTime.getHours())+':'+p2(captureTime.getMinutes())+':'+p2(captureTime.getSeconds())+' Uhr';
+    ctx.fillText('📅 '+dateStr,10,h-barH+fs1*0.95+fs2*1.5);
+    ctx.fillText(coords?('📍 '+coords.lat.toFixed(5)+', '+coords.lng.toFixed(5)+'  (±'+coords.acc+'m)'):'📍 GPS nicht verfügbar',10,h-barH+fs1*0.95+fs2*3.0);
+    ctx.font='bold '+Math.max(9,Math.round(w*0.016))+'px sans-serif';
+    ctx.fillStyle='rgba(255,255,255,0.55)';ctx.textAlign='right';
+    ctx.fillText('Denis Protokoll',w-8,h-8);ctx.textAlign='left';
+    var b64=rawCanvas.toDataURL('image/jpeg',0.6);
+    appendPhotoThumb(rowIdTarget,b64);
+    updateSummary();
+    ciShowToast(coords?'📸 Foto mit Zeitstempel & GPS aufgenommen':'📸 Foto mit Zeitstempel aufgenommen');
+  }
+  if(!navigator.geolocation){stampAndSave(null);return;}
+  var done=false;
+  var to=setTimeout(function(){if(done)return;done=true;stampAndSave(null);},4000);
+  navigator.geolocation.getCurrentPosition(function(pos){
+    if(done)return;done=true;clearTimeout(to);
+    var coords={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy)};
+    stampAndSave(coords);
+    try{
+      if(updateLogEntry){
+        var log=ciGetLog();
+        for(var i=log.length-1;i>=0;i--){
+          if(log[i].kunde===kunde&&log[i].ts>=logTsRef){log[i].gps=coords;ciSaveLog(log);ciRenderLog();break;}
+        }
+      }
+      addNotiz(rowIdTarget,'📍 GPS bestätigt — Karte: https://maps.google.com/?q='+coords.lat+','+coords.lng,1,'');
+      saveData();
+    }catch(e){}
+  },function(){
+    if(done)return;done=true;clearTimeout(to);
+    stampAndSave(null);
+  },{enableHighAccuracy:true,timeout:3800,maximumAge:10000});
 }
 function handleQrResult(text){
   if(!text)return;
@@ -2602,25 +2619,24 @@ function handleQrResult(text){
     return;
   }
   if(!etage){
-    // كود موقع كامل (بدون طوابق) — نسجّل الدخول أولاً (ينشئ صف البروتوكول)، ثم نلتقط الصورة بنفس الصف قبل إغلاق الكاميرا
+    // كود موقع كامل (بدون طوابق) — نسجّل الدخول أولاً (ينشئ صف البروتوكول)، ثم نلتقط الإطار الخام قبل إغلاق الكاميرا
     var tsRef=Date.now()-1000;
     ciSelectKunde(kunde);
     ciIn(true);
     addNotiz(findOrCreateRowForKunde(kunde),'✅ Vor Ort bestätigt (QR-Code-Scan)',1,'');
     saveData();
-    var photoOk=captureQrPhoto(kunde);
+    var frame=grabVideoFrame(document.getElementById('qrScanVideo'),900,700);
     stopQrScan();
-    attachGpsToLatestEntry(kunde,tsRef);
-    if(photoOk)ciShowToast('📸 Foto automatisch aufgenommen');
+    if(frame)finalizeQrVisit(kunde,null,frame,tsRef,true);
     return;
   }
   // كود طابق/قسم داخل موقع متعدد الطوابق
+  var isFirstCheckin=false,tsRef2=null;
   if(!ciIsKundeCurrentlyIn(kunde)){
-    var tsRef2=Date.now()-1000;
+    isFirstCheckin=true;tsRef2=Date.now()-1000;
     ciSelectKunde(kunde);ciIn(true);
     addNotiz(findOrCreateRowForKunde(kunde),'✅ Vor Ort bestätigt (QR-Code-Scan)',1,'');
     saveData();
-    attachGpsToLatestEntry(kunde,tsRef2);
   }
   var noteText='🏢 Etage kontrolliert: '+etage;
   if(getRowNotesForKunde(kunde).indexOf(noteText)>=0){
@@ -2628,9 +2644,10 @@ function handleQrResult(text){
     playBeep('save');
     return;
   }
-  captureQrPhoto(kunde);
+  var frame2=grabVideoFrame(document.getElementById('qrScanVideo'),900,700);
   addNotiz(findOrCreateRowForKunde(kunde),noteText,1,'');
   saveData();
+  if(frame2)finalizeQrVisit(kunde,etage,frame2,tsRef2,isFirstCheckin);
   var floors=getKundeEtagen(kunde);
   var notesNow=getRowNotesForKunde(kunde);
   var doneCount=floors.filter(function(f){return notesNow.indexOf('🏢 Etage kontrolliert: '+f)>=0;}).length;
