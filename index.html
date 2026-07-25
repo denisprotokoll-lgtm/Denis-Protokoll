@@ -2460,6 +2460,27 @@ function attachGpsToLatestEntry(kunde,afterTs){
     console.warn('GPS bei QR-Scan nicht verfügbar:',err);
   },{enableHighAccuracy:true,timeout:8000,maximumAge:10000});
 }
+// يلتقط لقطة من فيديو الكاميرا الحيّ نفسه (بدون طلب إذن إضافي) لحظة نجاح المسح، كدليل بصري إضافي
+function captureFrameFromVideo(videoEl,mW,mH,q){
+  try{
+    var vw=videoEl.videoWidth,vh=videoEl.videoHeight;
+    if(!vw||!vh)return null;
+    var w=vw,h=vh;
+    if(w>mW||h>mH){var ratio=Math.min(mW/w,mH/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}
+    var c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(videoEl,0,0,w,h);
+    return c.toDataURL('image/jpeg',q);
+  }catch(e){return null;}
+}
+function captureQrPhoto(kunde){
+  var video=document.getElementById('qrScanVideo');
+  if(!video)return false;
+  var b64=captureFrameFromVideo(video,800,600,0.55);
+  if(!b64)return false;
+  appendPhotoThumb(findOrCreateRowForKunde(kunde),b64);
+  updateSummary();
+  return true;
+}
 function handleQrResult(text){
   if(!text)return;
   var now=Date.now();
@@ -2481,12 +2502,14 @@ function handleQrResult(text){
     return;
   }
   if(!etage){
-    // كود موقع كامل (بدون طوابق) — تسجيل دخول مباشر
+    // كود موقع كامل (بدون طوابق) — نسجّل الدخول أولاً (ينشئ صف البروتوكول)، ثم نلتقط الصورة بنفس الصف قبل إغلاق الكاميرا
     var tsRef=Date.now()-1000;
-    stopQrScan();
     ciSelectKunde(kunde);
     ciIn(true);
+    var photoOk=captureQrPhoto(kunde);
+    stopQrScan();
     attachGpsToLatestEntry(kunde,tsRef);
+    if(photoOk)ciShowToast('📸 Foto automatisch aufgenommen');
     return;
   }
   // كود طابق/قسم داخل موقع متعدد الطوابق
@@ -2501,6 +2524,7 @@ function handleQrResult(text){
     playBeep('save');
     return;
   }
+  captureQrPhoto(kunde);
   addNotiz(findOrCreateRowForKunde(kunde),noteText,1,'');
   saveData();
   var floors=getKundeEtagen(kunde);
