@@ -2441,6 +2441,25 @@ function findOrCreateRowForKunde(kunde){
   var newRows=document.querySelectorAll('.proto-row');
   return parseInt(newRows[newRows.length-1].id.replace('row-',''));
 }
+// يلتقط موقع GPS وقت مسح QR ويربطه بالسجل — دليل إضافي يمنع تصوير الكود ومسحه من مكان آخر
+function attachGpsToLatestEntry(kunde,afterTs){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(function(pos){
+    try{
+      var log=ciGetLog();
+      for(var i=log.length-1;i>=0;i--){
+        if(log[i].kunde===kunde&&log[i].ts>=afterTs){
+          log[i].gps={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:Math.round(pos.coords.accuracy)};
+          ciSaveLog(log);
+          ciRenderLog();
+          break;
+        }
+      }
+    }catch(e){}
+  },function(err){
+    console.warn('GPS bei QR-Scan nicht verfügbar:',err);
+  },{enableHighAccuracy:true,timeout:8000,maximumAge:10000});
+}
 function handleQrResult(text){
   if(!text)return;
   var now=Date.now();
@@ -2463,13 +2482,19 @@ function handleQrResult(text){
   }
   if(!etage){
     // كود موقع كامل (بدون طوابق) — تسجيل دخول مباشر
+    var tsRef=Date.now()-1000;
     stopQrScan();
     ciSelectKunde(kunde);
     ciIn(true);
+    attachGpsToLatestEntry(kunde,tsRef);
     return;
   }
   // كود طابق/قسم داخل موقع متعدد الطوابق
-  if(!ciIsKundeCurrentlyIn(kunde)){ciSelectKunde(kunde);ciIn(true);}
+  if(!ciIsKundeCurrentlyIn(kunde)){
+    var tsRef2=Date.now()-1000;
+    ciSelectKunde(kunde);ciIn(true);
+    attachGpsToLatestEntry(kunde,tsRef2);
+  }
   var noteText='🏢 Etage kontrolliert: '+etage;
   if(getRowNotesForKunde(kunde).indexOf(noteText)>=0){
     if(statusEl)statusEl.textContent='ℹ️ '+etage+' bereits kontrolliert';
@@ -2738,14 +2763,25 @@ function ciRenderLog(){
       elapsedHtml='<span id="ci-elapsed-'+realIdx+'" style="margin-left:6px;font-size:9px;font-weight:800;padding:2px 6px;border-radius:7px;background:'+col+'22;color:'+col+';border:1px solid '+col+'55;">⏱ '+mins+' Min</span>';
     }
     var qrHtml=entry.qr?'<span style="margin-left:6px;font-size:9px;font-weight:800;padding:2px 6px;border-radius:7px;background:rgba(100,160,230,0.18);color:#7fb0e8;border:1px solid rgba(100,160,230,0.4);" title="Per QR-Code am Standort bestätigt">📷 QR</span>':'';
+    var gpsHtml='';
+    if(entry.gps){
+      gpsHtml='<span data-gps-badge style="margin-left:6px;font-size:9px;font-weight:800;padding:2px 6px;border-radius:7px;background:rgba(76,186,107,0.18);color:#4cba6b;border:1px solid rgba(76,186,107,0.4);cursor:pointer;" title="Standort bei Scan: ±'+entry.gps.acc+'m — antippen für Karte">📍 GPS</span>';
+    }
     item.innerHTML=
       '<div class="ci-log-dot '+(isIn?'in':'out')+'"></div>'
       +'<div style="flex:1;min-width:0;overflow:hidden;">'
-      +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(entry.kunde)+qrHtml+'</div>'
+      +'<div id="ci-kunde-lbl-'+realIdx+'" style="font-size:12px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(entry.kunde)+qrHtml+gpsHtml+'</div>'
       +'<div id="ci-time-lbl-'+realIdx+'" style="font-size:11px;color:'+(isIn?'#4cba6b':'#E8394A')+';font-weight:700;">⏱ '+escapeHtml(entry.time)+elapsedHtml+'</div>'
       +'</div>'
       +'<button data-row-menu style="flex-shrink:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:9px;color:rgba(255,255,255,0.7);font-size:16px;font-weight:800;padding:5px 12px;cursor:pointer;line-height:1;" title="Bearbeiten">⋮</button>';
     item.querySelector('[data-row-menu]').addEventListener('click',function(){ciOpenRowMenu(realIdx,isIn);});
+    var gpsBadgeEl=item.querySelector('[data-gps-badge]');
+    if(gpsBadgeEl){
+      gpsBadgeEl.addEventListener('click',function(ev){
+        ev.stopPropagation();
+        window.open('https://www.google.com/maps?q='+entry.gps.lat+','+entry.gps.lng,'_blank');
+      });
+    }
 
     // القائمة المنسدلة — نفس بطاقات "Schnell hinzufügen" الذكية بالشريط العلوي، لكن تُضاف مباشرة لهذا الكند بدون اختيار
     var dropdown=document.createElement('div');
