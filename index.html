@@ -694,6 +694,7 @@ body.app-ready::before{opacity:0.5;}
   </div>
   <div class="ci-body" style="padding:0 12px 20px;">
     <button onclick="startQrScan()" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#4a6080,#3d5268);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin:14px 0 10px;display:flex;align-items:center;justify-content:center;gap:8px;">📷 QR-Code scannen &amp; einchecken</button>
+    <button id="nfcScanBtn" onclick="startNfcScan()" style="display:none;width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#5a8f6a,#3d6b4a);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin:0 0 10px;align-items:center;justify-content:center;gap:8px;">📡 NFC-Tag antippen &amp; einchecken</button>
     <div class="ci-section-label" style="margin-bottom:8px;">📍 oder Kunde manuell auswählen</div>
     <div id="ciSearchWrap" style="display:none;margin-bottom:10px;">
       <input id="ciKundeSearch" type="text" placeholder="🔍 Suchen..." oninput="ciFilterKunden(this.value)"
@@ -2117,7 +2118,7 @@ function settingsRemoveKunde(k){safeSetItem('denis_extra_kunden',JSON.stringify(
 function showCheckin(){
   document.getElementById('checkinScreen').style.display='block';document.body.style.overflow='hidden';
   var fc=document.getElementById('fabCheckin');if(fc)fc.style.display='none';
-  ciRenderKunden();ciRenderLog();updateDayCounter();updateQuickBar();ciUpdateLayout();updateGreeting();
+  ciRenderKunden();ciRenderLog();updateDayCounter();updateQuickBar();ciUpdateLayout();updateGreeting();showNfcButtonIfSupported();
   if(ciClockInterval)clearInterval(ciClockInterval);
   function tick(){
     var now=new Date();
@@ -2291,6 +2292,59 @@ function ensureQrScanLib(){
 }
 var QR_PREFIX='DENIS-STANDORT:';
 
+// ===== NFC (اختياري — يعمل فقط على Chrome/Edge/Samsung Internet لأندرويد؛ لا يدعمه آيفون/سفاري إطلاقًا) =====
+function nfcSupported(){return typeof window!=='undefined'&&'NDEFReader' in window;}
+function showNfcButtonIfSupported(){
+  var btn=document.getElementById('nfcScanBtn');
+  if(btn)btn.style.display=nfcSupported()?'flex':'none';
+}
+var _nfcReader=null;
+function startNfcScan(){
+  if(!nfcSupported()){showToast('NFC wird auf diesem Gerät/Browser nicht unterstützt','error');return;}
+  try{
+    _nfcReader=new window.NDEFReader();
+    ciShowToast('📡 NFC-Tag jetzt an das Gerät halten…');
+    _nfcReader.scan().then(function(){
+      _nfcReader.onreading=function(event){
+        var text=null;
+        for(var i=0;i<event.message.records.length;i++){
+          var record=event.message.records[i];
+          try{
+            if(record.recordType==='text'){
+              text=new TextDecoder(record.encoding||'utf-8').decode(record.data);
+              break;
+            }else if(record.recordType==='url'){
+              text=new TextDecoder().decode(record.data);
+            }
+          }catch(e){}
+        }
+        if(text)handleQrResult(text); // نفس منطق QR بالضبط — نفس صيغة النص DENIS-STANDORT:...
+      };
+      _nfcReader.onreadingerror=function(){showToast('❌ Fehler beim Lesen des NFC-Tags','error');};
+    }).catch(function(){
+      showToast('❌ NFC-Zugriff verweigert oder nicht verfügbar','error');
+    });
+  }catch(e){
+    showToast('❌ NFC-Fehler: '+e.message,'error');
+  }
+}
+// كتابة كود على تاغ NFC فارغ (تُستخدم من نافذة توليد الأكواد بالإعدادات) — تحتاج جهاز أندرويد يدعم NFC للكتابة
+function writeNfcTag(text,label){
+  if(!nfcSupported()){showToast('NFC-Schreiben wird auf diesem Gerät/Browser nicht unterstützt','error');return;}
+  try{
+    var writer=new window.NDEFReader();
+    showToast('📡 NFC-Tag jetzt an das Gerät halten…','info',5000);
+    writer.write({records:[{recordType:'text',data:text}]}).then(function(){
+      showToast('✅ NFC-Tag beschrieben: '+label,'success');
+      playBeep('success');
+    }).catch(function(err){
+      showToast('❌ Schreiben fehlgeschlagen: '+err.message,'error');
+    });
+  }catch(e){
+    showToast('❌ NFC-Fehler: '+e.message,'error');
+  }
+}
+
 // ===== إدارة الطوابق/الأقسام لكل موقع =====
 function getKundeEtagen(name){
   try{return JSON.parse(localStorage.getItem('denis_kunde_etagen')||'{}')[name]||[];}catch(e){return[];}
@@ -2355,6 +2409,14 @@ function renderQrCodes(kundeName){
       block.appendChild(canvasWrap);
       var qrText=QR_PREFIX+kundeName+(etage?('::'+etage):'');
       new QRCode(canvasWrap,{text:qrText,width:120,height:120,correctLevel:QRCode.CorrectLevel.M});
+      if(nfcSupported()){
+        var nfcBtn=document.createElement('button');
+        nfcBtn.type='button';
+        nfcBtn.textContent='📡 Auf NFC-Tag schreiben';
+        nfcBtn.style.cssText='margin-top:6px;padding:5px 10px;border-radius:8px;border:1px solid #b7d9c2;background:#eefaf1;color:#3d6b4a;font-size:9px;font-weight:700;cursor:pointer;';
+        nfcBtn.addEventListener('click',function(){writeNfcTag(qrText,etage||kundeName);});
+        block.appendChild(nfcBtn);
+      }
       container.appendChild(block);
     });
   }).catch(function(){
