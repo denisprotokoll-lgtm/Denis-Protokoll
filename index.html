@@ -2282,7 +2282,9 @@ function ensureQrGenLib(){
 }
 function ensureQrScanLib(){
   if(_qrScanLoaded||window.QrScanner)return Promise.resolve();
-  return loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner.min.js').then(function(){
+  // ملاحظة: qr-scanner.min.js مُوزَّع كـ ES-module (import/export) ولا يعمل كـ <script> عادي.
+  // نستخدم بدلاً منه نسخة UMD المتوافقة مع script tag عادي.
+  return loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner.umd.min.js').then(function(){
     window.QrScanner.WORKER_PATH='https://cdnjs.cloudflare.com/ajax/libs/qr-scanner/1.4.2/qr-scanner-worker.min.js';
     _qrScanLoaded=true;
   });
@@ -2404,7 +2406,7 @@ function startQrScan(){
       statusEl.textContent='❌ Kamera nicht verfügbar oder Zugriff verweigert';
     });
   }).catch(function(){
-    statusEl.textContent='❌ Scanner konnte nicht geladen werden (Internet nötig)';
+    statusEl.textContent='❌ Scanner-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen)';
   });
 }
 function stopQrScan(){
