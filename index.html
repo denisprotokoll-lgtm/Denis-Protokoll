@@ -826,7 +826,7 @@ var EREIGNISSE=[
   {g:true,label:'── Technisch ⚙️ ──'},
   {label:'Technischer Defekt gemeldet 🔧'},{label:'Defekte Beleuchtung 💡'},{label:'Schrankenstörung 🚧'},
   {g:true,label:'── Warnung ⚠️ ──'},
-  {label:'Sicherungsausfall ⚡'},{label:'Dauersignal an Schranke ⚠️'},
+  {label:'Sicherungsausfall ⚡'},{label:'Strom ausgefallen ⚡'},{label:'Dauersignal an Schranke ⚠️'},
   {label:'Ruhestörung – Personen verwiesen'},{label:'Streit geschlichtet'},
   {g:true,label:'── Notfall 🚨 ──'},
   {label:'Polizei eingetroffen – Obdachlose Person entfernt 🚨'},
@@ -838,7 +838,7 @@ var EREIGNISSE=[
   {label:'Fahrzeug unberechtigt geparkt – Abschlepper verständigt'},{label:'Freitext…'}
 ];
 var DANGER_EVENTS=['Polizei eingetroffen – Obdachlose Person entfernt 🚨','Polizei eingetroffen – Personalien aufgenommen 🚨','Vandalismus gemeldet – Polizei informiert 🚨','Notruf / Notfall gemeldet 🚨','Rettungsdienst angefordert 🚑','Diebstahl gemeldet – Polizei verständigt 🚨','Streit geschlichtet','Ruhestörung – Personen verwiesen'];
-var ORANGE_EVENTS=['Sicherungsausfall ⚡','Dauersignal an Schranke ⚠️','Ruhestörung – Personen verwiesen','Fahrzeug unberechtigt geparkt – Abschlepper verständigt'];
+var ORANGE_EVENTS=['Sicherungsausfall ⚡','Strom ausgefallen ⚡','Dauersignal an Schranke ⚠️','Ruhestörung – Personen verwiesen','Fahrzeug unberechtigt geparkt – Abschlepper verständigt'];
 var BLUE_EVENTS=['Technischer Defekt gemeldet 🔧','Defekte Beleuchtung 💡','Schrankenstörung 🚧'];
 
 // ===== STATE =====
@@ -2628,6 +2628,7 @@ function handleQrResult(text){
     var frame=grabVideoFrame(document.getElementById('qrScanVideo'),900,700);
     stopQrScan();
     if(frame)finalizeQrVisit(kunde,null,frame,tsRef,true);
+    else showToast('⚠️ Foto konnte nicht aufgenommen werden (Kamera nicht bereit)','error');
     return;
   }
   // كود طابق/قسم داخل موقع متعدد الطوابق
@@ -2648,6 +2649,7 @@ function handleQrResult(text){
   addNotiz(findOrCreateRowForKunde(kunde),noteText,1,'');
   saveData();
   if(frame2)finalizeQrVisit(kunde,etage,frame2,tsRef2,isFirstCheckin);
+  else showToast('⚠️ Foto konnte nicht aufgenommen werden (Kamera nicht bereit)','error');
   var floors=getKundeEtagen(kunde);
   var notesNow=getRowNotesForKunde(kunde);
   var doneCount=floors.filter(function(f){return notesNow.indexOf('🏢 Etage kontrolliert: '+f)>=0;}).length;
