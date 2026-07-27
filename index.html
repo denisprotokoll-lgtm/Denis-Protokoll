@@ -336,7 +336,7 @@ body.app-ready::before{opacity:0.5;}
   body::before{display:none!important;}
   .no-print,.toolbar,.add-zone,.time-now-btn,.bottom-actions,.kunde-back,
   .progress-wrap,.autosave-bar,
-  .toast-wrap,.pdf-loading,.report-overlay,.overlay-base,#pinScreen,#homeScreen,#checkinScreen,#fabCheckin,#archivePreviewOverlay,#archivePanel,#archiveBg,#printArchiveOverlay,.print-archive-overlay{display:none!important;}
+  .toast-wrap,.pdf-loading,.report-overlay,.overlay-base,#pinScreen,#homeScreen,#checkinScreen,#fabCheckin,#arcPrev,#archivePanel,#archiveBg,#printArchiveOverlay,.print-archive-overlay{display:none!important;}
   /* طباعة كود QR لموقع واحد — تُفعّل فقط عبر body.qr-print-mode */
   body.qr-print-mode .card{display:none!important;}
   body.qr-print-mode #qrPrintArea{display:block!important;}
@@ -1534,7 +1534,7 @@ function closeArchive(){
 }
 function showArchivePreview(d){
   var old=document.getElementById('arcPrev');if(old)old.remove();
-  var ov=document.createElement('div');ov.id='arcPrev';
+  var ov=document.createElement('div');ov.id='arcPrev';ov.className='no-print';
   ov.style.cssText='position:fixed;inset:0;z-index:9999995;background:#0f1923;display:flex;flex-direction:column;overflow-y:auto;font-family:\'DM Sans\',sans-serif;';
 
   // إحصاءات الوردية
@@ -2792,6 +2792,7 @@ function showConfirmDialog(msg,onConfirm,confirmLabel,confirmColor){
   var label=confirmLabel||'Löschen';
   var color=confirmColor||'linear-gradient(135deg,#E8394A,#c8102e)';
   var overlay=document.createElement('div');
+  overlay.className='no-print';
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
   overlay.innerHTML='<div style="background:linear-gradient(160deg,#1e2d3d,#152030);border-radius:16px;padding:22px 20px;max-width:300px;width:100%;border:1px solid rgba(255,255,255,0.1);">'
     +'<div style="font-size:14px;font-weight:700;color:white;margin-bottom:16px;text-align:center;">'+msg+'</div>'
@@ -2986,6 +2987,7 @@ function ciOpenRowMenu(idx,isIn){
   var old=document.getElementById('ciRowMenu');if(old)old.remove();
   var overlay=document.createElement('div');
   overlay.id='ciRowMenu';
+  overlay.className='no-print';
   overlay.style.cssText='position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,0.55);display:flex;align-items:flex-end;justify-content:center;';
   var sheet=document.createElement('div');
   sheet.style.cssText='background:linear-gradient(160deg,#1e2d3d,#152030);border-radius:18px 18px 0 0;padding:10px 14px 18px;width:100%;max-width:480px;border-top:1px solid rgba(255,255,255,0.1);animation:slideUp 0.2s ease;';
@@ -3172,6 +3174,7 @@ function ciFinish(){
     else{showToast('⚠️ Archiv-Fehler!','error');}
   }catch(e){showToast('⚠️ '+e.message,'error');}
   var overlay=document.createElement('div');
+  overlay.className='no-print';
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);';
   overlay.innerHTML='<div style="background:linear-gradient(160deg,#2d3f52,#1a2535);border-radius:20px;padding:24px 20px;max-width:320px;width:100%;border:1px solid rgba(255,255,255,0.12);">'
     +'<div style="font-family:\'Syne\',sans-serif;font-size:18px;font-weight:800;color:white;margin-bottom:4px;">✅ Schicht beendet</div>'
@@ -3191,6 +3194,7 @@ function ciFinish(){
 function ciSOS(){
   if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);playBeep('danger');
   var overlay=document.createElement('div');
+  overlay.className='no-print';
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.88);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:20px;backdrop-filter:blur(6px);';
   var sosGroups=[];var currentGroup={title:'',items:[]};
   EREIGNISSE.forEach(function(e){
