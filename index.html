@@ -665,6 +665,14 @@ body.app-ready::before{opacity:0.5;}
   </div>
 </div>
 
+<!-- RUNDGÄNGE (Guard Tour / Checkpoint System) — طبقة إضافية فوق نظام QR/NFC الحالي، لا تغيّر أي سلوك موجود -->
+<div class="overlay-base" id="tourenOverlay">
+  <div class="modal-base">
+    <div class="modal-hdr"><div class="modal-hdr-title">🗺️ Rundgänge</div><button class="modal-close" onclick="closeTouren()">✕</button></div>
+    <div class="modal-body" id="tourenBody">Lädt…</div>
+  </div>
+</div>
+
 <!-- CHECKIN SCREEN -->
 <div id="checkinScreen">
   <div class="ci-alert-banner" id="ciAlertBanner">
@@ -722,6 +730,7 @@ body.app-ready::before{opacity:0.5;}
   <div class="toolbar-brand">Denis <span>Protokoll</span></div>
   <div class="toolbar-right">
     <button class="btn btn-ghost" onclick="openSettings()">⚙️</button>
+    <button class="btn btn-ghost" onclick="openTouren()" title="Rundgänge">🗺️</button>
     <button class="btn btn-ghost" onclick="openSigModal()">✍️</button>
     <button class="btn btn-ghost" onclick="openDashboard()">📊</button>
     <button class="btn btn-ghost" onclick="openArchive()">📁</button>
@@ -2379,15 +2388,167 @@ function writeNfcTag(text,label){
   }
 }
 
-// ===== إدارة الطوابق/الأقسام لكل موقع =====
-function getKundeEtagen(name){
-  try{return JSON.parse(localStorage.getItem('denis_kunde_etagen')||'{}')[name]||[];}catch(e){return[];}
+// ===== ============================================ =====
+// ===== RUNDGÄNGE (Guard Tour / Checkpoint System)      =====
+// ===== طبقة إضافية بالكامل — تُبنى فوق بيانات QR/NFC   =====
+// ===== الموجودة أصلاً، ولا تُعدّل أي دالة أو سلوك سابق =====
+// ===== ============================================ =====
+
+// --- تعريفات الجولات ---
+function getTouren(){try{return JSON.parse(localStorage.getItem('denis_touren')||'[]');}catch(e){return[];}}
+function saveTouren(arr){safeSetItem('denis_touren',JSON.stringify(arr));}
+
+// --- سجل آخر زيارة فعلية لكل نقطة تفتيش (موقع أو موقع::طابق) — يُحدَّث تلقائيًا مع كل مسح QR/NFC ناجح ---
+function getTourVisits(){try{return JSON.parse(localStorage.getItem('denis_tour_visits')||'{}');}catch(e){return{};}}
+function recordTourVisit(stopId){
+  var visits=getTourVisits();
+  visits[stopId]=Date.now();
+  safeSetItem('denis_tour_visits',JSON.stringify(visits));
 }
-function saveKundeEtagen(name,arr){
-  var all={};try{all=JSON.parse(localStorage.getItem('denis_kunde_etagen')||'{}');}catch(e){}
-  all[name]=arr;
-  safeSetItem('denis_kunde_etagen',JSON.stringify(all));
+
+// --- كل نقاط التفتيش الممكنة (كل عميل + كل طابق معرَّف له) ---
+function getAllPossibleStops(){
+  var stops=[];
+  ciGetAllKunden().forEach(function(k){
+    var etagen=getKundeEtagen(k);
+    if(etagen.length){
+      etagen.forEach(function(e){stops.push({id:k+'::'+e,label:k+' · '+e});});
+    }else{
+      stops.push({id:k,label:k});
+    }
+  });
+  return stops;
 }
+function stopLabel(stopId){return stopId.indexOf('::')>=0?stopId.replace('::',' · '):stopId;}
+
+// --- يحسب حالة كل نقطة بجولة معيّنة: تم زيارتها بالوقت المطلوب؟ متأخرة؟ قربت تستحق؟ ---
+function getTourStatus(tour){
+  var visits=getTourVisits();
+  var now=Date.now();
+  var intervalMs=(tour.intervalMinutes||0)*60000;
+  var results=(tour.stops||[]).map(function(stopId){
+    var lastVisit=visits[stopId]||0;
+    var elapsed=lastVisit?now-lastVisit:null;
+    var overdue=intervalMs>0&&(!lastVisit||elapsed>intervalMs);
+    var dueSoon=intervalMs>0&&!overdue&&elapsed!==null&&elapsed>intervalMs*0.75;
+    return{stopId:stopId,lastVisit:lastVisit,elapsed:elapsed,overdue:overdue,dueSoon:dueSoon};
+  });
+  return{
+    results:results,
+    overdueCount:results.filter(function(r){return r.overdue;}).length,
+    dueSoonCount:results.filter(function(r){return r.dueSoon;}).length,
+    visitedCount:results.filter(function(r){return r.lastVisit>0;}).length,
+    total:results.length
+  };
+}
+
+// --- الشاشة الرئيسية: قائمة الجولات مع حالتها الحيّة ---
+function openTouren(){
+  renderTourenList();
+  document.getElementById('tourenOverlay').classList.add('open');
+}
+function closeTouren(){document.getElementById('tourenOverlay').classList.remove('open');}
+function renderTourenList(){
+  var touren=getTouren();
+  var body=document.getElementById('tourenBody');
+  var html='';
+  if(!touren.length){
+    html='<div style="text-align:center;padding:24px 10px;color:var(--muted);font-size:12px;">Noch keine Rundgänge definiert.<br>Ein Rundgang ist eine Gruppe von Kontrollpunkten (QR-Standorte/Etagen), die regelmäßig besucht werden müssen.</div>';
+  }else{
+    touren.forEach(function(tour,idx){
+      var st=getTourStatus(tour);
+      var color=st.overdueCount>0?'#E8394A':st.dueSoonCount>0?'#f5a623':'#4cba6b';
+      var statusLabel=st.overdueCount>0?('🔴 '+st.overdueCount+' überfällig'):st.dueSoonCount>0?('🟠 '+st.dueSoonCount+' bald fällig'):'🟢 Aktuell';
+      html+='<div style="background:#f8f9fc;border:1.5px solid '+color+'44;border-left:4px solid '+color+';border-radius:12px;padding:12px;margin-bottom:10px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;">'
+        +'<div style="font-family:\'Syne\',sans-serif;font-size:13px;font-weight:800;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(tour.name)+'</div>'
+        +'<span style="font-size:10px;font-weight:700;color:'+color+';white-space:nowrap;">'+statusLabel+'</span>'
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">📍 '+st.visitedCount+'/'+st.total+' Punkte besucht'+(tour.intervalMinutes?' · Intervall: '+tour.intervalMinutes+' Min':' · Einmal pro Schicht')+'</div>'
+        +'<div style="display:flex;gap:6px;">'
+        +'<button data-edit="'+idx+'" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border);background:white;font-size:10px;font-weight:700;cursor:pointer;">✏️ Bearbeiten</button>'
+        +'<button data-del="'+idx+'" style="padding:7px 12px;border-radius:8px;border:1px solid #f5c0c4;background:#fff0f1;color:var(--red);font-size:10px;font-weight:700;cursor:pointer;">🗑</button>'
+        +'</div></div>';
+    });
+  }
+  html+='<button onclick="openTourEditor(null)" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#3d5268,#4a6080);color:white;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:6px;">➕ Neuen Rundgang erstellen</button>';
+  body.innerHTML=html;
+  body.querySelectorAll('[data-edit]').forEach(function(b){b.addEventListener('click',function(){openTourEditor(parseInt(b.dataset.edit,10));});});
+  body.querySelectorAll('[data-del]').forEach(function(b){b.addEventListener('click',function(){deleteTour(parseInt(b.dataset.del,10));});});
+}
+function deleteTour(idx){
+  showConfirmDialog('Diesen Rundgang wirklich löschen?',function(){
+    var touren=getTouren();touren.splice(idx,1);saveTouren(touren);renderTourenList();
+  });
+}
+
+// --- محرّر إنشاء/تعديل جولة ---
+function openTourEditor(idx){
+  var existing=idx!==null?getTouren()[idx]:null;
+  var tour=existing||{name:'',stops:[],intervalMinutes:120};
+  var stops=getAllPossibleStops();
+  var body=document.getElementById('tourenBody');
+  var html='<div class="einsatz-field"><label class="einsatz-label">📛 Name des Rundgangs</label>'
+    +'<input type="text" class="einsatz-input" id="tourNameInput" value="'+escapeHtml(tour.name)+'" placeholder="z. B. Nachtrunde Hauptgebäude"></div>';
+  html+='<div class="einsatz-field"><label class="einsatz-label">🔁 Intervall (wie oft muss der Rundgang wiederholt werden?)</label>'
+    +'<select class="einsatz-input" id="tourIntervalInput">'
+    +[30,60,90,120,180,240].map(function(m){return'<option value="'+m+'"'+(tour.intervalMinutes===m?' selected':'')+'>Alle '+m+' Minuten</option>';}).join('')
+    +'<option value="0"'+(!tour.intervalMinutes?' selected':'')+'>Einmal pro Schicht (keine Erinnerung)</option>'
+    +'</select></div>';
+  html+='<div class="einsatz-field"><label class="einsatz-label">📍 Kontrollpunkte auswählen</label><div style="max-height:220px;overflow-y:auto;border:1.5px solid var(--border);border-radius:10px;padding:8px;">';
+  if(!stops.length){
+    html+='<div style="font-size:11px;color:var(--muted);padding:8px;">Keine Standorte vorhanden. Lege zuerst Kunden (Einstellungen → Kunden) an — Etagen sind optional.</div>';
+  }else{
+    stops.forEach(function(s){
+      var checked=(tour.stops||[]).indexOf(s.id)>=0;
+      html+='<label style="display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text);">'
+        +'<input type="checkbox" class="tour-stop-chk" value="'+escapeHtml(s.id)+'"'+(checked?' checked':'')+' style="width:auto;flex-shrink:0;">'
+        +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;">'+escapeHtml(s.label)+'</span></label>';
+    });
+  }
+  html+='</div></div>';
+  html+='<div style="display:flex;gap:8px;margin-top:12px;">'
+    +'<button onclick="renderTourenList()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:white;color:var(--text);font-weight:700;cursor:pointer;">✕ Abbrechen</button>'
+    +'<button onclick="saveTourFromEditor('+(idx!==null?idx:'null')+')" style="flex:2;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#3d5268,#4a6080);color:white;font-weight:700;cursor:pointer;">💾 Speichern</button>'
+    +'</div>';
+  body.innerHTML=html;
+}
+function saveTourFromEditor(idx){
+  var name=(document.getElementById('tourNameInput').value||'').trim();
+  if(!name){showToast('Bitte einen Namen eingeben','error');return;}
+  var intervalMinutes=parseInt(document.getElementById('tourIntervalInput').value,10)||0;
+  var stops=Array.from(document.querySelectorAll('.tour-stop-chk:checked')).map(function(c){return c.value;});
+  if(!stops.length){showToast('Bitte mindestens einen Kontrollpunkt wählen','error');return;}
+  var touren=getTouren();
+  var tour={id:(idx!==null&&touren[idx])?touren[idx].id:('tour_'+Date.now()),name:name,stops:stops,intervalMinutes:intervalMinutes,active:true};
+  if(idx!==null)touren[idx]=tour;else touren.push(tour);
+  saveTouren(touren);
+  showToast('✅ Rundgang gespeichert','success');
+  renderTourenList();
+}
+
+// --- تنبيه دوري لأي نقطة تفتيش تجاوزت الفاصل الزمني المسموح دون زيارة ---
+var _tourAlertShown={};
+function checkTourAlerts(){
+  try{
+    getTouren().filter(function(t){return t.active&&t.intervalMinutes>0;}).forEach(function(tour){
+      getTourStatus(tour).results.forEach(function(r){
+        var key=tour.id+'|'+r.stopId;
+        if(r.overdue){
+          if(!_tourAlertShown[key]){
+            _tourAlertShown[key]=true;
+            showToast('⏰ Überfällig: '+stopLabel(r.stopId)+' ('+tour.name+')','error',6000);
+            playBeep('danger');
+          }
+        }else{
+          delete _tourAlertShown[key];
+        }
+      });
+    });
+  }catch(e){}
+}
+setInterval(checkTourAlerts,60000);
+
 
 // ----- توليد وطباعة QR لكل موقع/طابق (من الإعدادات) -----
 function openQrGenModal(kundeName){
@@ -2618,6 +2779,7 @@ function handleQrResult(text){
     playBeep('danger');
     return;
   }
+  recordTourVisit(etage?(kunde+'::'+etage):kunde); // للـ Rundgänge — لا يغيّر أي سلوك موجود، فقط يسجّل وقت الزيارة
   if(!etage){
     // كود موقع كامل (بدون طوابق) — نسجّل الدخول أولاً (ينشئ صف البروتوكول)، ثم نلتقط الإطار الخام قبل إغلاق الكاميرا
     var tsRef=Date.now()-1000;
