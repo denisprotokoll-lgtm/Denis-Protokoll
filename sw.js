@@ -1,6 +1,6 @@
 // Service Worker لتطبيق "Denis Protokoll" — يفعّل العمل الحقيقي بدون إنترنت
 // يجب أن يكون هذا الملف بجانب index.html في نفس المجلد، ويعمل فقط عبر HTTPS أو localhost
-var CACHE_NAME = 'denis-cache-v4';
+var CACHE_NAME = 'denis-cache-v6';
 var PRECACHE_URLS = [
   './',
   './index.html',
