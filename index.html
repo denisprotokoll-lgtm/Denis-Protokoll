@@ -733,7 +733,7 @@ body.app-ready::before{opacity:0.5;}
 
 <!-- MAIN TOOLBAR -->
 <div class="toolbar no-print">
-  <div class="toolbar-brand">Denis <span>Protokoll</span> <span style="font-size:9px;opacity:0.4;font-weight:400;">v2026.08.01-cleanup-merge</span></div>
+  <div class="toolbar-brand">Denis <span>Protokoll</span> <span style="font-size:9px;opacity:0.4;font-weight:400;">v2026.08.01-hotfix-etagen</span></div>
   <div class="toolbar-right">
     <button class="btn btn-ghost" onclick="openSettings()">⚙️</button>
     <button class="btn btn-ghost" onclick="openTouren()" title="Rundgänge">🗺️</button>
@@ -2314,6 +2314,16 @@ function ensureQrScanLib(){
   });
 }
 var QR_PREFIX='DENIS-STANDORT:';
+
+// ===== إدارة الطوابق/الأقسام لكل موقع (تُستخدم لتوليد أكواد QR منفصلة ولبناء قائمة نقاط التفتيش بـ Rundgänge) =====
+function getKundeEtagen(name){
+  try{return JSON.parse(localStorage.getItem('denis_kunde_etagen')||'{}')[name]||[];}catch(e){return[];}
+}
+function saveKundeEtagen(name,arr){
+  var all={};try{all=JSON.parse(localStorage.getItem('denis_kunde_etagen')||'{}');}catch(e){}
+  all[name]=arr;
+  safeSetItem('denis_kunde_etagen',JSON.stringify(all));
+}
 
 // ===== ============================================ =====
 // ===== RUNDGÄNGE — نظام موحّد لنقاط التفتيش (يدمج Etagen مع فواصل التكرار) =====
